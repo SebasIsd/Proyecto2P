@@ -1,0 +1,13 @@
+name: Solicitud de Nueva Funcionalidad
+description: Sugiere una nueva característica o mejora
+title: "[FEATURE] "
+labels: [enhancement]
+body:
+  - type: textarea
+    attributes:
+      label: Descripción de la propuesta
+      description: Explica la nueva función o mejora.
+  - type: textarea
+    attributes:
+      label: Justificación
+      description: ¿Por qué crees que esto beneficiará al proyecto?

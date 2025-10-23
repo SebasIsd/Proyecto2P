@@ -1,0 +1,19 @@
+name: Reporte de Bug
+description: Reporta un problema o error encontrado
+title: "[BUG] "
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: Descripción del problema
+      description: Explica qué ocurre y qué esperabas que ocurra.
+  - type: textarea
+    attributes:
+      label: Pasos para reproducir
+      description: Describe los pasos para reproducir el error.
+  - type: textarea
+    attributes:
+      label: Capturas de pantalla
+  - type: input
+    attributes:
+      label: Versión del sistema o software
