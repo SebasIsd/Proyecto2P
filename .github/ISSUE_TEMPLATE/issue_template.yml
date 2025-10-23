@@ -7,7 +7,7 @@ contact_links:
 name: Bug Report  # Nombre de la primera plantilla
 description: Plantilla para reportar un bug
 title: "[BUG] "  # Prefijo para el título del issue
-labels: ["bug", "needs-triage"]  # Labels automáticos
+labels: ["bug", "needs-triage"]  # Labels automáticoss
 body:
   - type: markdown
     attributes:
