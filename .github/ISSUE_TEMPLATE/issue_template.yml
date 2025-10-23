@@ -1,0 +1,47 @@
+blank_issues_enabled: false  # Desactiva issues en blanco si solo quieres plantillas
+contact_links:
+  - name: Soporte General
+    url: https://tudominio.com/soporte  # Opcional: Enlace a un canal de soporte
+    about: Para preguntas no relacionadas con bugs o features
+---
+name: Bug Report  # Nombre de la primera plantilla
+description: Plantilla para reportar un bug
+title: "[BUG] "  # Prefijo para el título del issue
+labels: ["bug", "needs-triage"]  # Labels automáticos
+body:
+  - type: markdown
+    attributes:
+      value: "## Descripción\nDescribe el problema aquí."
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducir
+      description: Lista los pasos detallados.
+      placeholder: "1. Ve a..."
+    validations:
+      required: true
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: Navegador afectado
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+      multiple: false
+---
+name: Feature Request  # Segunda plantilla
+description: Solicitar una nueva característica
+title: "[FEATURE] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: "## Idea\nExplica qué quieres agregar."
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Beneficios
+      placeholder: "¿Cómo beneficia esto al proyecto?"
+    validations:
+      required: true
