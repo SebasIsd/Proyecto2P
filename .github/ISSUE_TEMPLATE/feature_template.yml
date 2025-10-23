@@ -1,13 +1,63 @@
 name: Solicitud de Nueva Funcionalidad
-description: Sugiere una nueva característica o mejora
+description: Sugiere una nueva característica o mejora para el proyecto
 title: "[FEATURE] "
-labels: [enhancement]
+labels: [enhancement, needs-discussion]
+assignees: []  # Opcional: agrega usuarios, ej. ["tu-usuario"]
 body:
-  - type: textarea
+  - type: markdown
     attributes:
-      label: Descripción de la propuesta
-      description: Explica la nueva función o mejora.
+      value: |
+        ## Solicitud de Nueva Funcionalidad
+        Gracias por proponer una mejora para nuestro proyecto. Por favor, proporciona todos los detalles posibles para que podamos evaluar tu idea.
   - type: textarea
+    id: description
+    attributes:
+      label: Descripción de la Propuesta
+      description: Explica claramente qué nueva funcionalidad o mejora sugieres.
+      placeholder: |
+        **Propuesta**: [Describe la nueva característica o mejora]
+        **Ejemplo**: [Por ejemplo, "Agregar un botón para exportar datos en CSV"]
+    validations:
+      required: true
+  - type: textarea
+    id: justification
     attributes:
       label: Justificación
-      description: ¿Por qué crees que esto beneficiará al proyecto?
+      description: Explica por qué esta funcionalidad beneficiará al proyecto.
+      placeholder: |
+        **Beneficio**: [Ej. "Mejorará la experiencia del usuario al permitir..."]
+        **Problema resuelto**: [Ej. "Resuelve la dificultad de..."]
+    validations:
+      required: true
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Casos de Uso o Ejemplos
+      description: Describe cómo se usaría esta funcionalidad o proporciona ejemplos concretos.
+      placeholder: |
+        Ejemplo: "Un usuario podría descargar un informe en PDF desde la página de estadísticas."
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas Consideradas
+      description: ¿Pensaste en otras soluciones o enfoques? Descríbelos aquí.
+      placeholder: |
+        Ejemplo: "Consideré usar una API externa, pero preferí una solución interna porque..."
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área del Proyecto
+      description: Selecciona el área principal afectada por esta funcionalidad.
+      options:
+        - Frontend
+        - Backend
+        - Documentación
+        - Otro
+      default: 0
+      multiple: false
+    validations:
+      required: false

@@ -1,19 +1,70 @@
 name: Reporte de Bug
-description: Reporta un problema o error encontrado
+description: Reporta un problema o error encontrado en el proyecto
 title: "[BUG] "
-labels: [bug]
+labels: [bug, needs-triage]
+assignees: []  # Opcional: agrega usuarios, ej. ["tu-usuario"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Reporte de Bug
+        Gracias por ayudarnos a mejorar el proyecto. Por favor, proporciona todos los detalles posibles para que podamos resolver el problema rápidamente.
   - type: textarea
+    id: description
     attributes:
-      label: Descripción del problema
-      description: Explica qué ocurre y qué esperabas que ocurra.
+      label: Descripción del Problema
+      description: Explica claramente qué ocurre y qué esperabas que ocurriera.
+      placeholder: |
+        **Qué pasó**: [Describe el error observado]
+        **Comportamiento esperado**: [Qué debería haber pasado]
+    validations:
+      required: true
   - type: textarea
+    id: steps
     attributes:
-      label: Pasos para reproducir
-      description: Describe los pasos para reproducir el error.
+      label: Pasos para Reproducir
+      description: Enumera los pasos detallados para reproducir el error.
+      placeholder: |
+        1. Ve a [página o sección]
+        2. Haz clic en [botón o elemento]
+        3. Observa [comportamiento inesperado]
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        ## Capturas de Pantalla
+        Si es posible, adjunta capturas de pantalla o enlaces a imágenes/videos que muestren el problema. Puedes pegar URLs o arrastrar imágenes al área de texto.
   - type: textarea
+    id: screenshots
     attributes:
-      label: Capturas de pantalla
-  - type: input
+      label: Capturas de Pantalla o Enlaces
+      description: Pega enlaces a imágenes/videos o describe lo que muestran.
+      placeholder: "Ejemplo: [URL de la captura] o describe la imagen."
+    validations:
+      required: false
+  - type: textarea
+    id: environment
     attributes:
-      label: Versión del sistema o software
+      label: Entorno
+      description: Proporciona detalles sobre el entorno donde ocurrió el error.
+      placeholder: |
+        - Sistema operativo: [ej. Windows 11, macOS Ventura]
+        - Navegador: [ej. Chrome 120, Firefox 115]
+        - Versión del software: [ej. v1.2.3]
+        - Otros detalles: [ej. configuración específica]
+    validations:
+      required: false
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad
+      description: Selecciona la prioridad estimada del bug.
+      options:
+        - Baja
+        - Media
+        - Alta
+      default: 0
+      multiple: false
+    validations:
+      required: false
