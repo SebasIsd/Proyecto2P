@@ -1,3 +1,8 @@
+<?php
+// Incluir la consulta de autoridades
+require './home/autoridades.php';
+?>
+
 <!DOCTYPE html>
 <html>
 
@@ -32,6 +37,7 @@
   <link href="css/style.css" rel="stylesheet" />
   <!-- responsive style -->
   <link href="css/responsive.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 </head>
 
@@ -228,158 +234,81 @@
   </div>
 
   <!-- offer section -->
+ <section class="offer_section layout_padding-bottom py-5">
+  <h1 class="text-center mb-4" style="font-size:34px; color:#6d1313;">AUTORIDADES</h1>
+  <div class="container">
+    <div class="row g-4">
 
-  <section class="offer_section layout_padding-bottom">
-    <div class="offer_container">
-      <div class="container ">
-        <div class="row">
-          <div class="col-md-6  ">
-            <div class="box ">
-              <div class="img-box">
-                <img src="images/o1.jpg" alt="">
-              </div>
-              <div class="detail-box">
-                <h5>
-                  Tasty Thursdays
-                </h5>
-                <h6>
-                  <span>20%</span> Off
-                </h6>
-                <a href="">
-                  Order Now <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 456.029 456.029"
-                    style="enable-background:new 0 0 456.029 456.029;" xml:space="preserve">
-                    <g>
-                      <g>
-                        <path d="M345.6,338.862c-29.184,0-53.248,23.552-53.248,53.248c0,29.184,23.552,53.248,53.248,53.248
-                     c29.184,0,53.248-23.552,53.248-53.248C398.336,362.926,374.784,338.862,345.6,338.862z" />
-                      </g>
-                    </g>
-                    <g>
-                      <g>
-                        <path d="M439.296,84.91c-1.024,0-2.56-0.512-4.096-0.512H112.64l-5.12-34.304C104.448,27.566,84.992,10.67,61.952,10.67H20.48
-                     C9.216,10.67,0,19.886,0,31.15c0,11.264,9.216,20.48,20.48,20.48h41.472c2.56,0,4.608,2.048,5.12,4.608l31.744,216.064
-                     c4.096,27.136,27.648,47.616,55.296,47.616h212.992c26.624,0,49.664-18.944,55.296-45.056l33.28-166.4
-                     C457.728,97.71,450.56,86.958,439.296,84.91z" />
-                      </g>
-                    </g>
-                    <g>
-                      <g>
-                        <path d="M215.04,389.55c-1.024-28.16-24.576-50.688-52.736-50.688c-29.696,1.536-52.224,26.112-51.2,55.296
-                     c1.024,28.16,24.064,50.688,52.224,50.688h1.024C193.536,443.31,216.576,418.734,215.04,389.55z" />
-                      </g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                  </svg>
-                </a>
+      <?php if (!empty($autoridades)): ?>
+        <?php foreach ($autoridades as $a): ?>
+          <?php
+            $id  = (int)$a['id'];
+            $modalId = "autoridadModal_$id";
+            $foto = $a['foto'] ?: 'images/placeholder.jpg';
+            $titulo = trim($a['titulo'] ?? '');
+            $nombre = trim($a['nombre'] ?? '');
+            $cargo  = trim($a['cargo'] ?? 'Autoridad');
+            $encabezado = trim(($titulo ? $titulo.' ' : '').$nombre);
+            $resumen = $a['resumen'] ?? '';
+            $direccion = $a['direccion'] ?? '';
+            $telefono  = $a['telefono'] ?? '';
+            $ext       = $a['telefono_ext'] ?? '';
+            $horario   = $a['horario'] ?? '';
+            $email     = $a['email'] ?? '';
+          ?>
+          <div class="col-12">
+            <div class="card shadow-sm border-0">
+              <div class="row g-0">
+                <div class="col-md-4 bg-light text-center p-3">
+                  <img src="<?= htmlspecialchars($foto) ?>" alt="<?= htmlspecialchars($encabezado) ?>" class="img-fluid rounded">
+                  <?php if ($email): ?>
+                    <div class="mt-2">
+                      <a href="mailto:<?= htmlspecialchars($email) ?>" style="color:#6d1313; font-weight:600;">
+                        <?= htmlspecialchars($email) ?>
+                      </a>
+                    </div>
+                  <?php endif; ?>
+                </div>
+                <div class="col-md-8 d-flex flex-column justify-content-center p-4">
+                  <div style="font-size:1rem; color:#6d1313; font-weight:700;"><?= htmlspecialchars($cargo) ?></div>
+                  <h5 class="fw-bold"><?= htmlspecialchars($encabezado) ?></h5>
+                  <button class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#<?= $modalId ?>">Más detalles</button>
+                </div>
               </div>
             </div>
           </div>
-          <div class="col-md-6  ">
-            <div class="box ">
-              <div class="img-box">
-                <img src="images/o2.jpg" alt="">
-              </div>
-              <div class="detail-box">
-                <h5>
-                  Pizza Days
-                </h5>
-                <h6>
-                  <span>15%</span> Off
-                </h6>
-                <a href="">
-                  Order Now <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 456.029 456.029"
-                    style="enable-background:new 0 0 456.029 456.029;" xml:space="preserve">
-                    <g>
-                      <g>
-                        <path d="M345.6,338.862c-29.184,0-53.248,23.552-53.248,53.248c0,29.184,23.552,53.248,53.248,53.248
-                     c29.184,0,53.248-23.552,53.248-53.248C398.336,362.926,374.784,338.862,345.6,338.862z" />
-                      </g>
-                    </g>
-                    <g>
-                      <g>
-                        <path d="M439.296,84.91c-1.024,0-2.56-0.512-4.096-0.512H112.64l-5.12-34.304C104.448,27.566,84.992,10.67,61.952,10.67H20.48
-                     C9.216,10.67,0,19.886,0,31.15c0,11.264,9.216,20.48,20.48,20.48h41.472c2.56,0,4.608,2.048,5.12,4.608l31.744,216.064
-                     c4.096,27.136,27.648,47.616,55.296,47.616h212.992c26.624,0,49.664-18.944,55.296-45.056l33.28-166.4
-                     C457.728,97.71,450.56,86.958,439.296,84.91z" />
-                      </g>
-                    </g>
-                    <g>
-                      <g>
-                        <path d="M215.04,389.55c-1.024-28.16-24.576-50.688-52.736-50.688c-29.696,1.536-52.224,26.112-51.2,55.296
-                     c1.024,28.16,24.064,50.688,52.224,50.688h1.024C193.536,443.31,216.576,418.734,215.04,389.55z" />
-                      </g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                    <g>
-                    </g>
-                  </svg>
-                </a>
+
+          <!-- Modal -->
+          <div class="modal fade" id="<?= $modalId ?>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title"><?= htmlspecialchars($encabezado) ?></h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <?php if ($resumen): ?><p><?= nl2br(htmlspecialchars($resumen)) ?></p><?php endif; ?>
+                  <ul>
+                    <?php if ($direccion): ?><li><strong>Dirección:</strong> <?= htmlspecialchars($direccion) ?></li><?php endif; ?>
+                    <?php if ($telefono): ?><li><strong>Teléfono:</strong> <?= htmlspecialchars($telefono) ?><?= $ext ? ' ext '.htmlspecialchars($ext) : '' ?></li><?php endif; ?>
+                    <?php if ($horario): ?><li><strong>Horario:</strong> <?= nl2br(htmlspecialchars($horario)) ?></li><?php endif; ?>
+                  </ul>
+                </div>
+                <div class="modal-footer">
+                  <?php if ($email): ?><a href="mailto:<?= htmlspecialchars($email) ?>" class="btn btn-primary">Contactar</a><?php endif; ?>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <p class="text-center">No hay autoridades registradas.</p>
+      <?php endif; ?>
+
     </div>
-  </section>
-
+  </div>
+</section>
   <!-- end offer section -->
 
   <!-- food section -->
@@ -1390,6 +1319,7 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCh39n5U-4IoWpsVGUHWdqB6puEkhRLdmI&callback=myMap">
   </script>
   <!-- End Google Map -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 
