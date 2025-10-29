@@ -1,0 +1,104 @@
+/* ================================
+   ESTILOS PARA LOGIN.PHP
+   ================================ */
+
+/* Fondo general */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #df1313, #eaeaea);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Contenedor central */
+.contenedor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* Caja del login */
+.login-box {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    padding: 40px 50px;
+    width: 350px;
+    text-align: center;
+}
+
+/* Logo institucional */
+.logo-uta {
+    width: 120px;
+    margin-bottom: 15px;
+}
+
+/* Título */
+h2 {
+    color: #a30000;
+    margin-bottom: 20px;
+}
+
+/* Etiquetas de los campos */
+label {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Campos de entrada */
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #a61717;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0,74,173,0.4);
+}
+
+/* Botón */
+.btn-login {
+    background: #a30000;
+    color: white;
+    border: none;
+    padding: 10px 0;
+    width: 100%;
+    margin-top: 15px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-login:hover {
+    background: #d51313; /* color más claro al pasar el mouse */
+}
+
+/* Mensaje de error */
+.error {
+    background: #ffb3b3;
+    color: #a30000;
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+/* Nota inferior */
+.nota {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #777;
+}
