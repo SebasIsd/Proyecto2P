@@ -175,68 +175,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 
-  <!-- Paso 2: Fechas, lugar y modalidad -->
-  <div class="accordion-item card mb-3">
-    <h2 class="accordion-header">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p2" aria-expanded="true">
-        <i class="bi bi-geo-alt me-2"></i>2) Fechas, lugar y modalidad
-      </button>
-    </h2>
-    <div id="p2" class="accordion-collapse collapse">
-      <div class="accordion-body">
-        <div class="row g-3">
-          <div class="col-md-3">
-            <label class="form-label">Inscripción desde</label>
-            <input id="insDesde" type="date" name="INSCRIPCION_DESDE" class="form-control">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Inscripción hasta</label>
-            <input id="insHasta" type="date" name="INSCRIPCION_HASTA" class="form-control">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Inicio *</label>
-            <input id="fecInicio" type="date" name="FEC_INI_EVE_CUR" class="form-control" required>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Fin *</label>
-            <input id="fecFin" type="date" name="FEC_FIN_EVE_CUR" class="form-control" required>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Lugar</label>
-            <input id="lugar" name="LUGAR" class="form-control" placeholder="Auditorio FISEI">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Ubicación/detalle</label>
-            <input id="detalleLugar" name="UBICACION_DETALLE" class="form-control" placeholder="Bloque B, 2do piso">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Modalidad *</label>
-            <select id="modalidad" name="MOD_EVE_CUR" class="form-select">
-              <option value="Gratis">Gratis</option>
-              <option value="Pagado">Pagado</option>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Costo ($)</label>
-            <input id="costo" type="number" step="0.01" name="COS_EVE_CUR" class="form-control" value="0">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Capacidad máxima</label>
-            <input id="capacidad" type="number" name="CAPACIDAD_MAXIMA" class="form-control" value="0" min="0">
-            <div class="muted">Inicializa cupos disponibles.</div>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Horas totales</label>
-            <input id="horas" type="number" name="HORAS_TOTALES" class="form-control" min="0">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Responsable (Cédula)</label>
-            <input id="responsable" name="RESPONSABLE_CED" class="form-control" placeholder="Ej. 0102030405">
-          </div>
+<!-- Paso 2: Fechas, lugar y modalidad -->
+<div class="accordion-item card mb-3">
+  <h2 class="accordion-header">
+    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p2" aria-expanded="true">
+      <i class="bi bi-geo-alt me-2"></i>2) Fechas, lugar y modalidad
+    </button>
+  </h2>
+  <div id="p2" class="accordion-collapse collapse">
+    <div class="accordion-body">
+
+      <!-- Fechas: columna completa -->
+      <div class="mb-3">
+        <label class="form-label">Inscripción desde</label>
+        <input id="insDesde" type="date" name="INSCRIPCION_DESDE" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Inscripción hasta</label>
+        <input id="insHasta" type="date" name="INSCRIPCION_HASTA" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Inicio *</label>
+        <input id="fecInicio" type="date" name="FEC_INI_EVE_CUR" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Fin *</label>
+        <input id="fecFin" type="date" name="FEC_FIN_EVE_CUR" class="form-control" required>
+      </div>
+
+      <!-- Resto de campos en dos columnas -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Lugar</label>
+          <input id="lugar" name="LUGAR" class="form-control" placeholder="Auditorio FISEI">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Ubicación/detalle</label>
+          <input id="detalleLugar" name="UBICACION_DETALLE" class="form-control" placeholder="Bloque B, 2do piso">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Modalidad *</label>
+          <select id="modalidad" name="MOD_EVE_CUR" class="form-select">
+            <option value="Gratis">Gratis</option>
+            <option value="Pagado">Pagado</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Costo ($)</label>
+          <input id="costo" type="number" step="0.01" name="COS_EVE_CUR" class="form-control" value="0" disabled>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Capacidad máxima</label>
+          <input id="capacidad" type="number" name="CAPACIDAD_MAXIMA" class="form-control" value="0" min="0">
+          <div class="muted">Inicializa cupos disponibles.</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Horas totales</label>
+          <input id="horas" type="number" name="HORAS_TOTALES" class="form-control" min="0">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Responsable (Cédula)</label>
+          <input id="responsable" name="RESPONSABLE_CED" class="form-control" placeholder="Ej. 0102030405">
         </div>
       </div>
+
     </div>
   </div>
+</div>
+
 
   <!-- Paso 3: Requisitos -->
   <div class="accordion-item card mb-3">
@@ -473,6 +482,62 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 });
+
+
+//control de fechas
+
+document.addEventListener('DOMContentLoaded', () => {
+  const modalidad = document.getElementById('modalidad');
+  const costo = document.getElementById('costo');
+  const insDesde = document.getElementById('insDesde');
+  const insHasta = document.getElementById('insHasta');
+  const fecInicio = document.getElementById('fecInicio');
+  const fecFin = document.getElementById('fecFin');
+
+  // Fecha mínima de inscripción: hoy
+  const hoy = new Date().toISOString().split('T')[0];
+  insDesde.setAttribute('min', hoy);
+  insHasta.setAttribute('min', hoy);
+
+  // Cambiar costo según modalidad
+  modalidad.addEventListener('change', () => {
+    if (modalidad.value === 'Gratis') {
+      costo.value = 0;
+      costo.disabled = true;
+    } else {
+      costo.disabled = false;
+    }
+  });
+
+  // Validar fechas antes de enviar
+  const form = modalidad.closest('form');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      // Inscripción hasta >= desde
+      if (insHasta.value && insDesde.value && insHasta.value < insDesde.value) {
+        e.preventDefault();
+        alert('La fecha de inscripción hasta no puede ser antes de la fecha de inicio de inscripción.');
+        return false;
+      }
+
+      // Inicio >= inscripción hasta
+      if (fecInicio.value && insHasta.value && fecInicio.value < insHasta.value) {
+        e.preventDefault();
+        alert('La fecha de inicio del evento no puede ser antes de la fecha de fin de inscripción.');
+        return false;
+      }
+
+      // Fin >= inicio
+      if (fecFin.value && fecInicio.value && fecFin.value < fecInicio.value) {
+        e.preventDefault();
+        alert('La fecha de finalización del evento no puede ser antes de la fecha de inicio.');
+        return false;
+      }
+    });
+  }
+});
+
+
 </script>
 </body>
 </html>
