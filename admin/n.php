@@ -136,134 +136,173 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <p>Completa la información paso a paso</p>
     </div>
 
-    <form method="post">
+    <form method="post" id="formEvento">
       <div class="accordion" id="eventWizard">
 
-        <!-- Paso 1 -->
         <div class="accordion-item card mb-3">
-          <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#p1" aria-expanded="true">
-              <i class="bi bi-info-circle me-2"></i>1) Datos básicos
-            </button>
-          </h2>
-          <div id="p1" class="accordion-collapse collapse show">
-            <div class="accordion-body">
-              <div class="row g-3">
-                <div class="col-md-8">
-                  <label class="form-label">Título *</label>
-                  <input name="TIT_EVE_CUR" class="form-control" required>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Tipo de evento *</label>
-                  <div class="input-group">
-                    <select id="tipoEvento" name="ID_TIPO_EVE" class="form-select" required>
-                      <option value="">-- Selecciona --</option>
-                      <?php foreach($tipos as $t): ?>
-                        <option value="<?= (int)$t['ID_TIPO_EVE'] ?>"><?= htmlspecialchars($t['NOM_TIPO_EVE']) ?></option>
-                      <?php endforeach; ?>
-                    </select>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalNuevoTipo">
-                      <i class="bi bi-plus-lg"></i>
-                    </button>
-                  </div>
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Descripción</label>
-                  <textarea name="DES_EVE_CUR" rows="3" class="form-control" placeholder="Breve descripción del evento"></textarea>
-                </div>
-              </div>
-            </div>
+    <h2 class="accordion-header">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#p1" aria-expanded="true">
+        <i class="bi bi-info-circle me-2"></i>1) Datos básicos
+      </button>
+    </h2>
+    <div id="p1" class="accordion-collapse collapse show">
+      <div class="accordion-body">
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label">Título *</label>
+            <input id="tituloEvento" name="TIT_EVE_CUR" class="form-control" required>
           </div>
-        </div>
- <!-- Paso 3 -->
-        <div class="accordion-item card mb-3">
-          <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p3">
-              <i class="bi bi-list-check me-2"></i>2) Requisitos del evento
-            </button>
-          </h2>
-          <div id="p3" class="accordion-collapse collapse">
-            <div class="accordion-body">
-              <div id="tablaRequisitosContainer">
-                <p class="muted mb-2">Selecciona el tipo de evento para cargar los requisitos.</p>
-                <div class="table-responsive">
-                  <table class="table table-hover align-middle" id="tablaRequisitos">
-                    <thead>
-                      <tr>
-                        <th>Sel</th><th>Requisito</th><th>Tipo</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <?php foreach($requisitos as $r): ?>
-                        <tr>
-                          <td><input type="checkbox" name="REQ_ID[]" value="<?= (int)$r['ID_REQ'] ?>"></td>
-                          <td><?= htmlspecialchars($r['NOM_REQ']) ?></td>
-                          <td><?= htmlspecialchars($r['TIPO']) ?></td>
-                        </tr>
-                      <?php endforeach; ?>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Paso 2 -->
-        <div class="accordion-item card mb-3">
-          <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p2">
-              <i class="bi bi-geo-alt me-2"></i>3) Fechas, lugar y modalidad
-            </button>
-          </h2>
-          <div id="p2" class="accordion-collapse collapse">
-            <div class="accordion-body">
-              <div class="row g-3">
-                <div class="col-md-3"><label class="form-label">Inscripción desde</label><input type="date" name="INSCRIPCION_DESDE" class="form-control"></div>
-                <div class="col-md-3"><label class="form-label">Inscripción hasta</label><input type="date" name="INSCRIPCION_HASTA" class="form-control"></div>
-                <div class="col-md-3"><label class="form-label">Inicio *</label><input type="date" name="FEC_INI_EVE_CUR" class="form-control" required></div>
-                <div class="col-md-3"><label class="form-label">Fin *</label><input type="date" name="FEC_FIN_EVE_CUR" class="form-control" required></div>
-                <div class="col-md-6"><label class="form-label">Lugar</label><input name="LUGAR" class="form-control" placeholder="Auditorio FISEI"></div>
-                <div class="col-md-6"><label class="form-label">Ubicación/detalle</label><input name="UBICACION_DETALLE" class="form-control" placeholder="Bloque B, 2do piso"></div>
-                <div class="col-md-3"><label class="form-label">Modalidad *</label><select name="MOD_EVE_CUR" class="form-select"><option value="Gratis">Gratis</option><option value="Pagado">Pagado</option></select></div>
-                <div class="col-md-3"><label class="form-label">Costo ($)</label><input type="number" step="0.01" name="COS_EVE_CUR" class="form-control" value="0"></div>
-                <div class="col-md-3"><label class="form-label">Capacidad máxima</label><input type="number" name="CAPACIDAD_MAXIMA" class="form-control" value="0" min="0"><div class="muted">Inicializa cupos disponibles.</div></div>
-                <div class="col-md-3"><label class="form-label">Horas totales</label><input type="number" name="HORAS_TOTALES" class="form-control" min="0"></div>
-                <div class="col-md-6"><label class="form-label">Responsable (Cédula)</label><input name="RESPONSABLE_CED" class="form-control" placeholder="Ej. 0102030405"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-       
-        <!-- Paso 4 -->
-        <div class="accordion-item card mb-3">
-          <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p4">
-              <i class="bi bi-mortarboard me-2"></i>4) Carreras destinatarias
-            </button>
-          </h2>
-          <div id="p4" class="accordion-collapse collapse">
-            <div class="accordion-body">
-              <div class="row">
-                <?php foreach($carreras as $c): ?>
-                  <div class="col-md-4 mb-2">
-                    <label class="req-chip">
-                      <input type="checkbox" name="CARRERAS[]" value="<?= (int)$c['ID_CARRERA'] ?>"> 
-                      <?= htmlspecialchars($c['NOMBRE_CARRERA']) ?>
-                    </label>
-                  </div>
+          <div class="col-md-4">
+            <label class="form-label">Tipo de evento *</label>
+            <div class="input-group">
+              <select id="tipoEvento" name="ID_TIPO_EVE" class="form-select" required>
+                <option value="">-- Selecciona --</option>
+                <?php foreach($tipos as $t): ?>
+                  <option value="<?= (int)$t['ID_TIPO_EVE'] ?>"><?= htmlspecialchars($t['NOM_TIPO_EVE']) ?></option>
                 <?php endforeach; ?>
-              </div>
-              <div class="muted mt-2">Si no seleccionas ninguna, el evento se considera abierto al público.</div>
+              </select>
+              <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalNuevoTipo">
+                <i class="bi bi-plus-lg"></i>
+              </button>
             </div>
           </div>
+          <div class="col-12">
+            <label class="form-label">Descripción</label>
+            <textarea id="descripcionEvento" name="DES_EVE_CUR" rows="3" class="form-control" placeholder="Breve descripción del evento"></textarea>
+          </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paso 2: Fechas, lugar y modalidad -->
+  <div class="accordion-item card mb-3">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p2" aria-expanded="true">
+        <i class="bi bi-geo-alt me-2"></i>2) Fechas, lugar y modalidad
+      </button>
+    </h2>
+    <div id="p2" class="accordion-collapse collapse">
+      <div class="accordion-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Inscripción desde</label>
+            <input id="insDesde" type="date" name="INSCRIPCION_DESDE" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Inscripción hasta</label>
+            <input id="insHasta" type="date" name="INSCRIPCION_HASTA" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Inicio *</label>
+            <input id="fecInicio" type="date" name="FEC_INI_EVE_CUR" class="form-control" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Fin *</label>
+            <input id="fecFin" type="date" name="FEC_FIN_EVE_CUR" class="form-control" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Lugar</label>
+            <input id="lugar" name="LUGAR" class="form-control" placeholder="Auditorio FISEI">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Ubicación/detalle</label>
+            <input id="detalleLugar" name="UBICACION_DETALLE" class="form-control" placeholder="Bloque B, 2do piso">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Modalidad *</label>
+            <select id="modalidad" name="MOD_EVE_CUR" class="form-select">
+              <option value="Gratis">Gratis</option>
+              <option value="Pagado">Pagado</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Costo ($)</label>
+            <input id="costo" type="number" step="0.01" name="COS_EVE_CUR" class="form-control" value="0">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Capacidad máxima</label>
+            <input id="capacidad" type="number" name="CAPACIDAD_MAXIMA" class="form-control" value="0" min="0">
+            <div class="muted">Inicializa cupos disponibles.</div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Horas totales</label>
+            <input id="horas" type="number" name="HORAS_TOTALES" class="form-control" min="0">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Responsable (Cédula)</label>
+            <input id="responsable" name="RESPONSABLE_CED" class="form-control" placeholder="Ej. 0102030405">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paso 3: Requisitos -->
+  <div class="accordion-item card mb-3">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p3" aria-expanded="true">
+        <i class="bi bi-list-check me-2"></i>3) Requisitos del evento
+      </button>
+    </h2>
+    <div id="p3" class="accordion-collapse collapse">
+      <div class="accordion-body">
+        <div id="tablaRequisitosContainer">
+          <p class="muted mb-2">Selecciona el tipo de evento para cargar los requisitos.</p>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle" id="tablaRequisitos">
+              <thead>
+                <tr>
+                  <th>Sel</th><th>Requisito</th><th>Tipo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach($requisitos as $r): ?>
+                  <tr>
+                    <td><input class="reqCheck" type="checkbox" name="REQ_ID[]" value="<?= (int)$r['ID_REQ'] ?>"></td>
+                    <td><?= htmlspecialchars($r['NOM_REQ']) ?></td>
+                    <td><?= htmlspecialchars($r['TIPO']) ?></td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paso 4: Carreras -->
+  <div class="accordion-item card mb-3">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p4" aria-expanded="true">
+        <i class="bi bi-mortarboard me-2"></i>4) Carreras destinatarias
+      </button>
+    </h2>
+    <div id="p4" class="accordion-collapse collapse">
+      <div class="accordion-body">
+        <div class="row">
+          <?php foreach($carreras as $c): ?>
+            <div class="col-md-4 mb-2">
+              <label class="req-chip">
+                <input class="carCheck" type="checkbox" name="CARRERAS[]" value="<?= (int)$c['ID_CARRERA'] ?>"> 
+                <?= htmlspecialchars($c['NOMBRE_CARRERA']) ?>
+              </label>
+            </div>
+          <?php endforeach; ?>
+        </div>
+        <div class="muted mt-2">Si no seleccionas ninguna, el evento se considera abierto al público.</div>
+      </div>
+    </div>
+  </div>
+
 
         <!-- Botón final -->
         <div class="card sticky-actions">
           <div class="text-end">
-            <button type="submit" class="btn btn-uta px-4 py-2"><i class="bi bi-save me-1"></i>Guardar evento</button>
+<button id="btnGuardarEvento" type="submit" class="btn btn-uta px-4 py-2">
+  <i class="bi bi-save me-1"></i>Guardar evento
+</button>
           </div>
         </div>
       </div>
@@ -316,68 +355,124 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// === Cargar requisitos dinámicamente ===
-document.getElementById('tipoEvento').addEventListener('change', function() {
-  const idTipo = this.value;
-  if (!idTipo) return;
+// Esperar a que el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
 
-  fetch('obtenerRequisitosPorTipo.php?id_tipo=' + idTipo)
-    .then(res => res.json())
-    .then(data => {
-      const tbody = document.querySelector('#tablaRequisitos tbody');
-      tbody.innerHTML = '';
+  // === Cargar requisitos dinámicamente ===
+  const tipoEventoSelect = document.getElementById('tipoEvento');
+  if (tipoEventoSelect) {
+    tipoEventoSelect.addEventListener('change', () => {
+      const idTipo = tipoEventoSelect.value;
+      if (!idTipo) return;
 
-      if (!Array.isArray(data) || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No hay requisitos asociados.</td></tr>';
+      fetch('obtenerRequisitosPorTipo.php?id_tipo=' + idTipo)
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.querySelector('#tablaRequisitos tbody');
+          tbody.innerHTML = '';
+
+          if (!Array.isArray(data) || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No hay requisitos asociados.</td></tr>';
+            return;
+          }
+
+          data.forEach(req => {
+            tbody.innerHTML += `
+              <tr>
+                <td><input class="reqCheck" type="checkbox" name="REQ_ID[]" value="${req.ID_REQ}"></td>
+                <td>${req.NOM_REQ}</td>
+                <td>${req.TIPO}</td>
+              </tr>`;
+          });
+        })
+        .catch(err => console.error('Error cargando requisitos:', err));
+    });
+  }
+
+  // === Guardar nuevo tipo de evento (modal) ===
+  const btnNuevoTipo = document.getElementById('guardarNuevoTipo');
+  if (btnNuevoTipo) {
+    btnNuevoTipo.addEventListener('click', () => {
+      const nombre = document.getElementById('nuevoTipoNombre').value.trim();
+      const nuevoReq = document.getElementById('nuevoRequisito').value.trim();
+      const requisitos = [...document.querySelectorAll('.req-existente:checked')].map(r => r.value);
+      const imagen = document.getElementById('nuevoTipoImagen').files[0];
+
+      if (!nombre) {
+        alert('Por favor, ingresa un nombre para el tipo.');
         return;
       }
 
-      data.forEach(req => {
-        tbody.innerHTML += `
-          <tr>
-            <td><input type="checkbox" name="REQ_ID[]" value="${req.ID_REQ}"></td>
-            <td>${req.NOM_REQ}</td>
-            <td>${req.TIPO}</td>
-          </tr>`;
-      });
-    })
-    .catch(err => console.error('Error cargando requisitos:', err));
-});
+      const formData = new FormData();
+      formData.append('nombre_tipo', nombre);
+      formData.append('nuevo_requisito', nuevoReq);
+      requisitos.forEach(r => formData.append('requisitos[]', r));
+      if (imagen) formData.append('imagen', imagen);
 
-// === Guardar nuevo tipo de evento con imagen ===
-document.getElementById('guardarNuevoTipo').addEventListener('click', () => {
-  const nombre = document.getElementById('nuevoTipoNombre').value.trim();
-  const nuevoReq = document.getElementById('nuevoRequisito').value.trim();
-  const requisitos = [...document.querySelectorAll('.req-existente:checked')].map(r => r.value);
-  const imagen = document.getElementById('nuevoTipoImagen').files[0];
-
-  if (!nombre) {
-    alert('Por favor, ingresa un nombre para el tipo.');
-    return;
+      fetch('guardarTipoEvento.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(async res => {
+        const text = await res.text(); // para depurar si hay HTML
+        console.log('Respuesta cruda:', text);
+        try {
+          const data = JSON.parse(text);
+          if (data.success) {
+            alert('Tipo de evento guardado correctamente.');
+            location.reload();
+          } else {
+            alert('Error: ' + data.message);
+          }
+        } catch (e) {
+          console.error('Respuesta no es JSON válida:', text);
+          alert('Error inesperado en el servidor.');
+        }
+      })
+      .catch(err => alert('Error en la solicitud: ' + err));
+    });
   }
 
-  const formData = new FormData();
-  formData.append('nombre_tipo', nombre);
-  formData.append('nuevo_requisito', nuevoReq);
-  requisitos.forEach(r => formData.append('requisitos[]', r));
-  if (imagen) formData.append('imagen', imagen);
+  // === Guardar evento principal ===
+  const form = document.getElementById('formEvento');
+  const btnGuardar = document.getElementById('btnGuardarEvento');
 
-  fetch('guardarTipoEvento.php', {
-    method: 'POST',
-    body: formData
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      alert('Tipo de evento guardado correctamente.');
-      location.reload();
-    } else {
-      alert('Error: ' + data.message);
-    }
-  })
-  .catch(err => alert('Error en la solicitud: ' + err));
+  if (form && btnGuardar) {
+    btnGuardar.addEventListener('click', async (e) => {
+      e.preventDefault(); // evita envío normal del form
+
+      const data = new FormData(form);
+
+      // Agregar manualmente los requisitos seleccionados
+      document.querySelectorAll('.reqCheck:checked').forEach(cb => {
+        data.append('REQ_ID[]', cb.value);
+      });
+
+      // Agregar manualmente las carreras seleccionadas
+      document.querySelectorAll('.carCheck:checked').forEach(cb => {
+        data.append('CARRERAS[]', cb.value);
+      });
+
+      try {
+        const res = await fetch('guardarEvento.php', { method: 'POST', body: data });
+        const text = await res.text(); // Depurar si hay HTML de error
+        console.log('Respuesta guardarEvento.php:', text);
+
+        const json = JSON.parse(text);
+        if (json.success) {
+          alert('Evento guardado correctamente.');
+          form.reset();
+        } else {
+          alert('Error: ' + json.message);
+        }
+      } catch (err) {
+        console.error('Error al guardar evento:', err);
+        alert('Error al guardar el evento.');
+      }
+    });
+  }
+
 });
-
 </script>
 </body>
 </html>
