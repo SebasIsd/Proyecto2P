@@ -1,3 +1,14 @@
+<?php if (isset($_GET['error'])): ?>
+    <div class="error">
+        <?php 
+        if ($_GET['error'] == 'usuario_no_encontrado') echo "⚠️ Usuario no encontrado.";
+        elseif ($_GET['error'] == 'contraseña_incorrecta') echo "⚠️ Contraseña incorrecta.";
+        elseif ($_GET['error'] == 'rol_no_valido') echo "⚠️ Rol no válido.";
+        ?>
+    </div>
+<?php endif; ?>
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -16,10 +27,10 @@
                 <div class="error"><?= $error ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="">
+            <form method="POST" action="validar.php">
                 <div class="input-group">
                     <label for="usuario">Usuario</label>
-                    <input type="text" name="usuario" id="usuario" placeholder="Ingrese su usuario" required>
+                    <input type="email" name="usuario" id="usuario" placeholder="Ingrese su correo" required >
                 </div>
                 <div class="input-group">
                     <label for="clave">Contraseña</label>
@@ -27,9 +38,15 @@
                 </div>
                 <button type="submit" class="btn-login">Ingresar</button>
             </form>
-
+            <br>
+                        <div class="registro">
+                ¿No tienes cuenta?
+                <a href="registro.php">Regístrate aquí</a>
+            </div>
             <p class="nota">© Universidad Técnica de Ambato - 2025</p>
         </div>
     </div>
+
+
 </body>
 </html>
