@@ -11,7 +11,7 @@ if (isset($_GET['id_tipo'])) {
 
     // Consulta los requisitos relacionados al tipo de evento
     $sql = "
-        SELECT r.ID_REQ, r.NOM_REQ, r.DES_REQ, r.TIPO
+        SELECT r.ID_REQ, r.NOM_REQ, r.DES_REQ
         FROM TIPOS_EVENTO_REQUISITOS ter
         INNER JOIN REQUISITOS r ON ter.ID_REQ = r.ID_REQ
         WHERE ter.ID_TIPO_EVE = ?

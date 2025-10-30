@@ -262,7 +262,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <table class="table table-hover align-middle" id="tablaRequisitos">
               <thead>
                 <tr>
-                  <th>Sel</th><th>Requisito</th><th>Tipo</th>
+                  <th>Sel</th><th>Requisito</th>
                 </tr>
               </thead>
               <tbody>
@@ -270,7 +270,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   <tr>
                     <td><input class="reqCheck" type="checkbox" name="REQ_ID[]" value="<?= (int)$r['ID_REQ'] ?>"></td>
                     <td><?= htmlspecialchars($r['NOM_REQ']) ?></td>
-                    <td><?= htmlspecialchars($r['TIPO']) ?></td>
                   </tr>
                 <?php endforeach; ?>
               </tbody>
@@ -422,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <tr>
                 <td><input class="reqCheck" type="checkbox" name="REQ_ID[]" value="${req.ID_REQ}"></td>
                 <td>${req.NOM_REQ}</td>
-                <td>${req.TIPO}</td>
+           
               </tr>`;
           });
         })
