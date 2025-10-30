@@ -1,12 +1,4 @@
-<?php if (isset($_GET['error'])): ?>
-    <div class="error">
-        <?php 
-        if ($_GET['error'] == 'usuario_no_encontrado') echo "⚠️ Usuario no encontrado.";
-        elseif ($_GET['error'] == 'contraseña_incorrecta') echo "⚠️ Contraseña incorrecta.";
-        elseif ($_GET['error'] == 'rol_no_valido') echo "⚠️ Rol no válido.";
-        ?>
-    </div>
-<?php endif; ?>
+
 
 
 <!DOCTYPE html>
@@ -26,7 +18,15 @@
             <?php if (!empty($error)): ?>
                 <div class="error"><?= $error ?></div>
             <?php endif; ?>
-
+<?php if (isset($_GET['error'])): ?>
+    <div class="error">
+        <?php 
+        if ($_GET['error'] == 'usuario_no_encontrado') echo "⚠️ Usuario no encontrado.";
+        elseif ($_GET['error'] == 'contraseña_incorrecta') echo "⚠️ Contraseña incorrecta.";
+        elseif ($_GET['error'] == 'rol_no_valido') echo "⚠️ Rol no válido.";
+        ?>
+    </div>
+<?php endif; ?>
             <form method="POST" action="validar.php">
                 <div class="input-group">
                     <label for="usuario">Usuario</label>

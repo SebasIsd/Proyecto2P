@@ -38,10 +38,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             exit();
         } else {
-            $error = "⚠️ Contraseña incorrecta.";
+            header("Location: login.php?error=contraseña_incorrecta");
+        exit();
+
         }
     } else {
-        $error = "⚠️ El usuario no existe o el correo es incorrecto.";
-    }
+    header("Location: login.php?error=usuario_no_encontrado");
+    exit();
+}
 }
 ?>
