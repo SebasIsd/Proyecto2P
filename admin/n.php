@@ -324,7 +324,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content p-3">
       <div class="modal-header border-0">
-        <h5 class="modal-title text-uta"><i class="bi bi-plus-circle me-2"></i>Nuevo tipo de evento</h5>
+        <h5 class="modal-title text-uta">
+          <i class="bi bi-plus-circle me-2"></i>Nuevo tipo de evento
+        </h5>
         <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -336,23 +338,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <label class="form-label">Imagen del tipo</label>
           <input id="nuevoTipoImagen" type="file" class="form-control" accept="image/*">
         </div>
+
+        <!-- Sección de requisitos dinámicos -->
         <div class="mb-3">
-          <label class="form-label">Requisitos existentes</label>
-          <div class="row">
-            <?php foreach($requisitos as $r): ?>
-              <div class="col-6 mb-2">
-                <label class="req-chip">
-                  <input type="checkbox" class="req-existente" value="<?= (int)$r['ID_REQ'] ?>"> <?= htmlspecialchars($r['NOM_REQ']) ?>
-                </label>
-              </div>
-            <?php endforeach; ?>
+          <label class="form-label">Requisitos del tipo</label>
+          <div id="contenedorRequisitos">
+            <!-- Plantilla de requisito -->
+            <div class="requisito-item mb-2 d-flex gap-2">
+              <input type="text" class="form-control req-nombre" placeholder="Nombre del requisito">
+              <select class="form-select req-tipo">
+                <option value="NUMERICO">Numérico</option>
+                <option value="TEXTO_CORTO">Texto corto</option>
+                <option value="DOCUMENTO">Documento</option>
+              </select>
+              <input type="number" class="form-control req-valor-min" placeholder="Valor mínimo" style="display:none;">
+              <button type="button" class="btn btn-danger btn-remove-requisito">Eliminar</button>
+            </div>
           </div>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Agregar nuevo requisito</label>
-          <input id="nuevoRequisito" class="form-control" placeholder="Ej. Certificación previa">
+          <button type="button" id="agregarRequisito" class="btn btn-sm btn-uta mt-2">Agregar requisito</button>
         </div>
       </div>
+
       <div class="modal-footer border-0">
         <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button id="guardarNuevoTipo" class="btn btn-uta">Guardar</button>
@@ -361,14 +367,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // Esperar a que el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
-
-  // === Cargar requisitos dinámicamente ===
+  // === Variables DOM ===
   const tipoEventoSelect = document.getElementById('tipoEvento');
+  const formEvento = document.getElementById('formEvento');
+  const btnGuardarEvento = document.getElementById('btnGuardarEvento');
+
+  const contenedorReqModal = document.getElementById('contenedorRequisitos');
+  const btnGuardarNuevoTipo = document.getElementById('guardarNuevoTipo');
+
+  const modalidad = document.getElementById('modalidad');
+  const costo = document.getElementById('costo');
+  const insDesde = document.getElementById('insDesde');
+  const insHasta = document.getElementById('insHasta');
+  const fecInicio = document.getElementById('fecInicio');
+  const fecFin = document.getElementById('fecFin');
+
+  const hoy = new Date().toISOString().split('T')[0];
+  insDesde.setAttribute('min', hoy);
+  insHasta.setAttribute('min', hoy);
+
+  // === Cambiar costo según modalidad ===
+  if (modalidad) {
+    modalidad.addEventListener('change', () => {
+      if (modalidad.value === 'Gratis') {
+        costo.value = 0;
+        costo.disabled = true;
+      } else {
+        costo.disabled = false;
+      }
+    });
+  }
+
+  // === Cargar requisitos dinámicamente al cambiar tipo de evento ===
   if (tipoEventoSelect) {
     tipoEventoSelect.addEventListener('change', () => {
       const idTipo = tipoEventoSelect.value;
@@ -379,12 +413,10 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
           const tbody = document.querySelector('#tablaRequisitos tbody');
           tbody.innerHTML = '';
-
           if (!Array.isArray(data) || data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No hay requisitos asociados.</td></tr>';
             return;
           }
-
           data.forEach(req => {
             tbody.innerHTML += `
               <tr>
@@ -398,79 +430,106 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === Guardar nuevo tipo de evento (modal) ===
-  const btnNuevoTipo = document.getElementById('guardarNuevoTipo');
-  if (btnNuevoTipo) {
-    btnNuevoTipo.addEventListener('click', () => {
-      const nombre = document.getElementById('nuevoTipoNombre').value.trim();
-      const nuevoReq = document.getElementById('nuevoRequisito').value.trim();
-      const requisitos = [...document.querySelectorAll('.req-existente:checked')].map(r => r.value);
-      const imagen = document.getElementById('nuevoTipoImagen').files[0];
-
-      if (!nombre) {
-        alert('Por favor, ingresa un nombre para el tipo.');
-        return;
+  // === Modal de nuevo tipo de evento (requisitos dinámicos) ===
+  if (contenedorReqModal) {
+    // Mostrar campo valor mínimo solo si NUMERICO
+    contenedorReqModal.addEventListener('change', (e) => {
+      if (e.target.classList.contains('req-tipo')) {
+        const parent = e.target.closest('.requisito-item');
+        const valorMin = parent.querySelector('.req-valor-min');
+        valorMin.style.display = e.target.value === 'NUMERICO' ? 'block' : 'none';
       }
+    });
+
+    // Eliminar requisito
+    contenedorReqModal.addEventListener('click', (e) => {
+      if (e.target.classList.contains('btn-remove-requisito')) {
+        e.target.closest('.requisito-item').remove();
+      }
+    });
+
+    // Agregar requisito
+    const btnAgregarReq = document.getElementById('agregarRequisito');
+    if (btnAgregarReq) {
+      btnAgregarReq.addEventListener('click', () => {
+        const template = contenedorReqModal.querySelector('.requisito-item').cloneNode(true);
+        template.querySelectorAll('input').forEach(inp => inp.value = '');
+        template.querySelector('select').value = 'NUMERICO';
+        template.querySelector('.req-valor-min').style.display = 'block';
+        contenedorReqModal.appendChild(template);
+      });
+    }
+  }
+
+  // === Guardar nuevo tipo de evento (modal) ===
+  if (btnGuardarNuevoTipo) {
+    btnGuardarNuevoTipo.addEventListener('click', async () => {
+      const nombre = document.getElementById('nuevoTipoNombre').value.trim();
+      const img = document.getElementById('nuevoTipoImagen').files[0];
+      if (!nombre) return alert('Debes ingresar el nombre del tipo.');
 
       const formData = new FormData();
       formData.append('nombre_tipo', nombre);
-      formData.append('nuevo_requisito', nuevoReq);
-      requisitos.forEach(r => formData.append('requisitos[]', r));
-      if (imagen) formData.append('imagen', imagen);
+      if (img) formData.append('imagen_tipo', img);
 
-      fetch('guardarTipoEvento.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(async res => {
-        const text = await res.text(); // para depurar si hay HTML
-        console.log('Respuesta cruda:', text);
-        try {
-          const data = JSON.parse(text);
-          if (data.success) {
-            alert('Tipo de evento guardado correctamente.');
-            location.reload();
-          } else {
-            alert('Error: ' + data.message);
-          }
-        } catch (e) {
-          console.error('Respuesta no es JSON válida:', text);
-          alert('Error inesperado en el servidor.');
+      // Requisitos
+      const requisitos = [];
+      contenedorReqModal.querySelectorAll('.requisito-item').forEach(item => {
+        const nom = item.querySelector('.req-nombre').value.trim();
+        const tipo = item.querySelector('.req-tipo').value;
+        const valMin = item.querySelector('.req-valor-min').value || null;
+        if (nom) requisitos.push({ nombre: nom, tipo, valor_min: tipo === 'NUMERICO' ? valMin : null });
+      });
+      formData.append('requisitos', JSON.stringify(requisitos));
+
+      try {
+        const res = await fetch('guardarTipoEvento.php', { method: 'POST', body: formData });
+        const json = await res.json();
+        if (json.success) {
+          alert('Tipo de evento guardado.');
+          location.reload();
+        } else {
+          alert('Error: ' + json.message);
         }
-      })
-      .catch(err => alert('Error en la solicitud: ' + err));
+      } catch (e) {
+        console.error('Error al guardar tipo:', e);
+        alert('Error inesperado al guardar el tipo de evento.');
+      }
     });
   }
 
   // === Guardar evento principal ===
-  const form = document.getElementById('formEvento');
-  const btnGuardar = document.getElementById('btnGuardarEvento');
+  if (formEvento && btnGuardarEvento) {
+    btnGuardarEvento.addEventListener('click', async (e) => {
+      e.preventDefault();
 
-  if (form && btnGuardar) {
-    btnGuardar.addEventListener('click', async (e) => {
-      e.preventDefault(); // evita envío normal del form
+      // Validaciones de fechas antes de enviar
+      if (insDesde.value && insHasta.value && insHasta.value < insDesde.value) {
+        return alert('La fecha de inscripción hasta no puede ser antes de la fecha de inicio de inscripción.');
+      }
+      if (fecInicio.value && insHasta.value && fecInicio.value < insHasta.value) {
+        return alert('La fecha de inicio del evento no puede ser antes de la fecha de fin de inscripción.');
+      }
+      if (fecFin.value && fecInicio.value && fecFin.value < fecInicio.value) {
+        return alert('La fecha de finalización del evento no puede ser antes de la fecha de inicio.');
+      }
 
-      const data = new FormData(form);
+      const data = new FormData(formEvento);
 
-      // Agregar manualmente los requisitos seleccionados
-      document.querySelectorAll('.reqCheck:checked').forEach(cb => {
-        data.append('REQ_ID[]', cb.value);
-      });
+      // Agregar requisitos seleccionados
+      document.querySelectorAll('.reqCheck:checked').forEach(cb => data.append('REQ_ID[]', cb.value));
 
-      // Agregar manualmente las carreras seleccionadas
-      document.querySelectorAll('.carCheck:checked').forEach(cb => {
-        data.append('CARRERAS[]', cb.value);
-      });
+      // Agregar carreras seleccionadas
+      document.querySelectorAll('.carCheck:checked').forEach(cb => data.append('CARRERAS[]', cb.value));
 
       try {
         const res = await fetch('guardarEvento.php', { method: 'POST', body: data });
-        const text = await res.text(); // Depurar si hay HTML de error
+        const text = await res.text();
         console.log('Respuesta guardarEvento.php:', text);
-
         const json = JSON.parse(text);
         if (json.success) {
           alert('Evento guardado correctamente.');
-          form.reset();
+          formEvento.reset();
         } else {
           alert('Error: ' + json.message);
         }
@@ -480,63 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
 });
-
-
-//control de fechas
-
-document.addEventListener('DOMContentLoaded', () => {
-  const modalidad = document.getElementById('modalidad');
-  const costo = document.getElementById('costo');
-  const insDesde = document.getElementById('insDesde');
-  const insHasta = document.getElementById('insHasta');
-  const fecInicio = document.getElementById('fecInicio');
-  const fecFin = document.getElementById('fecFin');
-
-  // Fecha mínima de inscripción: hoy
-  const hoy = new Date().toISOString().split('T')[0];
-  insDesde.setAttribute('min', hoy);
-  insHasta.setAttribute('min', hoy);
-
-  // Cambiar costo según modalidad
-  modalidad.addEventListener('change', () => {
-    if (modalidad.value === 'Gratis') {
-      costo.value = 0;
-      costo.disabled = true;
-    } else {
-      costo.disabled = false;
-    }
-  });
-
-  // Validar fechas antes de enviar
-  const form = modalidad.closest('form');
-  if (form) {
-    form.addEventListener('submit', (e) => {
-      // Inscripción hasta >= desde
-      if (insHasta.value && insDesde.value && insHasta.value < insDesde.value) {
-        e.preventDefault();
-        alert('La fecha de inscripción hasta no puede ser antes de la fecha de inicio de inscripción.');
-        return false;
-      }
-
-      // Inicio >= inscripción hasta
-      if (fecInicio.value && insHasta.value && fecInicio.value < insHasta.value) {
-        e.preventDefault();
-        alert('La fecha de inicio del evento no puede ser antes de la fecha de fin de inscripción.');
-        return false;
-      }
-
-      // Fin >= inicio
-      if (fecFin.value && fecInicio.value && fecFin.value < fecInicio.value) {
-        e.preventDefault();
-        alert('La fecha de finalización del evento no puede ser antes de la fecha de inicio.');
-        return false;
-      }
-    });
-  }
-});
-
 
 </script>
 </body>
