@@ -38,6 +38,7 @@ require './home/autoridades.php';
   <!-- responsive style -->
   <link href="css/responsive.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/estiloslogin.css">
 
 </head>
 
@@ -139,9 +140,7 @@ require './home/autoridades.php';
                   <i class="fa fa-search" aria-hidden="true"></i>
                 </button>
               </form>
-              <a href="" class="order_online">
-                Inscribete
-              </a>
+              <a href="#" class="order_online" data-bs-toggle="modal" data-bs-target="#loginModal">login</a>
             </div>
           </div>
         </nav>
@@ -1320,7 +1319,51 @@ require './home/autoridades.php';
   </script>
   <!-- End Google Map -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Modal Login -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content login-modal-content">
+      <div class="modal-body p-0">
+        <div class="login-box">
+          <img src="images/usu/logouta.jpg" class="logo-uta" alt="Logo UTA">
+          <h2>login</h2>
 
+          <?php if (!empty($error)): ?>
+            <div class="error"><?= $error ?></div>
+          <?php endif; ?>
+          
+          <?php if (isset($_GET['error'])): ?>
+            <div class="error">
+              <?php 
+              if ($_GET['error'] == 'usuario_no_encontrado') echo "⚠️ Usuario no encontrado.";
+              elseif ($_GET['error'] == 'contraseña_incorrecta') echo "⚠️ Contraseña incorrecta.";
+              elseif ($_GET['error'] == 'rol_no_valido') echo "⚠️ Rol no válido.";
+              ?>
+            </div>
+          <?php endif; ?>
+          
+          <form method="POST" action="validar.php">
+            <div class="input-group">
+              <label for="usuario">Usuario</label>
+              <input type="email" name="usuario" id="usuario" placeholder="Ingrese su correo" required>
+            </div>
+            <div class="input-group">
+              <label for="clave">Contraseña</label>
+              <input type="password" name="clave" id="clave" placeholder="Ingrese su contraseña" required>
+            </div>
+            <button type="submit" class="btn-login">Ingresar</button>
+          </form>
+          <br>
+          <div class="registro">
+            ¿No tienes cuenta?
+            <a href="registro.php">Regístrate aquí</a>
+          </div>
+          <p class="nota">© Universidad Técnica de Ambato - 2025</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 
 </html>

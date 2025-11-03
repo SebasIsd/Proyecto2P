@@ -1,0 +1,195 @@
+/* ================================
+   ESTILOS PARA EL MODAL DE LOGIN
+   ================================ */
+
+/* Contenedor del modal */
+.login-modal-content {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+/* Caja del login dentro del modal */
+.login-modal-content .login-box {
+    padding: 30px 40px;
+    width: 100%;
+    text-align: center;
+    background: #fff;
+}
+
+/* Logo institucional */
+.login-modal-content .logo-uta {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 15px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f0f0f0;
+}
+
+/* Título */
+.login-modal-content h2 {
+    color: #a30000;
+    margin-bottom: 25px;
+    font-size: 24px;
+    font-weight: 600;
+    text-transform: lowercase;
+}
+
+/* Grupos de entrada */
+.login-modal-content .input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+/* Etiquetas de los campos */
+.login-modal-content .input-group label {
+    display: block;
+    text-align: left;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Campos de entrada */
+.login-modal-content .input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s;
+    background: #fafafa;
+}
+
+.login-modal-content .input-group input:focus {
+    border-color: #a30000;
+    background: #fff;
+    outline: none;
+    box-shadow: 0 0 8px rgba(163, 0, 0, 0.2);
+}
+
+/* Botón */
+.login-modal-content .btn-login {
+    background: #a30000;
+    color: white;
+    border: none;
+    padding: 12px 0;
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.login-modal-content .btn-login:hover {
+    background: #d51313;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(163, 0, 0, 0.3);
+}
+
+/* Mensaje de error */
+.login-modal-content .error {
+    background: #ffebeb;
+    color: #a30000;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 4px solid #a30000;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Enlace de registro */
+.login-modal-content .registro {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #555;
+}
+
+.login-modal-content .registro a {
+    color: #a30000;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.login-modal-content .registro a:hover {
+    color: #cc0000;
+    text-decoration: underline;
+}
+
+/* Nota inferior */
+.login-modal-content .nota {
+    margin-top: 25px;
+    font-size: 11px;
+    color: #888;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+/* Ajustes para el modal de Bootstrap */
+#loginModal .modal-dialog {
+    max-width: 400px;
+}
+
+#loginModal .modal-header {
+    border-bottom: none;
+    padding: 0;
+}
+
+#loginModal .modal-body {
+    padding: 0;
+}
+
+#loginModal .btn-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+    background: rgba(0,0,0,0.1);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#loginModal .btn-close:hover {
+    background: rgba(0,0,0,0.2);
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    .login-modal-content .login-box {
+        padding: 25px 30px;
+    }
+    
+    .login-modal-content .logo-uta {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .login-modal-content h2 {
+        font-size: 22px;
+    }
+    
+    #loginModal .modal-dialog {
+        margin: 20px;
+    }
+}
+
+/* Efectos de animación para el modal */
+#loginModal.modal.fade .modal-dialog {
+    transform: scale(0.9);
+    transition: transform 0.3s ease-out;
+}
+
+#loginModal.modal.show .modal-dialog {
+    transform: scale(1);
+}
