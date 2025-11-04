@@ -180,9 +180,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             transition: transform 0.2s;
         }
 
-        .card:hover {
-            transform: translateY(-3px);
-        }
 
         .card-header-custom {
             background: var(--primary);
@@ -192,102 +189,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 1.15rem;
         }
 
-        .table {
-            margin: 0;
-        }
-
-        .table thead {
-            background: var(--primary);
-            color: white;
-        }
-
-        .table thead th {
-            border: none;
-            font-weight: 600;
-            padding: 16px;
-            font-size: 0.95rem;
-        }
-
-        .table tbody td {
-            padding: 16px;
-            vertical-align: middle;
-            border-color: #eee;
-        }
-
-        .table tbody tr:hover {
-            background: var(--primary-light);
-        }
-
-        .badge {
-            font-size: 0.8rem;
-            padding: 6px 12px;
-            border-radius: 20px;
-        }
-
-        .badge-success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge-danger {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .btn-edit {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-edit:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(163,0,0,0.2);
+        .card-body-custom {
+            padding: 30px;
         }
 
         .avatar-circle {
-            width: 46px;
-            height: 46px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
             background: var(--primary-light);
             color: var(--primary);
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 2.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 3px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 0 auto 15px;
+            border: 4px solid white;
+            box-shadow: 0 4px 15px rgba(163,0,0,0.2);
         }
 
-        /* Modal */
-        .modal-content {
-            border-radius: var(--radius);
-            border: none;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
         }
 
-        .modal-header {
+        .profile-header h3 {
+            margin: 0 0 8px;
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .role-badge {
+            display: inline-block;
             background: var(--primary);
             color: white;
-            border-radius: var(--radius) var(--radius) 0 0;
-            padding: 18px 25px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .modal-header .btn-close {
-            filter: brightness(0) invert(1);
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
         }
 
-        .modal-body {
-            padding: 30px;
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .info-item i {
+            color: var(--primary);
+            width: 20px;
+            text-align: center;
+        }
+
+        .info-item span {
+            color: var(--gray);
+            font-size: 0.95rem;
         }
 
         .form-control, .form-select {
@@ -309,19 +278,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 8px;
         }
 
-        .btn-save-modal {
+        .btn-save {
             background: var(--primary);
             color: white;
             border: none;
             padding: 12px 28px;
             border-radius: 12px;
             font-weight: 600;
+            font-size: 1rem;
             transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn-save-modal:hover {
+        .btn-save:hover {
             background: var(--primary-hover);
             transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(163,0,0,0.25);
+        }
+
+        .alert {
+            border: none;
+            border-left: 5px solid var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         @media (max-width: 768px) {
@@ -336,76 +321,94 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="<?= (strtolower($_SESSION['rol_nombre']) === 'administrador') ? 'admin_inicio.php' : 'usuarios_inicio.php' ?>">
-            <i class="fas fa-home"></i> <span>Inicio</span>
-        </a>
-        <a href="perfil_usuario.php" class="active">
-            <i class="fas fa-user"></i> <span>Perfil</span>
-        </a>
-        <a href="../Login/logout.php">
-            <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
-        </a>
+        <a href="usuarios_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="#"><i class="fas fa-calendar-alt me-2"></i> Mis Eventos</a>
+        <a href="#"><i class="fas fa-search me-2"></i> Buscar Eventos</a>
+        <a href="#"><i class="fas fa-user-edit me-2"></i> Inscribirme</a>
+        <a href="perfil_usuario.php"><i class="fas fa-user me-2"></i> Perfil</a>
+        <a href="#"><i class="fas fa-chart-line me-2"></i> Mis Estadísticas</a>
+        <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
     </div>
 
+    <!-- Contenido -->
     <div class="content">
-        <div class="profile-container">
-            <?= $mensaje ?>
+        <div class="page-header">
+            <i class="fas fa-user"></i>
+            <h1>Mi Perfil</h1>
+        </div>
 
-            <div class="profile-header">
-                <div class="avatar-circle">
-                    <?= strtoupper(substr($usuario['NOM_PRI_USU'], 0, 1) . substr($usuario['APE_PRI_USU'], 0, 1)) ?>
-                </div>
-                <h3><?= htmlspecialchars(trim($usuario['NOM_PRI_USU'] . ' ' . ($usuario['NOM_SEG_USU'] ?? '') . ' ' . $usuario['APE_PRI_USU'] . ' ' . ($usuario['APE_SEG_USU'] ?? ''))) ?></h3>
-                <div class="role-badge"><?= ucfirst($_SESSION['rol_nombre']) ?></div>
-            </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="avatar-circle">
+                                <?= strtoupper(substr($usuario['NOM_PRI_USU'], 0, 1) . substr($usuario['APE_PRI_USU'], 0, 1)) ?>
+                            </div>
+                            <h3><?= htmlspecialchars(trim($usuario['NOM_PRI_USU'] . ' ' . ($usuario['NOM_SEG_USU'] ?? '') . ' ' . $usuario['APE_PRI_USU'] . ' ' . ($usuario['APE_SEG_USU'] ?? ''))) ?></h3>
+                            <div class="role-badge"><?= ucfirst($_SESSION['rol_nombre']) ?></div>
+                        </div>
+                    </div>
 
-            <div class="profile-card">
-                <div class="card-header-custom">
-                    <i class="fas fa-id-card me-2"></i> Información Personal
-                </div>
-                <div class="card-body-custom">
-                    <div class="info-grid">
-                        <div class="info-item"><i class="fas fa-id-badge"></i><span><strong>Cédula:</strong> <?= $usuario['CED_USU'] ?></span></div>
-                        <div class="info-item"><i class="fas fa-envelope"></i><span><strong>Correo:</strong> <?= $usuario['COR_USU'] ?></span></div>
-                        <div class="info-item"><i class="fas fa-phone"></i><span><strong>Teléfono:</strong> <?= $usuario['TEL_USU'] ?? 'No registrado' ?></span></div>
-                        <div class="info-item"><i class="fas fa-map-marker-alt"></i><span><strong>Dirección:</strong> <?= $usuario['DIR_USU'] ?? 'No registrada' ?></span></div>
+                    <div class="card mt-4">
+                        <div class="card-header-custom">
+                            <i class="fas fa-id-card me-2"></i> Información Personal
+                        </div>
+                        <div class="card-body-custom">
+                            <div class="info-grid">
+                                <div class="info-item"><i class="fas fa-id-badge"></i><span><strong>Cédula:</strong> <?= $usuario['CED_USU'] ?></span></div>
+                                <div class="info-item"><i class="fas fa-envelope"></i><span><strong>Correo:</strong> <?= $usuario['COR_USU'] ?></span></div>
+                                <div class="info-item"><i class="fas fa-phone"></i><span><strong>Teléfono:</strong> <?= $usuario['TEL_USU'] ?? 'No registrado' ?></span></div>
+                                <div class="info-item"><i class="fas fa-map-marker-alt"></i><span><strong>Dirección:</strong> <?= $usuario['DIR_USU'] ?? 'No registrada' ?></span></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="profile-card mt-4">
-                <div class="card-header-custom">
-                    <i class="fas fa-edit me-2"></i> Actualizar Datos
-                </div>
-                <div class="card-body-custom">
-                    <form method="POST">
-                        <div class="mb-3">
-                            <label for="correo" class="form-label">Correo Electrónico</label>
-                            <input type="email" class="form-control" id="correo" name="correo" value="<?= $usuario['COR_USU'] ?>" required>
+                <div class="col-lg-8">
+                    <?= $mensaje ?>
+
+                    <div class="card">
+                        <div class="card-header-custom">
+                            <i class="fas fa-edit me-2"></i> Actualizar Datos
                         </div>
-                        <div class="mb-3">
-                            <label for="telefono" class="form-label">Teléfono</label>
-                            <input type="text" class="form-control" id="telefono" name="telefono" value="<?= $usuario['TEL_USU'] ?? '' ?>" placeholder="0991234567">
+                        <div class="card-body-custom">
+                            <form method="POST">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Correo Electrónico</label>
+                                        <input type="email" class="form-control" name="correo" value="<?= $usuario['COR_USU'] ?>" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Teléfono</label>
+                                        <input type="text" class="form-control" name="telefono" value="<?= $usuario['TEL_USU'] ?? '' ?>" placeholder="0991234567">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Dirección</label>
+                                        <input type="text" class="form-control" name="direccion" value="<?= $usuario['DIR_USU'] ?? '' ?>" placeholder="Av. Principal 123">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Nueva Contraseña <small class="text-muted">(opcional)</small></label>
+                                        <input type="password" class="form-control" name="clave" placeholder="Mínimo 6 caracteres">
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <button type="submit" class="btn-save">
+                                        <i class="fas fa-save"></i> Guardar Cambios
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <div class="mb-3">
-                            <label for="direccion" class="form-label">Dirección</label>
-                            <input type="text" class="form-control" id="direccion" name="direccion" value="<?= $usuario['DIR_USU'] ?? '' ?>" placeholder="Av. Principal 123">
-                        </div>
-                        <div class="mb-3">
-                            <label for="clave" class="form-label">Nueva Contraseña <small class="text-muted">(opcional)</small></label>
-                            <input type="password" class="form-control" id="clave" name="clave" placeholder="Mínimo 6 caracteres">
-                        </div>
-                        <button type="submit" class="btn-save">
-                            <i class="fas fa-save"></i> Guardar Cambios
-                        </button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
 </body>
 </html>
