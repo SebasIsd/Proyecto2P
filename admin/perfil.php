@@ -322,17 +322,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo">
-            <img src="../images/usu/logouta.jpg" alt="Logo UTA">
+            <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="<?= (strtolower($_SESSION['rol_nombre']) === 'administrador') ? 'admin_inicio.php' : 'usuarios_inicio.php' ?>">
-            <i class="fas fa-home"></i> <span>Inicio</span>
-        </a>
-        <a href="perfil.php" class="active">
-            <i class="fas fa-user"></i> <span>Perfil</span>
-        </a>
-        <a href="../Login/logout.php">
-            <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
-        </a>
+        <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
+        <a href="#"><i class="fas fa-chart-bar me-2"></i> Estadísticas</a>
+        <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
+        <a href="#"><i class="fas fa-cog me-2"></i> Configuraciones</a>
+        <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
     </div>
 
     <!-- Contenido -->
