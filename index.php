@@ -1356,7 +1356,7 @@ require './home/autoridades.php';
           <br>
           <div class="registro">
             ¿No tienes cuenta?
-            <a href="registro.php">Regístrate aquí</a>
+            <a href="Login/registrar/Registrarse.php">Registrate aquí</a>
           </div>
           <p class="nota">© Universidad Técnica de Ambato - 2025</p>
         </div>

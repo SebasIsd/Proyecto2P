@@ -14,12 +14,12 @@ if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'admi
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Administrador - UTA</title>
-    <link rel="stylesheet" href="./css/users.css">
+    <link rel="stylesheet" href="../css/users.css">
 </head>
 <body>
     <div class="contenedor">
         <div class="login-box">
-            <img src="../images/logouta.jpg" class="logo-uta" alt="Logo UTA">
+            <img src="../images/usu/logouta.jpg" class="logo-uta" alt="Logo UTA">
             <h2>Hola, Administrador 👋</h2>
 
             <p><strong>Cédula:</strong> <?= $_SESSION['cedula'] ?></p>

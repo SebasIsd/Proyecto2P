@@ -30,9 +30,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['rol_nombre'] = $fila['NOM_ROL'];
             // Redirección según el nombre del rol
             if (strtolower($fila['NOM_ROL']) === 'administrador') {
-                header("Location: ../administrador/admin.php");
+                header("Location: ../admin/admin_inicio.php");
             } elseif (strtolower($fila['NOM_ROL']) === 'estudiante' || strtolower($fila['NOM_ROL']) === 'docente') {
-                header("Location: ../usuarios/usuarios.php");
+                header("Location: ../usuarios/usuarios_inicio.php");
             } else {
                 header("Location: ../index.php?error=rol_no_valido&modal=login");
             }
