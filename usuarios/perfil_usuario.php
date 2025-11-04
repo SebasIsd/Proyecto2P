@@ -1,48 +1,65 @@
-<!-- Actualización para usuarios_inicio.php: Dashboard para Usuarios Normales con estilos ajustados al tema rojo -->
+<!-- perfil.php - Perfil Personal Mejorado -->
 <?php
 session_start();
-
-// Verificar que haya una sesión activa y que sea docente o estudiante
-if (!isset($_SESSION['correo']) || 
-    !(strtolower($_SESSION['rol_nombre']) === 'docente' || strtolower($_SESSION['rol_nombre']) === 'estudiante')) {
+if (!isset($_SESSION['correo'])) {
     header("Location: ../index.php");
     exit();
 }
 
-require_once __DIR__ . '/../includes/conexion.php'; // Conexión a la BD
+require_once __DIR__ . '/../includes/conexion.php';
 
 $cedula = $_SESSION['cedula'];
-
-// Obtener datos reales de la BD
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM INSCRIPCIONES WHERE CED_USU = ?");
+$stmt = $conn->prepare("SELECT CED_USU, NOM_PRI_USU, NOM_SEG_USU, APE_PRI_USU, APE_SEG_USU, COR_USU, TEL_USU, DIR_USU FROM USUARIOS WHERE CED_USU = ?");
 $stmt->bind_param("s", $cedula);
 $stmt->execute();
-$misEventos = $stmt->get_result()->fetch_assoc()['total'];
+$usuario = $stmt->get_result()->fetch_assoc();
 
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM INSCRIPCIONES WHERE CED_USU = ? AND ESTADO_INS = 'Inscrito'");
-$stmt->bind_param("s", $cedula);
-$stmt->execute();
-$inscripcionesAprobadas = $stmt->get_result()->fetch_assoc()['total'];
+$mensaje = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nuevoCorreo = trim($_POST['correo']);
+    $nuevoTel = trim($_POST['telefono']);
+    $nuevaDir = trim($_POST['direccion']);
+    $nuevaClave = trim($_POST['clave']);
 
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM INSCRIPCIONES WHERE CED_USU = ? AND ESTADO_INS = 'Preinscrito'");
-$stmt->bind_param("s", $cedula);
-$stmt->execute();
-$eventosPendientes = $stmt->get_result()->fetch_assoc()['total'];
+    $updates = [];
+    $params = [];
+    $types = '';
 
-// Participaciones por mes (últimos 6 meses)
-$participacionesPorMes = [];
-for ($i = 5; $i >= 0; $i--) {
-    $mes = date('Y-m', strtotime("-$i months"));
-    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM INSCRIPCIONES i 
-                           INNER JOIN EVENTOS_CURSOS e ON i.ID_EVE_CUR = e.ID_EVE_CUR
-                           WHERE i.CED_USU = ? AND DATE_FORMAT(e.FEC_INI_EVE_CUR, '%Y-%m') = ?");
-    $stmt->bind_param("ss", $cedula, $mes);
-    $stmt->execute();
-    $participacionesPorMes[] = $stmt->get_result()->fetch_assoc()['count'];
-}
-$mesesLabels = [];
-for ($i = 5; $i >= 0; $i--) {
-    $mesesLabels[] = date('M', strtotime("-$i months"));
+    if ($nuevoCorreo && filter_var($nuevoCorreo, FILTER_VALIDATE_EMAIL)) {
+        $updates[] = "COR_USU = ?";
+        $params[] = $nuevoCorreo;
+        $types .= 's';
+        $_SESSION['correo'] = $nuevoCorreo;
+    }
+    if ($nuevoTel !== $usuario['TEL_USU']) {
+        $updates[] = "TEL_USU = ?";
+        $params[] = $nuevoTel;
+        $types .= 's';
+    }
+    if ($nuevaDir !== $usuario['DIR_USU']) {
+        $updates[] = "DIR_USU = ?";
+        $params[] = $nuevaDir;
+        $types .= 's';
+    }
+    if ($nuevaClave) {
+        $hashed = password_hash($nuevaClave, PASSWORD_DEFAULT);
+        $updates[] = "PAS_USU = ?";
+        $params[] = $hashed;
+        $types .= 's';
+    }
+
+    if (!empty($updates)) {
+        $sql = "UPDATE USUARIOS SET " . implode(', ', $updates) . " WHERE CED_USU = ?";
+        $params[] = $cedula;
+        $types .= 's';
+        $updateStmt = $conn->prepare($sql);
+        $updateStmt->bind_param($types, ...$params);
+        $updateStmt->execute();
+        $mensaje = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Perfil actualizado correctamente.</div>';
+        // Recargar datos
+        $stmt->execute();
+        $usuario = $stmt->get_result()->fetch_assoc();
+    }
 }
 ?>
 
@@ -51,10 +68,9 @@ for ($i = 5; $i >= 0; $i--) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Usuario - UTA</title>
+    <title>Mi Perfil - UTA</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #a30000;
@@ -319,94 +335,77 @@ for ($i = 5; $i >= 0; $i--) {
     </style>
 </head>
 <body>
-    <!-- Sidebar Navbar Lateral Izquierdo -->
+
     <div class="sidebar">
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="#"><i class="fas fa-home me-2"></i> Inicio</a>
-        <a href="#"><i class="fas fa-calendar-alt me-2"></i> Mis Eventos</a>
-        <a href="#"><i class="fas fa-search me-2"></i> Buscar Eventos</a>
-        <a href="#"><i class="fas fa-user-edit me-2"></i> Inscribirme</a>
-        <a href="perfil_usuario.php"><i class="fas fa-user me-2"></i> Perfil</a>
-        <a href="#"><i class="fas fa-chart-line me-2"></i> Mis Estadísticas</a>
-        <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
+        <a href="<?= (strtolower($_SESSION['rol_nombre']) === 'administrador') ? 'admin_inicio.php' : 'usuarios_inicio.php' ?>">
+            <i class="fas fa-home"></i> <span>Inicio</span>
+        </a>
+        <a href="perfil_usuario.php" class="active">
+            <i class="fas fa-user"></i> <span>Perfil</span>
+        </a>
+        <a href="../Login/logout.php">
+            <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
+        </a>
     </div>
 
-    <!-- Contenido Principal -->
     <div class="content">
-        <h1 class="mb-4">Dashboard Usuario</h1>
-        <p>Bienvenido, <?= ucfirst($_SESSION['rol_nombre']) ?> (<?= $_SESSION['correo'] ?>)</p>
+        <div class="profile-container">
+            <?= $mensaje ?>
 
-        <!-- Tarjetas de Estadísticas Personales -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Mis Eventos</div>
-                    <div class="card-body text-center">
-                        <h2><?= $misEventos ?></h2>
-                        <p>Eventos en los que participas.</p>
-                    </div>
+            <div class="profile-header">
+                <div class="avatar-circle">
+                    <?= strtoupper(substr($usuario['NOM_PRI_USU'], 0, 1) . substr($usuario['APE_PRI_USU'], 0, 1)) ?>
                 </div>
+                <h3><?= htmlspecialchars(trim($usuario['NOM_PRI_USU'] . ' ' . ($usuario['NOM_SEG_USU'] ?? '') . ' ' . $usuario['APE_PRI_USU'] . ' ' . ($usuario['APE_SEG_USU'] ?? ''))) ?></h3>
+                <div class="role-badge"><?= ucfirst($_SESSION['rol_nombre']) ?></div>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Inscripciones Aprobadas</div>
-                    <div class="card-body text-center">
-                        <h2><?= $inscripcionesAprobadas ?></h2>
-                        <p>Inscripciones confirmadas.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Eventos Pendientes</div>
-                    <div class="card-body text-center">
-                        <h2><?= $eventosPendientes ?></h2>
-                        <p>Eventos por confirmar.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Gráfico de Participaciones por Mes -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">Participaciones por Mes</div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="participacionesChart"></canvas>
+            <div class="profile-card">
+                <div class="card-header-custom">
+                    <i class="fas fa-id-card me-2"></i> Información Personal
+                </div>
+                <div class="card-body-custom">
+                    <div class="info-grid">
+                        <div class="info-item"><i class="fas fa-id-badge"></i><span><strong>Cédula:</strong> <?= $usuario['CED_USU'] ?></span></div>
+                        <div class="info-item"><i class="fas fa-envelope"></i><span><strong>Correo:</strong> <?= $usuario['COR_USU'] ?></span></div>
+                        <div class="info-item"><i class="fas fa-phone"></i><span><strong>Teléfono:</strong> <?= $usuario['TEL_USU'] ?? 'No registrado' ?></span></div>
+                        <div class="info-item"><i class="fas fa-map-marker-alt"></i><span><strong>Dirección:</strong> <?= $usuario['DIR_USU'] ?? 'No registrada' ?></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-card mt-4">
+                <div class="card-header-custom">
+                    <i class="fas fa-edit me-2"></i> Actualizar Datos
+                </div>
+                <div class="card-body-custom">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="correo" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="correo" name="correo" value="<?= $usuario['COR_USU'] ?>" required>
                         </div>
-                    </div>
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="text" class="form-control" id="telefono" name="telefono" value="<?= $usuario['TEL_USU'] ?? '' ?>" placeholder="0991234567">
+                        </div>
+                        <div class="mb-3">
+                            <label for="direccion" class="form-label">Dirección</label>
+                            <input type="text" class="form-control" id="direccion" name="direccion" value="<?= $usuario['DIR_USU'] ?? '' ?>" placeholder="Av. Principal 123">
+                        </div>
+                        <div class="mb-3">
+                            <label for="clave" class="form-label">Nueva Contraseña <small class="text-muted">(opcional)</small></label>
+                            <input type="password" class="form-control" id="clave" name="clave" placeholder="Mínimo 6 caracteres">
+                        </div>
+                        <button type="submit" class="btn-save">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-
-    <script>
-        // Gráfico con Chart.js
-        const ctx = document.getElementById('participacionesChart').getContext('2d');
-        const participacionesChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: <?= json_encode($mesesLabels) ?>,
-                datasets: [{
-                    label: 'Participaciones',
-                    data: <?= json_encode($participacionesPorMes) ?>,
-                    backgroundColor: 'rgba(163, 0, 0, 0.2)', /* Rojo con opacidad */
-                    borderColor: 'rgba(163, 0, 0, 1)',
-                    borderWidth: 2,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    </script>
 </body>
 </html>
