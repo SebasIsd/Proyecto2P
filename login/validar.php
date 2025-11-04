@@ -34,17 +34,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } elseif (strtolower($fila['NOM_ROL']) === 'estudiante' || strtolower($fila['NOM_ROL']) === 'docente') {
                 header("Location: ../usuarios/usuarios.php");
             } else {
-                header("Location: login.php?error=rol_no_valido");
+                header("Location: ../index.php?error=rol_no_valido&modal=login");
             }
             exit();
         } else {
-            header("Location: login.php?error=contraseña_incorrecta");
-        exit();
-
+            header("Location: ../index.php?error=contraseña_incorrecta&modal=login");
+            exit();
         }
     } else {
-    header("Location: login.php?error=usuario_no_encontrado");
-    exit();
-}
+        header("Location: ../index.php?error=usuario_no_encontrado&modal=login");
+        exit();
+    }
 }
 ?>

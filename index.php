@@ -1342,7 +1342,7 @@ require './home/autoridades.php';
             </div>
           <?php endif; ?>
           
-          <form method="POST" action="validar.php">
+          <form method="POST" action="login/validar.php">
             <div class="input-group">
               <label for="usuario">Usuario</label>
               <input type="email" name="usuario" id="usuario" placeholder="Ingrese su correo" required>
@@ -1364,6 +1364,17 @@ require './home/autoridades.php';
     </div>
   </div>
 </div>
+
+<script>
+// Mostrar modal automáticamente si hay error de login
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('error') && urlParams.get('modal') === 'login') {
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        loginModal.show();
+    }
+});
+</script>
 </body>
 
 </html>
