@@ -3,7 +3,7 @@ session_start();
 
 // Verificar que haya una sesión activa y que sea administrador
 if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'administrador') {
-    header("Location: ../Login/login.php");
+       header("Location: ../index.php");
     exit();
 }
 ?>

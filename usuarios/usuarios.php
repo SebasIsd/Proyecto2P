@@ -4,7 +4,7 @@ session_start();
 // Verificar que haya una sesión activa y que sea docente o estudiante
 if (!isset($_SESSION['correo']) || 
     !(strtolower($_SESSION['rol_nombre']) === 'docente' || strtolower($_SESSION['rol_nombre']) === 'estudiante')) {
-    header("Location: ../Login/login.php");
+        header("Location: ../index.php");
     exit();
 }
 ?>
