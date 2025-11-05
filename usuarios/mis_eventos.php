@@ -336,9 +336,10 @@ if ($stmt) {
             border-radius: 10px;
             font-size: 0.85rem;
             transition: all 0.3s;
-            display: inline-flex;
+            display: inline-flex;   
             align-items: center;
             gap: 6px;
+            text-decoration: none;
         }
 
         .btn-ver:hover {
