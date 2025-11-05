@@ -18,39 +18,34 @@
 <fieldset>
 <legend>Datos personales</legend>
 
+<div class="row">
+  <div class="field">
+    <label for="cedula">Cédula *</label>
+    <input id="cedula" name="cedula" type="text" maxlength="10"
+           placeholder="ej :1850098433" required
+           oninput="soloNumeros(this)" onblur="validarCedula(this)">
+    <small id="msgCedula">Ingrese 10 dígitos sin guiones.</small>
+  </div>
+</div>
 
+<span class="section-title">Nombres</span>
+<br>
+<br>
+<div class="row">
+  <div class="field">
+    
+    <input id="primer_nombre" name="primer_nombre" type="text" required placeholder="Primer nombre">
+  </div>
+  <div class="field">
+  
+    <input id="segundo_nombre" name="segundo_nombre" type="text" placeholder="Segundo nombre">
+  </div>
+</div>
 <div class="row">
 <div class="field">
-<label for="cedula">Cédula *</label>
-<input id="cedula" name="cedula" type="text" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" placeholder="0123456789" required>
-<small>Ingrese 10 dígitos sin guiones.</small>
-</div>
-
-
-<div class="field">
-<label for="telefono">Teléfono *</label>
-<input id="telefono" name="telefono" type="tel" inputmode="tel" pattern="[0-9]{7,10}" maxlength="10" placeholder="0991234567" required>
-</div>
-</div>
-
-
-<div class="row">
-<div class="field">
-<label for="primer_nombre">Primer Nombre *</label>
-<input id="primer_nombre" name="primer_nombre" type="text" maxlength="50" placeholder="Carlos" required>
-</div>
-
-
-<div class="field">
-<label for="segundo_nombre">Segundo Nombre</label>
-<input id="segundo_nombre" name="segundo_nombre" type="text" maxlength="50" placeholder="Andrés">
-</div>
-</div>
-
-
-<div class="row">
-<div class="field">
-<label for="primer_apellido">Primer Apellido *</label>
+  <span class="section-title">Apellidos</span>
+  <br>
+<br>
 <input id="primer_apellido" name="primer_apellido" type="text" maxlength="50" placeholder="Pérez" required>
 </div>
 
@@ -99,7 +94,11 @@
 <small>Usa al menos 8 caracteres.</small>
 </div>
 </div>
-
+<div class="field">
+<label for="telefono">Teléfono *</label>
+<input id="telefono" name="telefono" type="tel" inputmode="tel" pattern="[0-9]{7,10}" maxlength="10" placeholder="0991234567" required>
+</div>
+</div>
 
 <div class="row">
 <div class="field full">
@@ -148,10 +147,89 @@ return false;
 
 
 // aquí podrías agregar validaciones adicionales o envío por fetch
+//validar cedula
+
 
 
 });
 </script>
+<script>
+    //validar cedula
+  // Función: solo permitir números mientras se escribe
+  function soloNumeros(input) {
+    input.value = input.value.replace(/[^0-9]/g, ''); // elimina todo lo que no sea número
+  }
+
+  // Función: validar la cédula ecuatoriana
+  function validarCedula(input) {
+    const cedula = input.value.trim();
+    const msg = document.getElementById('msgCedula');
+
+    // Verifica longitud exacta
+    if (cedula.length !== 10) {
+      msg.style.color = "red";
+      msg.textContent = "⚠️ La cédula debe tener exactamente 10 dígitos.";
+      input.focus();
+      return false;
+    }
+
+    // Verifica que los dos primeros dígitos sean una provincia válida (01–24)
+    const provincia = parseInt(cedula.substring(0, 2), 10);
+    if (provincia < 1 || provincia > 24) {
+      msg.style.color = "red";
+      msg.textContent = "⚠️ Código de provincia no válido (01–24).";
+      input.focus();
+      return false;
+    }
+
+    // Algoritmo de validación (módulo 10)
+    const digitos = cedula.split('').map(Number);
+    const verificador = digitos.pop();
+    let suma = 0;
+
+    for (let i = 0; i < digitos.length; i++) {
+      let valor = digitos[i];
+      if (i % 2 === 0) { // posiciones impares (0-index)
+        valor *= 2;
+        if (valor > 9) valor -= 9;
+      }
+      suma += valor;
+    }
+
+    const decenaSuperior = Math.ceil(suma / 10) * 10;
+    const digitoValido = (decenaSuperior - suma) % 10;
+
+    if (digitoValido === verificador) {
+      msg.style.color = "green";
+      msg.textContent = "✔ Cédula válida.";
+      return true;
+    } else {
+      msg.style.color = "red";
+      msg.textContent = "❌ Cédula no válida.";
+      input.focus();
+      return false;
+    }
+  }
+
+  // Configurar eventos cuando cargue la página
+  document.addEventListener("DOMContentLoaded", () => {
+    const cedulaInput = document.getElementById("cedula");
+    // Poner el foco automáticamente en el campo de cédula
+    cedulaInput.focus();
+
+    // Validaciones dinámicas
+    cedulaInput.addEventListener("input", () => soloNumeros(cedulaInput));
+    cedulaInput.addEventListener("blur", () => {
+      const valido = validarCedula(cedulaInput);
+      if (!valido) {
+        setTimeout(() => cedulaInput.focus(), 0); // Reenfoca si no pasa la validación
+      }
+    });
+  });
+</script>
+
+
+
 
 </body>
 </html>
