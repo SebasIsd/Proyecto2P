@@ -24,7 +24,7 @@
     <input id="cedula" name="cedula" type="text" maxlength="10"
            placeholder="ej :1850098433" required
            oninput="soloNumeros(this)" onblur="validarCedula(this)">
-    <small id="msgCedula">Ingrese 10 dígitos sin guiones.</small>
+    <small id="msgCedula">Ingrese 10 dígitos sin guiones.Sin cedula no se habilitan mas campos</small>
   </div>
 </div>
 
@@ -41,39 +41,35 @@
     <input id="segundo_nombre" name="segundo_nombre" type="text" placeholder="Segundo nombre">
   </div>
 </div>
-<div class="row">
-<div class="field">
   <span class="section-title">Apellidos</span>
-  <br>
+   <br>
 <br>
-<input id="primer_apellido" name="primer_apellido" type="text" maxlength="50" placeholder="Pérez" required>
+<div class="row">
+<div class="field">
+ 
+<input id="primer_apellido" name="primer_apellido" type="text" maxlength="50" placeholder="Primer Apellido" required>
 </div>
 
 
 <div class="field">
-<label for="segundo_apellido">Segundo Apellido</label>
-<input id="segundo_apellido" name="segundo_apellido" type="text" maxlength="50" placeholder="Gómez">
+<input id="segundo_apellido" name="segundo_apellido" type="text" maxlength="50" placeholder="Segundo Apellido">
 </div>
 </div>
 
 
 <div class="row">
 <div class="field">
-<label for="fecha_nac">Fecha de Nacimiento *</label>
-<input id="fecha_nac" name="fecha_nac" type="date" required>
+<label for="fecha_nac">Fecha de Nacimiento</label>
+<input id="fecha_nac" name="fecha_nac" type="date" required max="">
+
 </div>
 
 <div class="field">
-<label for="rol">Rol *</label>
-<select id="rol" name="rol" required>
-<option value="">-- Seleccione --</option>
-<option value="estudiante">Estudiante</option>
-<option value="docente">Docente</option>
-<option value="administrativo">Administrativo</option>
-<option value="otro">Otro</option>
+  <label for="rol">Rol</label>
+  <select id="rol" name="rol" required>
 </select>
 </div>
-</div>
+ </div>
 
 </fieldset>
 
@@ -227,6 +223,152 @@ return false;
     });
   });
 </script>
+<script>
+  //fecha de nacimiento no mayor a hoy
+document.addEventListener("DOMContentLoaded", function() {
+  const hoy = new Date().toISOString().split("T")[0];
+  document.getElementById("fecha_nac").setAttribute("max", hoy);
+});
+</script>
+<script>
+// Al cargar la página, se ejecuta esta función
+document.addEventListener("DOMContentLoaded", () => {
+    fetch('roles.php')
+        .then(response => response.json())
+        .then(data => {
+            const selectRol = document.getElementById('rol');
+
+            data.forEach(rol => {
+                // ❌ Ignorar si el rol es "Administrador"
+                if (rol.NOM_ROL.toLowerCase() === 'administrador') return;
+
+                const option = document.createElement('option');
+                option.value = rol.ID_ROL;
+                option.textContent = rol.NOM_ROL;
+                selectRol.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error al cargar los roles:', error));
+});
+</script>
+<script>
+// Esperar que el documento cargue
+document.addEventListener("DOMContentLoaded", () => {
+  // Obtener campos de nombres y apellidos
+  const primerNombre = document.getElementById("primer_nombre");
+  const segundoNombre = document.getElementById("segundo_nombre");
+  const primerApellido = document.getElementById("primer_apellido");
+  const segundoApellido = document.getElementById("segundo_apellido");
+  
+  // Campo de correo y su mensaje
+  const correo = document.getElementById("correo");
+  const correoField = correo.closest(".field");
+  const msgCorreo = document.createElement("small");
+  msgCorreo.id = "msgCorreo";
+  msgCorreo.style.color = "red";
+  msgCorreo.textContent = "⚠️ Completa tus nombres y apellidos antes de ingresar el correo.";
+  correoField.appendChild(msgCorreo);
+
+  // Bloquear correo al inicio
+  correo.disabled = true;
+
+  // Función para verificar si los campos están llenos
+  function verificarCampos() {
+    const nombresLlenos = primerNombre.value.trim() !== "" && primerApellido.value.trim() !== "";
+    if (nombresLlenos) {
+      correo.disabled = false;
+      msgCorreo.style.color = "green";
+      msgCorreo.textContent = "✔ Ya puedes ingresar tu correo.";
+    } else {
+      correo.disabled = true;
+      msgCorreo.style.color = "red";
+      msgCorreo.textContent = "⚠️ Completa tus nombres y apellidos antes de ingresar el correo.";
+      correo.value = "";
+    }
+  }
+
+  // Escuchar cambios en los campos de nombre y apellido
+  primerNombre.addEventListener("input", verificarCampos);
+  segundoNombre.addEventListener("input", verificarCampos);
+  primerApellido.addEventListener("input", verificarCampos);
+  segundoApellido.addEventListener("input", verificarCampos);
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const primerNombre = document.getElementById("primer_nombre");
+  const primerApellido = document.getElementById("primer_apellido");
+  const cedula = document.getElementById("cedula");
+  const correo = document.getElementById("correo");
+
+  // Crear mensaje bajo el correo
+  const correoField = correo.closest(".field");
+  const msgCorreo = document.createElement("small");
+  msgCorreo.id = "msgCorreo";
+  msgCorreo.style.color = "red";
+  msgCorreo.textContent = "⚠️ Completa tus datos antes de generar el correo institucional.";
+  correoField.appendChild(msgCorreo);
+
+  // Bloquear correo al inicio
+  correo.disabled = true;
+
+  // Función para habilitar el correo si hay datos suficientes
+  function habilitarCorreo() {
+    const tieneDatos =
+      primerNombre.value.trim() !== "" &&
+      primerApellido.value.trim() !== "" &&
+      /^\d{10}$/.test(cedula.value.trim());
+
+    if (tieneDatos) {
+      correo.disabled = false;
+      generarCorreo();
+    } else {
+      correo.disabled = true;
+      correo.value = "";
+      msgCorreo.style.color = "red";
+      msgCorreo.textContent = "⚠️ Completa nombre, apellido y cédula válidos para generar el correo.";
+    }
+  }
+
+  // Función para generar automáticamente el correo institucional
+  function generarCorreo() {
+    const nombre = primerNombre.value.trim().toLowerCase();
+    const apellido = primerApellido.value.trim().toLowerCase();
+    const ced = cedula.value.trim();
+
+    if (nombre && apellido && ced.length === 10) {
+      const inicial = nombre.charAt(0);
+      const ultimos4 = ced.slice(-4);
+      const correoGenerado = `${inicial}${apellido}${ultimos4}@uta.edu.ec`;
+
+      correo.value = correoGenerado;
+      msgCorreo.style.color = "green";
+      msgCorreo.textContent = `✔ Correo institucional generado correctamente: ${correoGenerado}`;
+    }
+  }
+
+  // Validar si el usuario intenta cambiar el correo
+  correo.addEventListener("input", () => {
+    const valor = correo.value.trim();
+    const regex = /^[a-z]\w+@uta\.edu\.ec$/i;
+
+    if (!regex.test(valor)) {
+      msgCorreo.style.color = "red";
+      msgCorreo.textContent = "❌ El correo debe tener el formato institucional (ej: jlopez1234@uta.edu.ec)";
+    } else {
+      msgCorreo.style.color = "green";
+      msgCorreo.textContent = "✔ Correo válido de la UTA.";
+    }
+  });
+
+  // Escuchar cambios en los campos clave
+  primerNombre.addEventListener("input", habilitarCorreo);
+  primerApellido.addEventListener("input", habilitarCorreo);
+  cedula.addEventListener("input", habilitarCorreo);
+});
+</script>
+
+
 
 
 
