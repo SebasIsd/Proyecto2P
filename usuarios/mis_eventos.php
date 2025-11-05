@@ -1,49 +1,57 @@
-<!-- Actualización para usuarios_inicio.php: Dashboard para Usuarios Normales con estilos ajustados al tema rojo -->
 <?php
 session_start();
 
-// Verificar que haya una sesión activa y que sea docente o estudiante
-if (!isset($_SESSION['correo']) || 
-    !(strtolower($_SESSION['rol_nombre']) === 'docente' || strtolower($_SESSION['rol_nombre']) === 'estudiante')) {
+// Verificar sesión
+if (!isset($_SESSION['correo']) || !isset($_SESSION['cedula'])) {
     header("Location: ../index.php");
     exit();
 }
 
-require_once __DIR__ . '/../includes/conexion.php'; // Conexión a la BD
+require_once '../includes/conexion.php';
 
 $cedula = $_SESSION['cedula'];
 
-// Obtener datos reales de la BD
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM INSCRIPCIONES WHERE CED_USU = ?");
-$stmt->bind_param("s", $cedula);
-$stmt->execute();
-$misEventos = $stmt->get_result()->fetch_assoc()['total'];
+// Cargar eventos inscritos utilizando una SENTENCIA PREPARADA
+$sql = "
+    SELECT 
+        e.ID_EVE_CUR,
+        e.TIT_EVE_CUR,
+        e.FEC_INI_EVE_CUR,
+        e.FEC_FIN_EVE_CUR,
+        t.NOM_TIPO_EVE,
+        i.ESTADO_INS,
+        i.FEC_INI_INS
+    FROM INSCRIPCIONES i
+    JOIN EVENTOS_CURSOS e ON i.ID_EVE_CUR = e.ID_EVE_CUR
+    JOIN TIPOS_EVENTO t ON e.ID_TIPO_EVE = t.ID_TIPO_EVE
+    WHERE i.CED_USU = ?
+    ORDER BY i.FEC_INI_INS DESC
+";
 
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM INSCRIPCIONES WHERE CED_USU = ? AND ESTADO_INS = 'Inscrito'");
-$stmt->bind_param("s", $cedula);
-$stmt->execute();
-$inscripcionesAprobadas = $stmt->get_result()->fetch_assoc()['total'];
+// 1. Preparar la consulta
+$stmt = $conn->prepare($sql);
 
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM INSCRIPCIONES WHERE CED_USU = ? AND ESTADO_INS = 'Preinscrito'");
-$stmt->bind_param("s", $cedula);
-$stmt->execute();
-$eventosPendientes = $stmt->get_result()->fetch_assoc()['total'];
+// 2. Vincular el parámetro (s = string)
+if ($stmt) {
+    $stmt->bind_param("s", $cedula);
 
-// Participaciones por mes (últimos 6 meses)
-$participacionesPorMes = [];
-for ($i = 5; $i >= 0; $i--) {
-    $mes = date('Y-m', strtotime("-$i months"));
-    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM INSCRIPCIONES i 
-                           INNER JOIN EVENTOS_CURSOS e ON i.ID_EVE_CUR = e.ID_EVE_CUR
-                           WHERE i.CED_USU = ? AND DATE_FORMAT(e.FEC_INI_EVE_CUR, '%Y-%m') = ?");
-    $stmt->bind_param("ss", $cedula, $mes);
+    // 3. Ejecutar la consulta
     $stmt->execute();
-    $participacionesPorMes[] = $stmt->get_result()->fetch_assoc()['count'];
+
+    // 4. Obtener el resultado
+    $result = $stmt->get_result();
+
+    // 5. Cargar eventos inscritos
+    $eventos = $result->fetch_all(MYSQLI_ASSOC);
+    
+    // 6. Cerrar el statement
+    $stmt->close();
+} else {
+    // Manejo de error si la preparación falla
+    die("Error en la preparación de la consulta: " . $conn->error);
 }
-$mesesLabels = [];
-for ($i = 5; $i >= 0; $i--) {
-    $mesesLabels[] = date('M', strtotime("-$i months"));
-}
+
+// Nota: La conexión ($conn) se cierra generalmente al final del script o en 'conexion.php' si es una función de cierre.
 ?>
 
 <!DOCTYPE html>
@@ -51,10 +59,9 @@ for ($i = 5; $i >= 0; $i--) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Usuario - UTA</title>
+    <title>Mis Eventos - UTA</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #a30000;
@@ -316,95 +323,187 @@ for ($i = 5; $i >= 0; $i--) {
             .sidebar a:hover { padding-left: 16px; }
             .content { margin-left: 80px; padding: 20px; }
         }
+        .badge-preinscrito { background: #fff3cd; color: #856404; }
+        .badge-confirmado { background: #d4edda; color: #155724; }
+        .badge-cancelado { background: #f8d7da; color: #721c24; }
+        .badge-asistio { background: #d1ecf1; color: #0c5460; }
+
+        .btn-ver {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-ver:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-cancelar {
+            background: transparent;
+            color: #dc3545;
+            border: 1px solid #dc3545;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .btn-cancelar:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 80px; }
+            .sidebar .logo img { width: 50px; }
+            .sidebar a span { display: none; }
+            .sidebar a { padding: 16px; justify-content: center; }
+            .sidebar a:hover { padding-left: 16px; }
+            .content { margin-left: 80px; padding: 20px; }
+            .event-item { flex-direction: column; align-items: flex-start; gap: 12px; }
+        }
+        .event-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px dashed #eee;
+            margin: 0 10px;
+        }
+
+        .event-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-info h5 {
+            margin: 0 0 6px;
+            font-size: 1.1rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .event-info small {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .event-badge {
+            font-size: 0.75rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
-    <!-- Sidebar Navbar Lateral Izquierdo -->
+
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="usuarios_inicio.php" class="active"><i class="fas fa-home"></i> <span>Inicio</span></a>
-        <a href="mis_eventos.php"><i class="fas fa-calendar-alt"></i> <span>Mis Eventos</span></a>
+        <a href="usuarios_inicio.php"><i class="fas fa-home"></i> <span>Inicio</span></a>
+        <a href="mis_eventos.php" class="active"><i class="fas fa-calendar-alt"></i> <span>Mis Eventos</span></a>
         <a href="buscar_eventos.php"><i class="fas fa-search"></i> <span>Buscar Eventos</span></a>
         <a href="perfil_usuario.php"><i class="fas fa-user"></i> <span>Perfil</span></a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a>
     </div>
 
-    <!-- Contenido Principal -->
+    <!-- Contenido -->
     <div class="content">
-        <h1 class="mb-4">Dashboard Usuario</h1>
-        <p>Bienvenido, <?= ucfirst($_SESSION['rol_nombre']) ?> (<?= $_SESSION['correo'] ?>)</p>
-
-        <!-- Tarjetas de Estadísticas Personales -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Mis Eventos</div>
-                    <div class="card-body text-center">
-                        <h2><?= $misEventos ?></h2>
-                        <p>Eventos en los que participas.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Inscripciones Aprobadas</div>
-                    <div class="card-body text-center">
-                        <h2><?= $inscripcionesAprobadas ?></h2>
-                        <p>Inscripciones confirmadas.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Eventos Pendientes</div>
-                    <div class="card-body text-center">
-                        <h2><?= $eventosPendientes ?></h2>
-                        <p>Eventos por confirmar.</p>
-                    </div>
-                </div>
-            </div>
+        <div class="page-header">
+            <i class="fas fa-calendar-alt"></i>
+            <h1>Mis Eventos Inscritos</h1>
         </div>
 
-        <!-- Gráfico de Participaciones por Mes -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">Participaciones por Mes</div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="participacionesChart"></canvas>
-                        </div>
+        <div class="card">
+            <div class="card-header-custom">
+                <i class="fas fa-list me-2"></i> Eventos en los que estás inscrito
+            </div>
+            <div class="card-body-custom">
+                <?php if (empty($eventos)): ?>
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <h4>No estás inscrito en ningún evento</h4>
+                        <p>Explora los eventos disponibles y regístrate en los que te interesen.</p>
+                        <a href="buscar_eventos.php" class="btn-ver mt-3">
+                            <i class="fas fa-search"></i> Buscar Eventos
+                        </a>
                     </div>
-                </div>
+                <?php else: ?>
+                    <?php foreach ($eventos as $e): ?>
+                        <div class="event-item">
+                            <div class="event-info">
+                                <h5><?= htmlspecialchars($e['TIT_EVE_CUR']) ?></h5>
+                                <small>
+                                    <i class="fas fa-calendar"></i> 
+                                    <?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?>
+                                    <?php if ($e['FEC_FIN_EVE_CUR'] && $e['FEC_FIN_EVE_CUR'] !== $e['FEC_INI_EVE_CUR']): ?>
+                                        al <?= date('d/m/Y', strtotime($e['FEC_FIN_EVE_CUR'])) ?>
+                                    <?php endif; ?>
+                                    • <i class="fas fa-tag"></i> <?= htmlspecialchars($e['NOM_TIPO_EVE']) ?>
+                                </small>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="event-badge badge-<?= strtolower(str_replace(' ', '', $e['ESTADO_INS'])) ?>">
+                                    <?= ucfirst($e['ESTADO_INS']) ?>
+                                </span>
+                                <a href="detalle_evento.php?id=<?= $e['ID_EVE_CUR'] ?>" class="btn-ver">
+                                    <i class="fas fa-eye"></i> Ver
+                                </a>
+                                <?php if (in_array($e['ESTADO_INS'], ['Preinscrito', 'Confirmado'])): ?>
+                                    <button class="btn-cancelar" onclick="cancelarInscripcion(<?= $e['ID_EVE_CUR'] ?>)">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Gráfico con Chart.js
-        const ctx = document.getElementById('participacionesChart').getContext('2d');
-        const participacionesChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: <?= json_encode($mesesLabels) ?>,
-                datasets: [{
-                    label: 'Participaciones',
-                    data: <?= json_encode($participacionesPorMes) ?>,
-                    backgroundColor: 'rgba(163, 0, 0, 0.2)', /* Rojo con opacidad */
-                    borderColor: 'rgba(163, 0, 0, 1)',
-                    borderWidth: 2,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
-                }
+        function cancelarInscripcion(idEvento) {
+            if (confirm('¿Estás seguro de cancelar tu inscripción a este evento?')) {
+                fetch('cancelar_inscripcion.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'id_evento=' + idEvento
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(() => alert('Error al cancelar'));
             }
-        });
+        }
     </script>
 </body>
 </html>
