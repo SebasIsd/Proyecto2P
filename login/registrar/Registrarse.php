@@ -4,14 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Formulario - Universidad Técnica de Ambato</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="../../css/estiloRegistrarse.css">
 </head>
 <body>
 <main class="container">
 <header class="header">
 <h1>Registro - Universidad Técnica de Ambato</h1>
-<p class="sub">Por favor completa todos los campos. Los campos con * son obligatorios.</p>
 </header>
+
 
 
 <form id="formRegistro" class="form" action="registrar_usuario.php" method="post" autocomplete="on">
@@ -129,6 +130,7 @@
 
 
 <p class="note">Al enviar aceptas la política de manejo de datos de la Universidad Técnica de Ambato.</p>
+
 </form>
 
 
@@ -260,138 +262,84 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <script>
-// Esperar que el documento cargue
 document.addEventListener("DOMContentLoaded", () => {
-  // Obtener campos de nombres y apellidos
   const primerNombre = document.getElementById("primer_nombre");
   const segundoNombre = document.getElementById("segundo_nombre");
   const primerApellido = document.getElementById("primer_apellido");
   const segundoApellido = document.getElementById("segundo_apellido");
-  
-  // Campo de correo y su mensaje
-  const correo = document.getElementById("correo");
-  const correoField = correo.closest(".field");
-  const msgCorreo = document.createElement("small");
-  msgCorreo.id = "msgCorreo";
-  msgCorreo.style.color = "red";
-  msgCorreo.textContent = "⚠️ Completa tus nombres y apellidos antes de ingresar el correo.";
-  correoField.appendChild(msgCorreo);
-
-  // Bloquear correo al inicio
-  correo.disabled = true;
-
-  // Función para verificar si los campos están llenos
-  function verificarCampos() {
-    const nombresLlenos = primerNombre.value.trim() !== "" && primerApellido.value.trim() !== "";
-    if (nombresLlenos) {
-      correo.disabled = false;
-      msgCorreo.style.color = "green";
-      msgCorreo.textContent = "✔ Ya puedes ingresar tu correo.";
-    } else {
-      correo.disabled = true;
-      msgCorreo.style.color = "red";
-      msgCorreo.textContent = "⚠️ Completa tus nombres y apellidos antes de ingresar el correo.";
-      correo.value = "";
-    }
-  }
-
-  // Escuchar cambios en los campos de nombre y apellido
-  primerNombre.addEventListener("input", verificarCampos);
-  segundoNombre.addEventListener("input", verificarCampos);
-  primerApellido.addEventListener("input", verificarCampos);
-  segundoApellido.addEventListener("input", verificarCampos);
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const primerNombre = document.getElementById("primer_nombre");
-  const primerApellido = document.getElementById("primer_apellido");
   const cedula = document.getElementById("cedula");
   const correo = document.getElementById("correo");
-  const password = document.getElementById("password");
 
-  // Crear mensaje bajo el correo
+  // Crear mensaje informativo debajo del campo de correo
   const correoField = correo.closest(".field");
   const msgCorreo = document.createElement("small");
   msgCorreo.id = "msgCorreo";
+  msgCorreo.style.display = "block";
+  msgCorreo.style.marginTop = "4px";
   msgCorreo.style.color = "red";
-  msgCorreo.textContent = "⚠️ Completa tus datos antes de generar el correo institucional.";
+  msgCorreo.textContent = "⚠️ Completa tus datos antes habilitar el correo.";
   correoField.appendChild(msgCorreo);
 
+  // Desactivar el campo correo al inicio
   correo.disabled = true;
-  password.disabled = true;
 
-  // Función para habilitar el correo
-  function habilitarCorreo() {
-    const tieneDatos =
-      primerNombre.value.trim() !== "" &&
-      primerApellido.value.trim() !== "" &&
-      /^\d{10}$/.test(cedula.value.trim());
-
-    if (tieneDatos) {
-      correo.disabled = false;
-      generarCorreo();
-    } else {
-      correo.disabled = true;
-      correo.value = "";
-      msgCorreo.style.color = "red";
-      msgCorreo.textContent = "⚠️ Completa nombre, apellido y cédula válidos para generar el correo.";
-      password.disabled = true;
-      password.value = "";
-    }
+  // Verificar si los campos obligatorios están llenos
+  function verificarDatos() {
+    const nombreValido = primerNombre.value.trim() !== "";
+    const apellidoValido = primerApellido.value.trim() !== "";
+    const cedulaValida = /^\d{10}$/.test(cedula.value.trim());
+    return nombreValido && apellidoValido && cedulaValida;
   }
 
-  // Generar el correo institucional
+  // Generar correo institucional automáticamente
   function generarCorreo() {
-    const nombre = primerNombre.value.trim().toLowerCase();
-    const apellido = primerApellido.value.trim().toLowerCase();
-    const ced = cedula.value.trim();
-
-    if (nombre && apellido && ced.length === 10) {
-      const inicial = nombre.charAt(0);
-      const ultimos4 = ced.slice(-4);
-      const correoGenerado = `${inicial}${apellido}${ultimos4}@uta.edu.ec`;
-
-      correo.value = correoGenerado;
-      msgCorreo.style.color = "green";
-      msgCorreo.textContent = `✔ Correo institucional generado: ${correoGenerado}`;
-      password.disabled = false;
-    }
-  }
-
-  // Verificar si el usuario modifica el correo manualmente
-  correo.addEventListener("input", () => {
-    const valor = correo.value.trim().toLowerCase();
     const nombre = primerNombre.value.trim().toLowerCase();
     const apellido = primerApellido.value.trim().toLowerCase();
     const ced = cedula.value.trim();
     const inicial = nombre.charAt(0);
     const ultimos4 = ced.slice(-4);
-    const correoEsperado = `${inicial}${apellido}${ultimos4}@uta.edu.ec`;
+    return `${inicial}${apellido}${ultimos4}@uta.edu.ec`;
+  }
 
-    if (valor === correoEsperado) {
+  // Función principal que controla la lógica
+  function actualizarEstadoCorreo() {
+    if (verificarDatos()) {
+      correo.disabled = false;
+      correo.value = generarCorreo();
       msgCorreo.style.color = "green";
-      msgCorreo.textContent = "✔ Correo institucional válido.contraseña habilitada";
-      password.disabled = false;
+      msgCorreo.textContent = "✔ Correo institucional generado correctamente.";
+    } else {
+      correo.disabled = true;
+      correo.value = "";
+      msgCorreo.style.color = "red";
+      msgCorreo.textContent = "⚠️ Completa nombre, apellido y una cédula válida  el correo deberia coincidir con los mismos.";
+    }
+  }
+
+  // Verificar si el usuario edita el correo manualmente
+  correo.addEventListener("input", () => {
+    const valor = correo.value.trim().toLowerCase();
+    const esperado = generarCorreo();
+    if (valor === esperado) {
+      msgCorreo.style.color = "green";
+      msgCorreo.textContent = "✔ Correo institucional válido.";
     } else if (valor.endsWith("@uta.edu.ec")) {
       msgCorreo.style.color = "red";
-      msgCorreo.textContent = "⚠️ El correo invalido no existe";
-      password.disabled = true;
-      password.value = "";
+      msgCorreo.textContent = "⚠️ El formato del correo no coincide con el institucional.";
     } else {
       msgCorreo.style.color = "red";
-      msgCorreo.textContent = "❌ El correo invalido no institucional";
-      password.disabled = true;
-      password.value = "";
+      msgCorreo.textContent = "❌ El correo no pertenece al dominio institucional.";
     }
   });
 
-  // Escuchar cambios en los campos clave
-  primerNombre.addEventListener("input", habilitarCorreo);
-  primerApellido.addEventListener("input", habilitarCorreo);
-  cedula.addEventListener("input", habilitarCorreo);
+  // Escuchar cambios en los campos relacionados
+  [primerNombre, segundoNombre, primerApellido, segundoApellido, cedula].forEach(campo => {
+    campo.addEventListener("input", actualizarEstadoCorreo);
+  });
 });
 </script>
+
+
 
 
 <script>
@@ -545,30 +493,117 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <script>
-document.getElementById("formRegistro").addEventListener("submit", function(e) {
-  e.preventDefault();
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("formRegistro");
+  const correo = document.getElementById("correo");
+  const primerNombre = document.getElementById("primer_nombre");
+  const primerApellido = document.getElementById("primer_apellido");
+  const cedula = document.getElementById("cedula");
+  const msgCorreo = document.getElementById("msgCorreo");
 
-  const formData = new FormData(this);
+  // Crear contenedor de alerta antes de los botones
+  let alerta = document.createElement("div");
+  alerta.id = "alerta";
+  alerta.className = "mt-3 w-100";
+  const botones = form.querySelector(".botones") || form.lastElementChild;
+  form.insertBefore(alerta, botones);
 
-  fetch("registrar_usuario.php", {
-    method: "POST",
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.status === "success") {
-      alert("✅ " + data.msg);
-      document.getElementById("formRegistro").reset();
+  // Función que genera el correo esperado institucional
+  function correoEsperado() {
+    const nombre = primerNombre.value.trim().toLowerCase();
+    const apellido = primerApellido.value.trim().toLowerCase();
+    const ced = cedula.value.trim();
+    const inicial = nombre.charAt(0);
+    const ultimos4 = ced.slice(-4);
+    return `${inicial}${apellido}${ultimos4}@uta.edu.ec`;
+  }
+
+  // Función para validar el formato del correo institucional
+  function validarCorreo() {
+    const valor = correo.value.trim().toLowerCase();
+    const esperado = correoEsperado();
+
+    if (valor === esperado) {
+      msgCorreo.style.color = "green";
+      msgCorreo.textContent = "✔ Correo institucional válido.";
+      return true;
+    } else if (valor.endsWith("@uta.edu.ec")) {
+      msgCorreo.style.color = "red";
+      msgCorreo.textContent = "⚠️ El formato del correo no coincide con el institucional.";
+      return false;
     } else {
-      alert("⚠️ " + data.msg);
+      msgCorreo.style.color = "red";
+      msgCorreo.textContent = "❌ El correo no pertenece al dominio institucional.";
+      return false;
     }
-  })
-  .catch(error => {
-    console.error("Error:", error);
-    alert("❌ Error al conectar con el servidor.");
+  }
+
+  // Evento submit
+  form.addEventListener("submit", function(e) {
+    e.preventDefault(); // detener envío por defecto
+
+    // Validar correo antes de enviar
+    if (!validarCorreo()) {
+      alerta.innerHTML = `
+        <div class="alert alert-danger alert-dismissible fade show mt-3 text-center" role="alert">
+          ⚠️ <strong>Error:</strong> El correo institucional no cumple con el formato requerido.
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      correo.focus();
+      return; // no continúa al fetch
+    }
+
+    // Si pasa la validación, se envía el formulario normalmente
+    const formData = new FormData(this);
+
+    fetch("registrar_usuario.php", {
+      method: "POST",
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      alerta.innerHTML = ""; // Limpia alertas anteriores
+      const div = document.createElement("div");
+      div.classList.add("alert", "alert-dismissible", "fade", "show", "text-center");
+
+      if (data.status === "success") {
+        div.classList.add("alert-success");
+        div.innerHTML = `
+          <strong>✅ Éxito:</strong> ${data.msg}
+          <br>La página se recargará en unos segundos...
+        `;
+        alerta.appendChild(div);
+        setTimeout(() => location.reload(), 3000);
+      } else {
+        div.classList.add("alert-danger");
+        div.innerHTML = `<strong>⚠️ Error:</strong> ${data.msg}`;
+        alerta.appendChild(div);
+      }
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn-close";
+      btn.setAttribute("data-bs-dismiss", "alert");
+      btn.setAttribute("aria-label", "Close");
+      div.appendChild(btn);
+    })
+    .catch(error => {
+      alerta.innerHTML = `
+        <div class="alert alert-danger alert-dismissible fade show mt-3 text-center" role="alert">
+          ❌ <strong>Error:</strong> No se pudo conectar con el servidor.
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      console.error("Error:", error);
+    });
   });
 });
 </script>
+
+
+
+
 
 
 
