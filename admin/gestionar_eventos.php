@@ -18,9 +18,9 @@ $eventos = $conn->query("
 ")->fetch_all(MYSQLI_ASSOC);
 
 // Cargar catálogos para modal de edición (si necesitas editar)
-$tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER BY NOM_TIPO_EVE")->fetch_all(MYSQLI_ASSOC);
-$requisitos = $conn->query("SELECT ID_REQ, NOM_REQ FROM REQUISITOS ORDER BY NOM_REQ")->fetch_all(MYSQLI_ASSOC);
-$carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA ORDER BY NOMBRE_CARRERA")->fetch_all(MYSQLI_ASSOC);
+//$tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER BY NOM_TIPO_EVE")->fetch_all(MYSQLI_ASSOC);
+//$requisitos = $conn->query("SELECT ID_REQ, NOM_REQ FROM REQUISITOS ORDER BY NOM_REQ")->fetch_all(MYSQLI_ASSOC);
+//$carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA ORDER BY NOMBRE_CARRERA")->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -326,221 +326,110 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
 
     <!-- Contenido -->
     <div class="content">
-        <div class="page-header">
-            <i class="fas fa-calendar-check"></i>
-            <h1>Gestionar Eventos</h1>
-            <a href="eventoNuevo.php" class="btn-primary">
-                <i class="fas fa-plus"></i> Nuevo Evento
-            </a>
-        </div>
+  <div class="page-header">
+    <i class="fas fa-calendar-check"></i>
+    <h1>Gestionar Eventos</h1>
+    <a href="eventoNuevo.php" class="btn-primary">
+      <i class="fas fa-plus"></i> Nuevo Evento
+    </a>
+  </div>
 
-        <div class="card">
-            <div class="card-header-custom">
-                <i class="fas fa-list me-2"></i> Lista de Eventos
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Título</th>
-                                <th>Fecha Inicio</th>
-                                <th>Tipo</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($eventos)): ?>
-                                <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">No hay eventos registrados aún.</td>
-                                </tr>
-                            <?php else: ?>
-                                <?php foreach ($eventos as $e): ?>
-                                    <tr>
-                                        <td><strong><?= htmlspecialchars($e['TIT_EVE_CUR']) ?></strong></td>
-                                        <td><?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?></td>
-                                        <td><?= htmlspecialchars($e['NOM_TIPO_EVE']) ?></td>
-                                        <td>
-                                            <?php if ($e['ACTIVO']): ?>
-                                                <span class="badge badge-success">Activo</span>
-                                            <?php else: ?>
-                                                <span class="badge badge-danger">Inactivo</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <button class="btn-edit" onclick="editarEvento(<?= $e['ID_EVE_CUR'] ?>)">
-                                                <i class="fas fa-edit"></i> Editar
-                                            </button>
-                                            <button class="btn-delete" onclick="eliminarEvento(<?= $e['ID_EVE_CUR'] ?>)">
-                                                <i class="fas fa-trash"></i> Eliminar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+  <!-- ✅ Alertas dentro de .content -->
+  <?php if (isset($_GET['ok'])): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <i class="fas fa-check-circle me-2"></i>
+      El evento se actualizó correctamente.
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
+  <?php elseif (isset($_GET['err'])): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      Error: <?= htmlspecialchars($_GET['err']) ?>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <?php endif; ?>
 
-    <!-- Modal para Editar Evento (similar a eventoNuevo.php) -->
-    <div class="modal fade" id="modalEditarEvento" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i> Editar Evento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form id="formEditarEvento" method="POST" action="guardarEvento.php">
-                    <div class="modal-body">
-                        <input type="hidden" name="ID_EVE_CUR" id="editIdEvento">
-                        <!-- Aquí pon el formulario de eventoNuevo.php adaptado -->
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label class="form-label">Título *</label>
-                                <input type="text" class="form-control" name="TIT_EVE_CUR" id="editTitulo" required>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Descripción</label>
-                                <textarea class="form-control" name="DES_EVE_CUR" id="editDescripcion" rows="3"></textarea>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Tipo de Evento *</label>
-                                <select class="form-select" name="ID_TIPO_EVE" id="editTipoEvento" required onchange="cargarRequisitosEditar(this.value)">
-                                    <?php foreach ($tipos as $t): ?>
-                                        <option value="<?= $t['ID_TIPO_EVE'] ?>"><?= htmlspecialchars($t['NOM_TIPO_EVE']) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Modalidad *</label>
-                                <select class="form-select" name="MOD_EVE_CUR" id="editModalidad">
-                                    <option value="Gratis">Gratis</option>
-                                    <option value="Pagado">Pagado</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Costo</label>
-                                <input type="number" class="form-control" name="COS_EVE_CUR" id="editCosto" min="0" step="0.01">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Horas Totales</label>
-                                <input type="number" class="form-control" name="HORAS_TOTALES" id="editHoras" min="0">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Fecha Inicio Inscripción</label>
-                                <input type="date" class="form-control" name="INSCRIPCION_DESDE" id="editInsDesde">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Fecha Fin Inscripción</label>
-                                <input type="date" class="form-control" name="INSCRIPCION_HASTA" id="editInsHasta">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Fecha Inicio Evento *</label>
-                                <input type="date" class="form-control" name="FEC_INI_EVE_CUR" id="editFecInicio" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Fecha Fin Evento *</label>
-                                <input type="date" class="form-control" name="FEC_FIN_EVE_CUR" id="editFecFin" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Lugar</label>
-                                <input type="text" class="form-control" name="LUGAR" id="editLugar">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Detalle Ubicación</label>
-                                <input type="text" class="form-control" name="UBICACION_DETALLE" id="editDetalle">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Capacidad Máxima *</label>
-                                <input type="number" class="form-control" name="CAPACIDAD_MAXIMA" id="editCapacidad" min="0" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Cupos Disponibles *</label>
-                                <input type="number" class="form-control" name="CUPOS_DISPONIBLES" id="editCupos" min="0" required>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Responsable (Cédula)</label>
-                                <input type="text" class="form-control" name="RESPONSABLE_CED" id="editResponsable" pattern="\d{10}" placeholder="0101234567">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Requisitos</label>
-                                <div id="editRequisitos" class="d-flex flex-wrap gap-2">
-                                    <!-- Cargados dinámicamente -->
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Carreras</label>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <?php foreach ($carreras as $c): ?>
-                                        <label class="req-chip">
-                                            <input type="checkbox" name="CARRERAS[]" value="<?= $c['ID_CARRERA'] ?>" class="carCheck">
-                                            <?= htmlspecialchars($c['NOMBRE_CARRERA']) ?>
-                                        </label>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn-save-modal">
-                            <i class="fas fa-save me-2"></i> Guardar Cambios
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+  <div class="card">
+    <div class="card-header-custom">
+      <i class="fas fa-list me-2"></i> Lista de Eventos
     </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Fecha Inicio</th>
+              <th>Tipo</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if (empty($eventos)): ?>
+              <tr><td colspan="5" class="text-center py-4 text-muted">No hay eventos registrados aún.</td></tr>
+            <?php else: foreach ($eventos as $e): ?>
+              <tr data-evento-row="<?= (int)$e['ID_EVE_CUR'] ?>">
+                <td><strong><?= htmlspecialchars($e['TIT_EVE_CUR']) ?></strong></td>
+                <td><?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?></td>
+                <td><?= htmlspecialchars($e['NOM_TIPO_EVE']) ?></td>
+                <td>
+                  <?php if ((int)$e['ACTIVO'] === 1): ?>
+                    <span class="badge bg-success">Activo</span>
+                  <?php else: ?>
+                    <span class="badge bg-danger">Inactivo</span>
+                  <?php endif; ?>
+                </td>
+                <td>
+                  <button type="button"
+                          class="btn-edit"
+                          onclick="location.href='editarEvento.php?id=<?= (int)$e['ID_EVE_CUR'] ?>'">
+                    <i class="fas fa-edit"></i> Editar
+                  </button>
+                  <button type="button" class="btn-delete" onclick="eliminarEvento(<?= (int)$e['ID_EVE_CUR'] ?>)">
+                    <i class="fas fa-trash"></i> Eliminar
+                  </button>
+                </td>
+              </tr>
+            <?php endforeach; endif; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div> 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        async function cargarRequisitosEditar(idTipo) {
-            const cont = document.getElementById('editRequisitos');
-            cont.innerHTML = '';
-            try {
-                const res = await fetch(`obtenerRequisitosPorTipo.php?id_tipo=${idTipo}`);
-                const reqs = await res.json();
-                reqs.forEach(r => {
-                    const label = document.createElement('label');
-                    label.className = 'req-chip';
-                    label.innerHTML = `
-                        <input type="checkbox" name="REQUISITOS[]" value="${r.ID_REQ}" class="reqCheck">
-                        ${r.NOM_REQ}
-                    `;
-                    cont.appendChild(label);
-                });
-            } catch (err) {
-                console.error('Error al cargar requisitos:', err);
-            }
-        }
+   <script>
+async function eliminarEvento(id){
+  if(!confirm('¿Seguro que deseas eliminar el evento?')) return;
+  const row = document.querySelector(`[data-evento-row="${id}"]`);
+  const btns = row ? row.querySelectorAll('button') : [];
+  btns.forEach(b => b.disabled = true);
 
-        function editarEvento(id) {
-            // Aquí carga datos del evento via AJAX y llena el modal
-            // Por ejemplo:
-            // fetch(`obtenerEvento.php?id=${id}`).then(res => res.json()).then(data => {
-            //     document.getElementById('editIdEvento').value = data.ID_EVE_CUR;
-            //     document.getElementById('editTitulo').value = data.TIT_EVE_CUR;
-            //     // ... llenar todos los campos
-            //     // Para requisitos y carreras, checkear los seleccionados
-            //     cargarRequisitosEditar(data.ID_TIPO_EVE);
-            //     // etc.
-            // });
-            // document.getElementById('modalEditarEvento').modal('show');
-            alert('Función de edición para ID: ' + id + ' (Implementa AJAX para cargar datos)');
-            const modal = new bootstrap.Modal(document.getElementById('modalEditarEvento'));
-            modal.show();
-        }
+  try{
+    const res = await fetch('eliminar_evento.php', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: new URLSearchParams({ id: String(id) })
+    });
+    const ct = res.headers.get('content-type') || '';
+    const json = ct.includes('application/json') ? await res.json() : { success:false, message: await res.text() };
 
-        function eliminarEvento(id) {
-            if (confirm('¿Seguro que quieres eliminar este evento?')) {
-                // fetch(`eliminarEvento.php?id=${id}`).then(() => location.reload());
-                alert('Evento eliminado ID: ' + id);
-            }
-        }
-    </script>
+    if(json.success){
+      if(row) row.remove();
+      alert('Evento eliminado con éxito.');
+    }else{
+      alert('No se pudo eliminar: ' + (json.message || 'Error'));
+      btns.forEach(b => b.disabled = false);
+    }
+  }catch(e){
+    console.error(e);
+    alert('Error de red al eliminar.');
+    btns.forEach(b => b.disabled = false);
+  }
+}
+</script>
+
 </body>
 </html>
