@@ -332,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
       correo.disabled = false;
       correo.value = generarCorreo();
       msgCorreo.style.color = "green";
-      msgCorreo.textContent = "✔ Correo institucional generado correctamente.";
+      msgCorreo.textContent = "✔ Correo Valido";
     } else {
       correo.disabled = true;
       correo.value = "";
