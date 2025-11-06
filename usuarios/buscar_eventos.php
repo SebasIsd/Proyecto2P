@@ -249,7 +249,7 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
             .content { margin-left: 80px; padding: 20px; }
             .event-item { flex-direction: column; align-items: flex-start; gap: 12px; }
             .event-card .card-body .d-flex { flex-direction: column; gap: 10px; }
-            .btn-inscribir, .btn-detalles { width: 100%; justify-content: center; }
+            .btn-inscribir, .btn-detalles { width: 100%; justify-content: center;}
         }
     </style>
 </head>
@@ -329,7 +329,7 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
                                         <?= $e['CUPOS_DISPONIBLES'] ?> / <?= $e['CAPACIDAD_MAXIMA'] ?> cupos
                                     </span>
                                     
-                                <button type="button" class="btn-detalle" data-bs-toggle="modal" data-bs-target="#detalleModal"
+                                <button type="button" class="btn-detalles" data-bs-toggle="modal" data-bs-target="#detalleModal"
                                         data-title="<?= htmlspecialchars($e['TIT_EVE_CUR']) ?>"
                                         data-type="<?= htmlspecialchars($e['NOM_TIPO_EVE']) ?>"
                                         data-start="<?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?>"

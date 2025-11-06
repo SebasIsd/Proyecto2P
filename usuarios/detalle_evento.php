@@ -308,7 +308,8 @@ $requisitos = $conn->query("
         .content { margin-left: 260px; padding: 40px; }
         .page-header { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 25px; margin-bottom: 30px; }
         .card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); }
-        .btn-inscribir { background: var(--primary); color: white; padding: 12px 30px; border-radius: 12px; font-weight: 600; }
+        .btn-inscribir { background: var(--primary); color: white; padding: 12px 30px; border-radius: 12px; font-weight: 600; 
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
         .btn-inscribir:hover { background: var(--primary-hover); }
     </style>
 </head>
