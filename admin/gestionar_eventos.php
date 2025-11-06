@@ -195,24 +195,48 @@ $eventos = $conn->query("
             color: #721c24;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
+       .btn-primary {
+    background: var(--primary);
+    color: white !important;
+    border: none;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 12px 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(163, 0, 0, 0.25);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
 
-        .btn-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(163,0,0,0.2);
-        }
+.btn-primary i {
+    font-size: 1rem;
+    background: white;
+    color: var(--primary);
+    border-radius: 50%;
+    padding: 4px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 6px 18px rgba(163, 0, 0, 0.35);
+    transform: translateY(-2px);
+}
+
+.btn-primary:hover i {
+    background: white;
+    color: var(--primary-hover);
+}
+
 
         .btn-edit {
             background: transparent;
