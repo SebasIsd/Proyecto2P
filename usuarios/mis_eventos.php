@@ -1,8 +1,6 @@
 <?php
 session_start();
-
-// Verificar sesión
-if (!isset($_SESSION['correo']) || !isset($_SESSION['cedula'])) {
+if (!isset($_SESSION['correo'])) {
     header("Location: ../index.php");
     exit();
 }
@@ -11,49 +9,29 @@ require_once '../includes/conexion.php';
 
 $cedula = $_SESSION['cedula'];
 
-// Cargar eventos inscritos utilizando una SENTENCIA PREPARADA
-$sql = "
+// Cargar eventos inscritos con detalles
+$eventos = $conn->query("
     SELECT 
         e.ID_EVE_CUR,
         e.TIT_EVE_CUR,
         e.FEC_INI_EVE_CUR,
         e.FEC_FIN_EVE_CUR,
+        e.REQUIERE_ASISTENCIA,
+        e.MOD_EVE_CUR,
+        e.COS_EVE_CUR,
         t.NOM_TIPO_EVE,
         i.ESTADO_INS,
+        i.EST_PAG_INS,
+        p.URL_COMPROBANTE AS COMPROBANTE_PAGO,
         i.FEC_INI_INS
     FROM INSCRIPCIONES i
     JOIN EVENTOS_CURSOS e ON i.ID_EVE_CUR = e.ID_EVE_CUR
     JOIN TIPOS_EVENTO t ON e.ID_TIPO_EVE = t.ID_TIPO_EVE
-    WHERE i.CED_USU = ?
+    LEFT JOIN PAGOS p ON i.ID_INS = p.ID_INS
+    WHERE i.CED_USU = '$cedula'
     ORDER BY i.FEC_INI_INS DESC
-";
-
-// 1. Preparar la consulta
-$stmt = $conn->prepare($sql);
-
-// 2. Vincular el parámetro (s = string)
-if ($stmt) {
-    $stmt->bind_param("s", $cedula);
-
-    // 3. Ejecutar la consulta
-    $stmt->execute();
-
-    // 4. Obtener el resultado
-    $result = $stmt->get_result();
-
-    // 5. Cargar eventos inscritos
-    $eventos = $result->fetch_all(MYSQLI_ASSOC);
-    
-    // 6. Cerrar el statement
-    $stmt->close();
-} else {
-    // Manejo de error si la preparación falla
-    die("Error en la preparación de la consulta: " . $conn->error);
-}
-
-// Nota: La conexión ($conn) se cierra generalmente al final del script o en 'conexion.php' si es una función de cierre.
+")->fetch_all(MYSQLI_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -384,12 +362,12 @@ if ($stmt) {
             .event-item { flex-direction: column; align-items: flex-start; gap: 12px; }
         }
         .event-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 0;
-            border-bottom: 1px dashed #eee;
-            margin: 0 10px;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            transition: all 0.2s;
         }
 
         .event-item:last-child {
@@ -414,6 +392,30 @@ if ($stmt) {
             border-radius: 20px;
             font-weight: 600;
         }
+
+        .event-item {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+
+        .requisitos-list {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 0.9rem;
+        }
+
+        .btn-ver-comprobante {
+            font-size: 0.85rem;
+        }
+
+        .content {
+            margin-left: 260px;
+            padding: 40px;
+        }
     </style>
 </head>
 <body>
@@ -430,80 +432,236 @@ if ($stmt) {
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a>
     </div>
 
-    <!-- Contenido -->
+ <!-- Contenido -->
     <div class="content">
         <div class="page-header">
-            <i class="fas fa-calendar-alt"></i>
-            <h1>Mis Eventos Inscritos</h1>
+            <h2 class="text-dark"><i class="fas fa-calendar-check"></i> Mis Eventos</h2>
         </div>
 
-        <div class="card">
-            <div class="card-header-custom">
-                <i class="fas fa-list me-2"></i> Eventos en los que estás inscrito
+        <?php if (empty($eventos)): ?>
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No estás inscrito en ningún evento.</p>
             </div>
-            <div class="card-body-custom">
-                <?php if (empty($eventos)): ?>
-                    <div class="empty-state">
-                        <i class="fas fa-calendar-times"></i>
-                        <h4>No estás inscrito en ningún evento</h4>
-                        <p>Explora los eventos disponibles y regístrate en los que te interesen.</p>
-                        <a href="buscar_eventos.php" class="btn-ver mt-3">
-                            <i class="fas fa-search"></i> Buscar Eventos
-                        </a>
-                    </div>
-                <?php else: ?>
-                    <?php foreach ($eventos as $e): ?>
-                        <div class="event-item">
-                            <div class="event-info">
-                                <h5><?= htmlspecialchars($e['TIT_EVE_CUR']) ?></h5>
-                                <small>
-                                    <i class="fas fa-calendar"></i> 
-                                    <?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?>
-                                    <?php if ($e['FEC_FIN_EVE_CUR'] && $e['FEC_FIN_EVE_CUR'] !== $e['FEC_INI_EVE_CUR']): ?>
-                                        al <?= date('d/m/Y', strtotime($e['FEC_FIN_EVE_CUR'])) ?>
-                                    <?php endif; ?>
-                                    • <i class="fas fa-tag"></i> <?= htmlspecialchars($e['NOM_TIPO_EVE']) ?>
-                                </small>
+        <?php else: ?>
+            <?php foreach ($eventos as $e): ?>
+                <?php 
+                // Cargar requisitos del evento
+                $reqs = $conn->query("
+                    SELECT r.NOM_REQ, r.TIPO 
+                    FROM EVENTOS_REQUISITOS er
+                    JOIN REQUISITOS r ON er.ID_REQ = r.ID_REQ
+                    WHERE er.ID_EVE_CUR = {$e['ID_EVE_CUR']}
+                ")->fetch_all(MYSQLI_ASSOC);
+
+                // Cargar evidencias subidas por el usuario
+                $evidencias = $conn->query("
+                    SELECT r.NOM_REQ, r.TIPO, e.VALOR_TEXTO, e.NOMBRE_ARCHIVO, e.URL_ARCHIVO, e.TIPO_MIME
+                    FROM EVIDENCIAS e
+                    JOIN REQUISITOS r ON e.ID_REQ = r.ID_REQ
+                    JOIN INSCRIPCIONES i ON e.ID_INS = i.ID_INS
+                    WHERE i.ID_EVE_CUR = {$e['ID_EVE_CUR']} AND i.CED_USU = '$cedula'
+                ")->fetch_all(MYSQLI_ASSOC);
+                ?>
+
+                <div class="event-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="event-info flex-grow-1">
+                            <h5 class="event-title"><?= htmlspecialchars($e['TIT_EVE_CUR']) ?></h5>
+
+                            <div class="event-meta">
+                                <i class="fas fa-calendar"></i> 
+                                <?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?>
+                                <?php if ($e['FEC_FIN_EVE_CUR'] && $e['FEC_FIN_EVE_CUR'] !== $e['FEC_INI_EVE_CUR']): ?>
+                                    al <?= date('d/m/Y', strtotime($e['FEC_FIN_EVE_CUR'])) ?>
+                                <?php endif; ?>
+                                • <?= htmlspecialchars($e['NOM_TIPO_EVE']) ?>
+                                • <strong>
+                                    <?= $e['MOD_EVE_CUR'] == 'Pagado' 
+                                        ? 'Pagado ($' . number_format($e['COS_EVE_CUR'], 2) . ')' 
+                                        : 'Gratis' ?>
+                                </strong>
                             </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="event-badge badge-<?= strtolower(str_replace(' ', '', $e['ESTADO_INS'])) ?>">
-                                    <?= ucfirst($e['ESTADO_INS']) ?>
-                                </span>
-                                <a href="detalle_evento.php?id=<?= $e['ID_EVE_CUR'] ?>" class="btn-ver">
-                                    <i class="fas fa-eye"></i> Ver
-                                </a>
-                                <?php if (in_array($e['ESTADO_INS'], ['Preinscrito', 'Confirmado'])): ?>
-                                    <button class="btn-cancelar" onclick="cancelarInscripcion(<?= $e['ID_EVE_CUR'] ?>)">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+
+                            <div class="event-meta">
+                                <strong>Estado:</strong> 
+                                <span class="badge bg-primary"><?= ucfirst($e['ESTADO_INS']) ?></span>
+                                <?php if ($e['ESTADO_INS'] == 'Preinscrito'): ?>
+                                    <span class="text-muted">
+                                        (Esperando aprobación 
+                                        <?= $e['MOD_EVE_CUR'] == 'Pagado' ? 'y verificación de pago' : 'del docente/admin' ?>)
+                                    </span>
                                 <?php endif; ?>
                             </div>
+
+                            <!-- REQUISITOS -->
+                            <div class="mt-2">
+                                <strong>Requisitos:</strong>
+                                <?php if (empty($reqs)): ?>
+                                    <p class="text-muted mb-0">No requiere requisitos adicionales.</p>
+                                <?php else: ?>
+                                    <ul class="ps-3 mb-0">
+                                        <?php foreach ($reqs as $r): ?>
+                                            <li><?= htmlspecialchars($r['NOM_REQ']) ?> (<?= $r['TIPO'] ?>)</li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- BOTÓN VER DOCUMENTOS -->
+                            <?php if ($e['COMPROBANTE_PAGO'] || !empty($evidencias)): ?>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#documentosModal"
+                                            onclick="cargarDocumentos(<?= $e['ID_EVE_CUR'] ?>, '<?= addslashes($e['TIT_EVE_CUR']) ?>', '<?= $e['COMPROBANTE_PAGO'] ?>', <?= json_encode($evidencias) ?>)">
+                                        <i class="fas fa-folder-open"></i> Ver Documentos
+                                    </button>
+                                </div>
+                            <?php endif; ?>
                         </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+
+                        <div class="d-flex flex-column gap-2">
+                            <a href="detalle_evento.php?id=<?= $e['ID_EVE_CUR'] ?>" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> Detalles
+                            </a>
+
+                            <?php if ($e['REQUIERE_ASISTENCIA'] && $e['ESTADO_INS'] == 'Inscrito'
+                                && strtotime($e['FEC_INI_EVE_CUR']) <= time()
+                                && strtotime($e['FEC_FIN_EVE_CUR']) >= time()): ?>
+                                <button class="btn btn-sm btn-success" onclick="registrarAsistencia(<?= $e['ID_EVE_CUR'] ?>)">
+                                    <i class="fas fa-check"></i> Registrar Asistencia
+                                </button>
+                            <?php endif; ?>
+
+                            <?php if (in_array($e['ESTADO_INS'], ['Preinscrito', 'Inscrito'])): ?>
+                                <button class="btn btn-sm btn-danger" onclick="cancelarInscripcion(<?= $e['ID_EVE_CUR'] ?>)">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+
+    <!-- MODAL DE DOCUMENTOS -->
+    <div class="modal fade" id="documentosModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalTituloDocs">Documentos</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalContenidoDocs">
+                    <!-- Se llena con JS -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function cancelarInscripcion(idEvento) {
-            if (confirm('¿Estás seguro de cancelar tu inscripción a este evento?')) {
-                fetch('cancelar_inscripcion.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'id_evento=' + idEvento
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(() => alert('Error al cancelar'));
+        function registrarAsistencia(id) {
+            if (!confirm('¿Registrar asistencia?')) return;
+            fetch('registrar_asistencia.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'id_evento=' + id
+            })
+            .then(r => r.json())
+            .then(d => { alert(d.message); if (d.success) location.reload(); })
+            .catch(() => alert('Error de conexión'));
+        }
+
+        function cancelarInscripcion(id) {
+            if (!confirm('¿Cancelar inscripción?')) return;
+            fetch('cancelar_inscripcion.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'id_evento=' + id
+            })
+            .then(r => r.json())
+            .then(d => { alert(d.message); if (d.success) location.reload(); })
+            .catch(() => alert('Error de conexión'));
+        }
+
+        function cargarDocumentos(id_evento, titulo, comprobante, evidencias) {
+            const modalTitulo = document.getElementById('modalTituloDocs');
+            const modalBody = document.getElementById('modalContenidoDocs');
+            
+            modalTitulo.textContent = `Documentos - ${titulo}`;
+            let html = '';
+
+            // COMPROBANTE
+            if (comprobante) {
+                const path = '../uploads/comprobantes/' + comprobante;
+                const ext = comprobante.split('.').pop().toLowerCase();
+                html += `<div class="mb-4 p-3 border rounded bg-light">
+                    <h6 class="text-primary"><i class="fas fa-file-invoice-dollar"></i> Comprobante de Pago</h6>`;
+                if (['jpg', 'jpeg', 'png'].includes(ext)) {
+                    html += `<canvas id="canvas-comprobante" class="img-fluid" style="max-height: 500px;"></canvas>
+                             <script>
+                                 const img = new Image();
+                                 img.src = '${path}';
+                                 img.onload = () => {
+                                     const canvas = document.getElementById('canvas-comprobante');
+                                     const ctx = canvas.getContext('2d');
+                                     const maxW = 700;
+                                     canvas.width = Math.min(img.width, maxW);
+                                     canvas.height = canvas.width * (img.height / img.width);
+                                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                 };
+                             <\/script>`;
+                } else if (ext === 'pdf') {
+                    html += `<embed src="${path}" type="application/pdf" width="100%" height="600px" />`;
+                }
+                html += `</div>`;
             }
+
+            // REQUISITOS
+            if (evidencias && evidencias.length > 0) {
+                html += `<h6 class="text-success mb-3"><i class="fas fa-clipboard-list"></i> Requisitos Entregados</h6>`;
+                evidencias.forEach(ev => {
+                    html += `<div class="mb-3 p-3 border rounded">
+                        <strong>${ev.NOM_REQ} (${ev.TIPO})</strong><br>`;
+                    if (ev.TIPO === 'TEXTO_CORTO' && ev.VALOR_TEXTO) {
+                        html += `<p class="mb-0">"${ev.VALOR_TEXTO}"</p>`;
+                    } else if (ev.NOMBRE_ARCHIVO) {
+                        const path = '../uploads/requisitos/' + ev.NOMBRE_ARCHIVO;
+                        const ext = ev.NOMBRE_ARCHIVO.split('.').pop().toLowerCase();
+                        if (['jpg', 'jpeg', 'png'].includes(ext)) {
+                            const canvasId = 'canvas-req-' + ev.ID_REQ;
+                            html += `<canvas id="${canvasId}" class="img-fluid" style="max-height: 400px;"></canvas>
+                                     <script>
+                                         const img${ev.ID_REQ} = new Image();
+                                         img${ev.ID_REQ}.src = '${path}';
+                                         img${ev.ID_REQ}.onload = () => {
+                                             const c = document.getElementById('${canvasId}');
+                                             const ctx = c.getContext('2d');
+                                             const maxW = 600;
+                                             c.width = Math.min(img${ev.ID_REQ}.width, maxW);
+                                             c.height = c.width * (img${ev.ID_REQ}.height / img${ev.ID_REQ}.width);
+                                             ctx.drawImage(img${ev.ID_REQ}, 0, 0, c.width, c.height);
+                                         };
+                                     <\/script>`;
+                        } else if (ext === 'pdf') {
+                            html += `<embed src="${path}" type="application/pdf" width="100%" height="500px" class="border rounded" />`;
+                        }
+                    } else {
+                        html += `<span class="text-muted">No entregado</span>`;
+                    }
+                    html += `</div>`;
+                });
+            } else {
+                html += `<p class="text-muted">No se han subido requisitos.</p>`;
+            }
+
+            modalBody.innerHTML = html;
         }
     </script>
 </body>

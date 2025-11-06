@@ -18,9 +18,11 @@ $sql = "
     SELECT 
         e.ID_EVE_CUR,
         e.TIT_EVE_CUR,
-        e.DES_EVE_CUR,        -- Se agrega la descripción para usarla en el modal
+        e.DES_EVE_CUR,
         e.FEC_INI_EVE_CUR,
         e.FEC_FIN_EVE_CUR,
+        e.MOD_EVE_CUR,
+        e.COS_EVE_CUR,
         t.NOM_TIPO_EVE,
         e.CUPOS_DISPONIBLES,
         e.CAPACIDAD_MAXIMA,
@@ -300,6 +302,16 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
                 </div>
             <?php else: ?>
                 <?php foreach ($eventos as $e): ?>
+                    <?php 
+                    // Cargar requisitos del evento
+                    $requisitos = $conn->query("
+                        SELECT r.NOM_REQ, r.TIPO
+                        FROM EVENTOS_REQUISITOS er
+                        JOIN REQUISITOS r ON er.ID_REQ = r.ID_REQ
+                        WHERE er.ID_EVE_CUR = {$e['ID_EVE_CUR']}
+                        ORDER BY er.ORDEN
+                    ")->fetch_all(MYSQLI_ASSOC);
+                    ?>
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="event-card">
                             <div class="card-header-custom">
@@ -317,20 +329,19 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
                                         <?= $e['CUPOS_DISPONIBLES'] ?> / <?= $e['CAPACIDAD_MAXIMA'] ?> cupos
                                     </span>
                                     
-                                    <button type="button" 
-                                            class="btn-detalles"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#detalleModal"
-                                            data-title="<?= htmlspecialchars($e['TIT_EVE_CUR']) ?>"
-                                            data-type="<?= htmlspecialchars($e['NOM_TIPO_EVE']) ?>"
-                                            data-start="<?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?>"
-                                            data-end="<?= $e['FEC_FIN_EVE_CUR'] && $e['FEC_FIN_EVE_CUR'] !== $e['FEC_INI_EVE_CUR'] ? date('d/m/Y', strtotime($e['FEC_FIN_EVE_CUR'])) : '' ?>"
-                                            data-capacity="<?= $e['CAPACIDAD_MAXIMA'] ?>"
-                                            data-available="<?= $e['CUPOS_DISPONIBLES'] ?>"
-                                            data-description="<?= htmlspecialchars($e['DES_EVE_CUR']) ?>"
-                                            data-id="<?= $e['ID_EVE_CUR'] ?>">
-                                        <i class="fas fa-info-circle"></i> Detalles
-                                    </button>
+                                <button type="button" class="btn-detalle" data-bs-toggle="modal" data-bs-target="#detalleModal"
+                                        data-title="<?= htmlspecialchars($e['TIT_EVE_CUR']) ?>"
+                                        data-type="<?= htmlspecialchars($e['NOM_TIPO_EVE']) ?>"
+                                        data-start="<?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?>"
+                                        data-end="<?= $e['FEC_FIN_EVE_CUR'] ? date('d/m/Y', strtotime($e['FEC_FIN_EVE_CUR'])) : '' ?>"
+                                        data-capacity="<?= $e['CAPACIDAD_MAXIMA'] ?>"
+                                        data-available="<?= $e['CUPOS_DISPONIBLES'] ?>"
+                                        data-description="<?= htmlspecialchars($e['DES_EVE_CUR']) ?>"
+                                        data-id="<?= $e['ID_EVE_CUR'] ?>"
+                                        data-modalidad="<?= $e['MOD_EVE_CUR'] == 'Pagado' ? 'Pagado ($' . number_format($e['COS_EVE_CUR'], 2) . ')' : 'Gratis' ?>"
+                                        data-requisitos='<?= json_encode($requisitos) ?>'>
+                                    <i class="fas fa-info-circle"></i> Detalles
+                                </button>
 
                                     <a href="detalle_evento.php?id=<?= $e['ID_EVE_CUR'] ?>"
                                        class="btn-inscribir <?= !$e['tiene_cupos'] ? 'disabled' : '' ?>">
@@ -356,9 +367,14 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
                     <h4 id="modal-title" class="mb-3" style="color: var(--dark);"></h4>
                     <p class="mb-1"><strong>Tipo:</strong> <span id="modal-type"></span></p>
                     <p class="mb-1"><strong>Fecha:</strong> <span id="modal-date"></span></p>
-                    <p class="mb-3"><strong>Cupos:</strong> <span id="modal-cupos"></span></p>
+                    <p class="mb-1"><strong>Cupos:</strong> <span id="modal-cupos"></span></p>
+                    <p class="mb-3"><strong>Modalidad:</strong> <span id="modal-modalidad" style="color: var(--primary); font-weight: 600;"></span></p>
+                    
                     <h6 class="mt-4 mb-2" style="color: var(--primary);">Descripción:</h6>
                     <p id="modal-description" style="white-space: pre-wrap;"></p>
+
+                    <h6 class="mt-4 mb-2" style="color: var(--primary);">Requisitos:</h6>
+                    <div id="modal-requisitos"></div>
                 </div>
                 <div class="modal-footer justify-content-between">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -371,51 +387,60 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Script para cargar la información en el modal
-        const detalleModal = document.getElementById('detalleModal');
-        if (detalleModal) {
-            detalleModal.addEventListener('show.bs.modal', event => {
-                // Botón que disparó el modal
-                const button = event.relatedTarget;
-                
-                // Extraer información de los atributos data-*
-                const title = button.getAttribute('data-title');
-                const type = button.getAttribute('data-type');
-                const start = button.getAttribute('data-start');
-                const end = button.getAttribute('data-end');
-                const capacity = button.getAttribute('data-capacity');
-                const available = button.getAttribute('data-available');
-                const description = button.getAttribute('data-description');
-                const id = button.getAttribute('data-id');
-                const tieneCupos = parseInt(available) > 0;
+<script>
+    const detalleModal = document.getElementById('detalleModal');
+    if (detalleModal) {
+        detalleModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            
+            const title = button.getAttribute('data-title');
+            const type = button.getAttribute('data-type');
+            const start = button.getAttribute('data-start');
+            const end = button.getAttribute('data-end');
+            const capacity = button.getAttribute('data-capacity');
+            const available = button.getAttribute('data-available');
+            const description = button.getAttribute('data-description');
+            const id = button.getAttribute('data-id');
+            const modalidad = button.getAttribute('data-modalidad');
+            const requisitos = JSON.parse(button.getAttribute('data-requisitos') || '[]');
+            const tieneCupos = parseInt(available) > 0;
 
-                // Construir la cadena de fechas
-                let dateString = start;
-                if (end) {
-                    dateString += ' al ' + end;
-                }
+            let dateString = start;
+            if (end) dateString += ' al ' + end;
 
-                // Actualizar el contenido del modal
-                document.getElementById('modal-title').textContent = title;
-                document.getElementById('modal-type').textContent = type;
-                document.getElementById('modal-date').textContent = dateString;
-                document.getElementById('modal-cupos').textContent = `${available} disponibles de ${capacity} totales`;
-                document.getElementById('modal-description').textContent = description;
-                
-                // Actualizar el botón de inscripción en el footer del modal
-                const inscribirBtn = document.getElementById('modal-inscribir-btn');
-                inscribirBtn.href = `detalle_evento.php?id=${id}`;
-                
-                if (!tieneCupos) {
-                    inscribirBtn.classList.add('disabled');
-                    inscribirBtn.innerHTML = '<i class="fas fa-ban"></i> Cupos Agotados';
-                } else {
-                    inscribirBtn.classList.remove('disabled');
-                    inscribirBtn.innerHTML = '<i class="fas fa-user-plus"></i> Ir a Inscribirme';
-                }
-            });
-        }
-    </script>
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-type').textContent = type;
+            document.getElementById('modal-date').textContent = dateString;
+            document.getElementById('modal-cupos').textContent = `${available} disponibles de ${capacity} totales`;
+            document.getElementById('modal-description').textContent = description;
+            document.getElementById('modal-modalidad').textContent = modalidad;
+
+            // Requisitos
+            const reqContainer = document.getElementById('modal-requisitos');
+            if (requisitos.length === 0) {
+                reqContainer.innerHTML = '<p class="text-muted mb-0">No requiere requisitos adicionales.</p>';
+            } else {
+                let list = '<ul class="ps-3 mb-0" style="font-size: 0.95rem;">';
+                requisitos.forEach(r => {
+                    list += `<li><strong>${r.NOM_REQ}</strong> (${r.TIPO})</li>`;
+                });
+                list += '</ul>';
+                reqContainer.innerHTML = list;
+            }
+
+            // Botón inscribir
+            const inscribirBtn = document.getElementById('modal-inscribir-btn');
+            inscribirBtn.href = `detalle_evento.php?id=${id}`;
+            
+            if (!tieneCupos) {
+                inscribirBtn.classList.add('disabled');
+                inscribirBtn.innerHTML = '<i class="fas fa-ban"></i> Cupos Agotados';
+            } else {
+                inscribirBtn.classList.remove('disabled');
+                inscribirBtn.innerHTML = '<i class="fas fa-user-plus"></i> Ir a Inscribirme';
+            }
+        });
+    }
+</script>
 </body>
 </html>
