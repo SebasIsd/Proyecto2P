@@ -103,7 +103,6 @@
 <div class="field">
 <label for="password">Contraseña *</label>
 <input id="password" name="password" type="password" minlength="8" maxlength="64" placeholder="Mínimo 8 caracteres" required>
-<small>Usa al menos 8 caracteres.</small>
 </div>
 </div>
 
@@ -125,7 +124,7 @@
 
 <div class="actions">
 <button type="submit" class="btn primary">Registrar</button>
-<button type="reset" class="btn">Limpiar</button>
+<button type="button" id="btnVolver" class="btn" onclick="window.location.href='../../index.php'">Volver al inicio</button>
 </div>
 
 
@@ -159,43 +158,56 @@ return false;
 
 });
 </script>
+
+
+
 <script>
-    //validar cedula
   // Función: solo permitir números mientras se escribe
   function soloNumeros(input) {
-    input.value = input.value.replace(/[^0-9]/g, ''); // elimina todo lo que no sea número
+    input.value = input.value.replace(/[^0-9]/g, '');
   }
 
-  // Función: validar la cédula ecuatoriana
-  function validarCedula(input) {
+  function validarCedulaInput(input) {
     const cedula = input.value.trim();
     const msg = document.getElementById('msgCedula');
 
-    // Verifica longitud exacta
-    if (cedula.length !== 10) {
-      msg.style.color = "red";
-      msg.textContent = "⚠️ La cédula debe tener exactamente 10 dígitos.";
-      input.focus();
+    if (cedula.length === 0) {
+      msg.style.color = "gray";
+      msg.textContent = "Ingrese su cédula (10 dígitos)";
+      return false;
+    } else if (cedula.length < 10) {
+      msg.style.color = "orange";
+      msg.textContent = `Escribiendo... (${cedula.length}/10 dígitos)`;
       return false;
     }
 
-    // Verifica que los dos primeros dígitos sean una provincia válida (01–24)
+    if (cedula.length === 10) {
+      return validarCedula(cedula);
+    }
+  }
+
+  function validarCedula(cedula) {
+    const msg = document.getElementById('msgCedula');
+    if (cedula.length !== 10) {
+      msg.style.color = "red";
+      msg.textContent = "⚠️ La cédula debe tener exactamente 10 dígitos";
+      return false;
+    }
+
     const provincia = parseInt(cedula.substring(0, 2), 10);
     if (provincia < 1 || provincia > 24) {
       msg.style.color = "red";
       msg.textContent = "⚠️ Código de provincia no válido (01–24).";
-      input.focus();
       return false;
     }
 
-    // Algoritmo de validación (módulo 10)
     const digitos = cedula.split('').map(Number);
     const verificador = digitos.pop();
     let suma = 0;
 
     for (let i = 0; i < digitos.length; i++) {
       let valor = digitos[i];
-      if (i % 2 === 0) { // posiciones impares (0-index)
+      if (i % 2 === 0) {
         valor *= 2;
         if (valor > 9) valor -= 9;
       }
@@ -212,27 +224,40 @@ return false;
     } else {
       msg.style.color = "red";
       msg.textContent = "❌ Cédula no válida.";
-      input.focus();
       return false;
     }
   }
 
-  // Configurar eventos cuando cargue la página
   document.addEventListener("DOMContentLoaded", () => {
     const cedulaInput = document.getElementById("cedula");
-    // Poner el foco automáticamente en el campo de cédula
     cedulaInput.focus();
 
-    // Validaciones dinámicas
-    cedulaInput.addEventListener("input", () => soloNumeros(cedulaInput));
+    cedulaInput.addEventListener("input", () => {
+      soloNumeros(cedulaInput);
+      validarCedulaInput(cedulaInput);
+    });
+
     cedulaInput.addEventListener("blur", () => {
-      const valido = validarCedula(cedulaInput);
-      if (!valido) {
-        setTimeout(() => cedulaInput.focus(), 0); // Reenfoca si no pasa la validación
-      }
+      validarCedula(cedulaInput.value);
+    });
+
+    // Botón "Volver al inicio" ignora validación siempre
+    const btnVolver = document.getElementById("btnVolver");
+    btnVolver.addEventListener("click", (e) => {
+      // Redirige sin activar ninguna validación
+      window.location.href = btnVolver.getAttribute("data-href") || '../../index.php';
     });
   });
 </script>
+
+
+
+
+
+
+
+
+
 <script>
   //fecha de nacimiento no mayor a hoy
 document.addEventListener("DOMContentLoaded", function() {
