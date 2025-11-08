@@ -21,6 +21,12 @@ $eventos = $conn->query("
 //$tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER BY NOM_TIPO_EVE")->fetch_all(MYSQLI_ASSOC);
 //$requisitos = $conn->query("SELECT ID_REQ, NOM_REQ FROM REQUISITOS ORDER BY NOM_REQ")->fetch_all(MYSQLI_ASSOC);
 //$carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA ORDER BY NOMBRE_CARRERA")->fetch_all(MYSQLI_ASSOC);
+// Cargar lista de eventos (ya lo tienes)
+// Favoritos globales marcados por el admin
+$favs = $conn->query("SELECT ID_EVE_CUR FROM EVENTOS_FAVORITOS")->fetch_all(MYSQLI_ASSOC);
+$favSet = [];
+foreach ($favs as $f) { $favSet[(int)$f['ID_EVE_CUR']] = true; }
+
 ?>
 
 <!DOCTYPE html>
@@ -330,6 +336,7 @@ $eventos = $conn->query("
             .sidebar a:hover { padding-left: 16px; }
             .content { margin-left: 80px; padding: 20px; }
         }
+        
     </style>
 </head>
 <body>
@@ -383,6 +390,7 @@ $eventos = $conn->query("
         <table class="table table-hover mb-0">
           <thead>
             <tr>
+              <th>Fav</th>
               <th>Título</th>
               <th>Fecha Inicio</th>
               <th>Tipo</th>
@@ -390,34 +398,47 @@ $eventos = $conn->query("
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            <?php if (empty($eventos)): ?>
-              <tr><td colspan="5" class="text-center py-4 text-muted">No hay eventos registrados aún.</td></tr>
-            <?php else: foreach ($eventos as $e): ?>
-              <tr data-evento-row="<?= (int)$e['ID_EVE_CUR'] ?>">
-                <td><strong><?= htmlspecialchars($e['TIT_EVE_CUR']) ?></strong></td>
-                <td><?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?></td>
-                <td><?= htmlspecialchars($e['NOM_TIPO_EVE']) ?></td>
-                <td>
-                  <?php if ((int)$e['ACTIVO'] === 1): ?>
-                    <span class="badge bg-success">Activo</span>
-                  <?php else: ?>
-                    <span class="badge bg-danger">Inactivo</span>
-                  <?php endif; ?>
-                </td>
-                <td>
-                  <button type="button"
-                          class="btn-edit"
-                          onclick="location.href='editarEvento.php?id=<?= (int)$e['ID_EVE_CUR'] ?>'">
-                    <i class="fas fa-edit"></i> Editar
-                  </button>
-                  <button type="button" class="btn-delete" onclick="eliminarEvento(<?= (int)$e['ID_EVE_CUR'] ?>)">
-                    <i class="fas fa-trash"></i> Eliminar
-                  </button>
-                </td>
-              </tr>
-            <?php endforeach; endif; ?>
-          </tbody>
+<tbody>
+<?php if (empty($eventos)): ?>
+  <tr><td colspan="6" class="text-center py-4 text-muted">No hay eventos registrados aún.</td></tr>
+<?php else: foreach ($eventos as $e):
+  $id = (int)$e['ID_EVE_CUR'];
+  $isFav = isset($favSet[$id]);
+?>
+  <tr data-evento-row="<?= $id ?>">
+    <td class="text-center">
+      <button type="button"
+              class="btn btn-link p-0 btn-fav"
+              aria-label="Marcar favorito"
+              data-id="<?= $id ?>"
+              data-fav="<?= $isFav ? '1':'0' ?>">
+        <!-- fas = lleno, far = contorno -->
+        <i class="fa<?= $isFav ? 's':'r' ?> fa-heart fav-icon<?= $isFav ? ' text-danger':'' ?>"></i>
+      </button>
+    </td>
+    <td><strong><?= htmlspecialchars($e['TIT_EVE_CUR']) ?></strong></td>
+    <td><?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?></td>
+    <td><?= htmlspecialchars($e['NOM_TIPO_EVE']) ?></td>
+    <td>
+      <?php if ((int)$e['ACTIVO'] === 1): ?>
+        <span class="badge bg-success">Activo</span>
+      <?php else: ?>
+        <span class="badge bg-danger">Inactivo</span>
+      <?php endif; ?>
+    </td>
+    <td>
+      <button type="button"
+              class="btn-edit"
+              onclick="location.href='editarEvento.php?id=<?= $id ?>'">
+        <i class="fas fa-edit"></i> Editar
+      </button>
+      <button type="button" class="btn-delete" onclick="eliminarEvento(<?= $id ?>)">
+        <i class="fas fa-trash"></i> Eliminar
+      </button>
+    </td>
+  </tr>
+<?php endforeach; endif; ?>
+</tbody>
         </table>
       </div>
     </div>
@@ -454,6 +475,47 @@ async function eliminarEvento(id){
     btns.forEach(b => b.disabled = false);
   }
 }
+
+// Manejar click en botones de favorito
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.btn-fav');
+  if (!btn) return;
+
+  const id = btn.getAttribute('data-id');
+  const icon = btn.querySelector('.fav-icon');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('toggle_favorito.php', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: new URLSearchParams({ id })
+    });
+    const json = await res.json();
+
+    if (!json.success) {
+      alert(json.message || 'No se pudo actualizar el favorito');
+      btn.disabled = false;
+      return;
+    }
+
+    if (json.favorito) {
+      icon.classList.remove('far');
+      icon.classList.add('fas', 'text-danger');
+      btn.setAttribute('data-fav', '1');
+    } else {
+      icon.classList.remove('fas', 'text-danger');
+      icon.classList.add('far');
+      btn.setAttribute('data-fav', '0');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Error de red al marcar favorito');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 </script>
 
 </body>
