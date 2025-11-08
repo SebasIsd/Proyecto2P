@@ -354,7 +354,7 @@ $eventos = $conn->query("
   <div class="page-header">
     <i class="fas fa-calendar-check"></i>
     <h1>Gestionar Eventos</h1>
-    <a href="eventoNuevo.php" class="btn-primary">
+    <a href="n.php" class="btn-primary">
       <i class="fas fa-plus"></i> Nuevo Evento
     </a>
   </div>

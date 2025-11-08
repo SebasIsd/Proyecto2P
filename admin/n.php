@@ -40,13 +40,229 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>Admin · Crear Evento</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<meta charset="utf-8">
+<title>Admin · Crear Evento</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
+
+    :root {
+            --primary: #a30000;
+            --primary-hover: #d51313;
+            --primary-light: #ffebeb;
+            --gray-light: #f8f9fa;
+            --gray: #6c757d;
+            --dark: #333;
+            --shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            --radius: 16px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 260px;
+            height: 100vh;
+            background: var(--primary);
+            color: white;
+            padding: 25px 0;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+
+        .sidebar .logo {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 25px;
+        }
+
+        .sidebar .logo img {
+            width: 130px;
+            border-radius: 50%;
+            border: 5px solid rgba(255,255,255,0.25);
+            transition: all 0.3s;
+        }
+
+        .sidebar .logo img:hover {
+            transform: scale(1.08);
+            border-color: white;
+        }
+
+        .sidebar a {
+            color: rgba(255,255,255,0.9);
+            padding: 16px 28px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar a i {
+            width: 24px;
+            margin-right: 14px;
+            font-size: 1.15rem;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: var(--primary-hover);
+            color: white;
+            border-left-color: white;
+            padding-left: 32px;
+        }
+
+        .content {
+            margin-left: 260px;
+            padding: 40px;
+        }
+
+        .page-header {
+            background: white;
+            padding: 25px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: space-between;
+        }
+
+        .page-header i {
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-header-custom {
+            background: var(--primary);
+            color: white;
+            padding: 18px 28px;
+            font-weight: 600;
+            font-size: 1.15rem;
+        }
+
+        .table {
+            margin: 0;
+        }
+
+        .table thead {
+            background: var(--primary);
+            color: white;
+        }
+
+        .table thead th {
+            border: none;
+            font-weight: 600;
+            padding: 16px;
+            font-size: 0.95rem;
+        }
+
+        .table tbody td {
+            padding: 16px;
+            vertical-align: middle;
+            border-color: #eee;
+        }
+
+        .table tbody tr:hover {
+            background: var(--primary-light);
+        }
+
+        .badge {
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+       .btn-primary {
+    background: var(--primary);
+    color: white !important;
+    border: none;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 12px 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(163, 0, 0, 0.25);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-primary i {
+    font-size: 1rem;
+    background: white;
+    color: var(--primary);
+    border-radius: 50%;
+    padding: 4px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 6px 18px rgba(163, 0, 0, 0.35);
+    transform: translateY(-2px);
+}
+
+.btn-primary:hover i {
+    background: white;
+    color: var(--primary-hover);
+}
+    
+        @media (max-width: 768px) {
+            .sidebar { width: 80px; }
+            .sidebar .logo img { width: 50px; }
+            .sidebar a span { display: none; }
+            .sidebar a { padding: 16px; justify-content: center; }
+            .sidebar a:hover { padding-left: 16px; }
+            .content { margin-left: 80px; padding: 20px; }
+        }
+
     body {
       background: #f8f6f3;
       font-family: 'Poppins', sans-serif;
@@ -130,6 +346,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </style>
 </head>
 <body>
+
+  <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <img src="../images/favico.png" alt="Logo UTA">
+        </div>
+        <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
+        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
+        <a href="#"><i class="fas fa-chart-bar me-2"></i> Estadísticas</a>
+        <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
+        <a href="#"><i class="fas fa-cog me-2"></i> Configuraciones</a>
+        <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
+    </div>
+
+     <main class="content">
   <div class="container py-5">
     <div class="brand-header">
       <h2><i class="bi bi-calendar2-plus me-2"></i>Crear nuevo evento o curso</h2>
@@ -360,7 +593,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 </div>
-
+</main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // Esperar a que el DOM esté listo
