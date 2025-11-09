@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $rol = strtolower($fila['NOM_ROL']);
             if ($rol === 'administrador') {
                 header("Location: ../admin/admin_inicio.php");
-            } elseif ($rol === 'estudiante' || $rol === 'docente') {
+            } elseif ($rol === 'asistente') {
                 header("Location: ../usuarios/usuarios_inicio.php");
             } else {
                 header("Location: ../index.php?error=rol_no_valido&modal=login");
