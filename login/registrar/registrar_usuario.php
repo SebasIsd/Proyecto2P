@@ -57,6 +57,15 @@ if (!preg_match("/^\d{10}$/", $cedula)) {
     echo json_encode(["status" => "error", "msg" => "La cédula debe tener exactamente 10 dígitos."]);
     exit;
 }
+$fecha_naci = new DateTime($fechaNac);
+$hoy = new DateTime();
+$edad = $hoy->diff($fecha_naci)->y;
+
+if ($edad < 17) {
+    echo json_encode(["status" => "error", "msg" => "Debes tener al menos 17 años para registrarte."]);
+    exit;
+}
+
 
 // Verificar si la cédula ya existe
 $stmt = $conn->prepare("SELECT CED_USU FROM USUARIOS WHERE CED_USU = ?");
