@@ -25,7 +25,7 @@
     <input id="cedula" name="cedula" type="text" maxlength="10"
            placeholder="ej :1850098433" required
            oninput="soloNumeros(this)" onblur="validarCedula(this)">
-    <small id="msgCedula">Ingrese 10 dígitos sin guiones.Sin cedula valida no se habilitan mas campos</small>
+    <small id="msgCedula">Ingrese 10 dígitos sin guiones.</small>
   </div>
 </div>
 
@@ -100,10 +100,42 @@
 </div>
 
 
-<div class="field">
-<label for="password">Contraseña *</label>
-<input id="password" name="password" type="password" minlength="8" maxlength="64" placeholder="Mínimo 8 caracteres" required>
+
+
+
+
+<div class="field" style="position: relative;">
+  <label for="password">Contraseña *</label>
+  <input id="password" name="password" type="password" minlength="8" maxlength="64" placeholder="Mínimo 8 caracteres" required
+         style="padding-right: 40px;">
+  <span id="togglePassword" 
+        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #555;">
+    <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+      <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 
+               5.5 8 5.5S16 8 16 8zM1.173 
+               8a13.133 13.133 0 0 1 1.66-2.043C4.12 
+               4.668 5.88 3.5 8 3.5c2.12 0 
+               3.879 1.168 5.168 2.457A13.133 
+               13.133 0 0 1 14.828 8a13.133 
+               13.133 0 0 1-1.66 2.043C11.879 
+               11.332 10.12 12.5 8 12.5c-2.12 
+               0-3.879-1.168-5.168-2.457A13.133 
+               13.133 0 0 1 1.172 8z"/>
+      <path d="M8 5.5a2.5 2.5 0 1 0 
+               0 5 2.5 2.5 0 0 0 0-5zM8 
+               4a4 4 0 1 1 0 8A4 4 0 0 1 8 4z"/>
+    </svg>
+  </span>
 </div>
+
+
+
+
+
+
+
+
+
 </div>
 
 </div>
@@ -622,6 +654,36 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       console.error("Error:", error);
     });
+  });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.getElementById("togglePassword");
+  const input = document.getElementById("password");
+  const icon = document.getElementById("eyeIcon");
+
+  toggle.addEventListener("click", () => {
+    const tipo = input.type === "password" ? "text" : "password";
+    input.type = tipo;
+
+    // Cambia entre ojo abierto y cerrado
+    icon.innerHTML = tipo === "password"
+      ? `<path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 
+               5.5 8 5.5S16 8 16 8zM1.173 
+               8a13.133 13.133 0 0 1 1.66-2.043C4.12 
+               4.668 5.88 3.5 8 3.5c2.12 0 
+               3.879 1.168 5.168 2.457A13.133 
+               13.133 0 0 1 14.828 8a13.133 
+               13.133 0 0 1-1.66 2.043C11.879 
+               11.332 10.12 12.5 8 12.5c-2.12 
+               0-3.879-1.168-5.168-2.457A13.133 
+               13.133 0 0 1 1.172 8z"/>
+         <path d="M8 5.5a2.5 2.5 0 1 0 
+               0 5 2.5 2.5 0 0 0 0-5zM8 
+               4a4 4 0 1 1 0 8A4 4 0 0 1 8 4z"/>`
+      : `<path d="M13.359 11.238l1.357 1.357a.5.5 0 0 1-.708.708l-1.335-1.336C11.708 12.582 9.936 13.5 8 13.5c-5 0-8-5.5-8-5.5a15.007 15.007 0 0 1 2.592-2.855L.646 3.354a.5.5 0 1 1 .708-.708l12 12zM11.297 9.176l-1.424-1.424A2.5 2.5 0 0 0 6.248 8c0 .347.07.678.197.979l-1.41-1.41a4.01 4.01 0 0 1 6.262 1.607z"/>`;
   });
 });
 </script>
