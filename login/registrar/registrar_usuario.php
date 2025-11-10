@@ -11,6 +11,25 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit;
 }
 
+
+// Buscar el ID del rol "Asistente" en la base de datos
+$rol = null;
+$nombreRol = 'Asistente';
+
+$stmt = $conn->prepare("SELECT ID_ROL FROM roles WHERE NOM_ROL = ?");
+$stmt->bind_param("s", $nombreRol);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($fila = $result->fetch_assoc()) {
+    $rol = $fila['ID_ROL'];
+} else {
+    echo json_encode(["status" => "error", "msg" => "No se encontró el rol 'Asistente' en la base de datos."]);
+    exit;
+}
+$stmt->close();
+
+
 // Capturar los valores enviados
 $cedula    = trim($_POST["cedula"] ?? "");
 $nomPri    = trim($_POST["primer_nombre"] ?? "");
@@ -22,7 +41,6 @@ $password  = trim($_POST["password"] ?? "");
 $telefono  = trim($_POST["telefono"] ?? "");
 $direccion = trim($_POST["direccion"] ?? "");
 $fechaNac  = trim($_POST["fecha_nac"] ?? "");
-$rol       = intval($_POST["rol"] ?? 0);
 $carrera   = intval($_POST["carrera"] ?? 0);
 
 // Validar campos obligatorios
@@ -96,8 +114,8 @@ $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
 // Insertar nuevo usuario
 $sql = "INSERT INTO USUARIOS 
-        (CED_USU, NOM_PRI_USU, NOM_SEG_USU, APE_PRI_USU, APE_SEG_USU, COR_USU, PAS_USU, TEL_USU, DIR_USU, FEC_NAC_USU, ID_ROL_USU, ID_CARRERA_USU)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        (CED_USU, NOM_PRI_USU, NOM_SEG_USU, APE_PRI_USU, APE_SEG_USU, COR_USU, PAS_USU, TEL_USU, DIR_USU, FEC_NAC_USU, ID_ROL_USU, ID_CARRERA_USU, ACTIVO)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param(

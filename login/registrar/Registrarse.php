@@ -65,12 +65,8 @@
 
 </div>
 
-<div class="field">
-  <label for="rol">Rol</label>
-  <select id="rol" name="rol" required>
-</select>
 </div>
- </div>
+
 
 </fieldset>
 <div class="row">
