@@ -6,9 +6,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $correo = trim($_POST["usuario"]);
     $clave = trim($_POST["clave"]);
 
+    // Evitar inyección SQL
     $correo = $conn->real_escape_string($correo);
 
-    $sql = "SELECT u.CED_USU, u.COR_USU, u.PAS_USU, u.ID_ROL_USU, r.NOM_ROL
+    $sql = "SELECT u.CED_USU, u.COR_USU, u.PAS_USU, u.ID_ROL_USU, u.ACTIVO, r.NOM_ROL
             FROM usuarios u
             INNER JOIN roles r ON u.ID_ROL_USU = r.ID_ROL
             WHERE u.COR_USU = '$correo'";
@@ -18,7 +19,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($resultado && $resultado->num_rows > 0) {
         $fila = $resultado->fetch_assoc();
 
-        // validar hash
+        // ✅ Verificar si el usuario está activo
+        if ($fila['ACTIVO'] != 1) {
+            header("Location: ../index.php?error=usuario_no_verificado&modal=login");
+            exit();
+        }
+
+        // ✅ Verificar contraseña con hash
         if (password_verify($clave, $fila['PAS_USU'])) {
             $_SESSION['cedula'] = $fila['CED_USU'];
             $_SESSION['correo'] = $fila['COR_USU'];
