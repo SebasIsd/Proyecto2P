@@ -1338,6 +1338,8 @@ require './home/autoridades.php';
               if ($_GET['error'] == 'usuario_no_encontrado') echo "⚠️ Usuario no encontrado.";
               elseif ($_GET['error'] == 'contraseña_incorrecta') echo "⚠️ Contraseña incorrecta.";
               elseif ($_GET['error'] == 'rol_no_valido') echo "⚠️ Rol no válido.";
+              elseif ($_GET['error'] == 'usuario_no_verificado') echo "⚠️ El usuario aún no está verificado por el administrador.";
+
               ?>
             </div>
           <?php endif; ?>
