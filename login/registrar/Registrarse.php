@@ -2,23 +2,26 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Formulario - Universidad Técnica de Ambato</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="../../css/estiloRegistrarse.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Registro de Usuario - UTA</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="../../css/estiloRegistrarse.css">
 </head>
 <body>
 <main class="container">
 <header class="header">
-<h1>Registro - Universidad Técnica de Ambato</h1>
+<h1><i class="fas fa-graduation-cap me-2"></i> Registrate! - Crea aqui tu usuario...</h1>>
 </header>
 
 
 
 <form id="formRegistro" class="form" action="registrar_usuario.php" method="post" autocomplete="on">
 <fieldset>
-<legend>Datos personales</legend>
-
+<legend><i class="fas fa-user-circle me-2"></i> Datos Personales</legend>
+<hr>
 <div class="row">
   <div class="field">
     <label for="cedula">Cédula *</label>
@@ -30,8 +33,6 @@
 </div>
 
 <span class="section-title">Nombres</span>
-<br>
-<br>
 <div class="row">
   <div class="field">
     
@@ -42,9 +43,7 @@
     <input id="segundo_nombre" name="segundo_nombre" type="text" placeholder="Segundo nombre" required>
   </div>
 </div>
-  <span class="section-title">Apellidos</span>
-   <br>
-<br>
+  <span class="section-title">Apellidos</span>  
 <div class="row">
 <div class="field">
  
@@ -60,15 +59,15 @@
 
 <div class="row">
 <div class="field">
-<label for="fecha_nac">Fecha de Nacimiento</label>
+<span for="fecha_nac" class="section-title">Fecha de Nacimiento</span>
 <input id="fecha_nac" name="fecha_nac" type="date" required max="">
 
 </div>
 
 </div>
-
-
 </fieldset>
+<legend><i class="fas fa-map-marker-alt me-2"></i> Contacto y Ubicación</legend>
+<hr>
 <div class="row">
   <div class="field">
     <label for="telefono">Teléfono *</label>
@@ -84,10 +83,10 @@
   </div>
 </div>
 
-
+<br><br>
 <fieldset>
-<legend>Acceso y contacto</legend>
-
+<legend><i class="fa-solid fa-eye"></i> Credenciales</legend>
+<hr>
 
 <div class="row">
 <div class="field">
@@ -105,7 +104,7 @@
   <input id="password" name="password" type="password" minlength="8" maxlength="64" placeholder="Mínimo 8 caracteres" required
          style="padding-right: 40px;">
   <span id="togglePassword" 
-        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #555;">
+        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #d81616ff;">
     <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
       <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 
                5.5 8 5.5S16 8 16 8zM1.173 
@@ -148,21 +147,23 @@
 
 
 </fieldset>
-
-
-<div class="actions">
-<button type="submit" class="btn primary">Registrar</button>
-<button type="button" id="btnVolver" class="btn" onclick="window.location.href='../../index.php'">Volver al inicio</button>
-</div>
-
-
-<p class="note">Al enviar aceptas la política de manejo de datos de la Universidad Técnica de Ambato.</p>
-
+        <div class="actions d-flex justify-content-end gap-3 pt-3 border-top">
+            <a href="../../index.php" class="btn btn-secondary">
+                <i class="fas fa-times me-2"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary primary">
+                <i class="fas fa-user-plus me-2"></i> Registrarme
+            </button>
+        </div>
+        
+        <p class="footer">
+            ¿Ya tienes cuenta? <a href="../../index.php">Iniciar Sesión</a>
+        </p>
 </form>
 
 
 <footer class="footer">
-<small>Universidad Técnica de Ambato • Facultad de Ingeniería</small>
+<small>Desarrollado por SvJ Tech - Registrate Aquí</small>
 </footer>
 </main>
 
