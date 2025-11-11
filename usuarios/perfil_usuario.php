@@ -326,13 +326,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="usuarios_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
-        <a href="#"><i class="fas fa-calendar-alt me-2"></i> Mis Eventos</a>
-        <a href="#"><i class="fas fa-search me-2"></i> Buscar Eventos</a>
-        <a href="#"><i class="fas fa-user-edit me-2"></i> Inscribirme</a>
-        <a href="perfil_usuario.php"><i class="fas fa-user me-2"></i> Perfil</a>
-        <a href="#"><i class="fas fa-chart-line me-2"></i> Mis Estadísticas</a>
-        <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
+        <a href="usuarios_inicio.php"><i class="fas fa-home"></i> <span>Inicio</span></a>
+        <a href="mis_eventos.php"><i class="fas fa-calendar-alt"></i> <span>Mis Eventos</span></a>
+        <a href="buscar_eventos.php"><i class="fas fa-search"></i> <span>Buscar Eventos</span></a>
+        <a href="perfil_usuario.php" class="active"><i class="fas fa-user"></i> <span>Perfil</span></a>
+        <a href="../Login/logout.php"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a>
     </div>
 
     <!-- Contenido -->

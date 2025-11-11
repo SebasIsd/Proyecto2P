@@ -1,78 +1,38 @@
 <?php
 session_start();
-
-// Verificar que haya una sesión activa y que sea docente o estudiante
-if (!isset($_SESSION['correo']) || 
-    !(strtolower($_SESSION['rol_nombre']) === 'docente' || strtolower($_SESSION['rol_nombre']) === 'estudiante')) {
+if (!isset($_SESSION['cedula'])) {
     header("Location: ../index.php");
     exit();
 }
 
-require_once __DIR__ . '/../includes/conexion.php'; // Conexión a la BD
+require_once '../includes/conexion.php';
 
+$id = $_GET['id'] ?? 0;
 $cedula = $_SESSION['cedula'];
 
-// Obtener datos reales de la BD
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM INSCRIPCIONES WHERE CED_USU = ?");
-$stmt->bind_param("s", $cedula);
-$stmt->execute();
-$misEventos = $stmt->get_result()->fetch_assoc()['total'];
-
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM INSCRIPCIONES WHERE CED_USU = ? AND ESTADO_INS = 'Inscrito'");
-$stmt->bind_param("s", $cedula);
-$stmt->execute();
-$inscripcionesAprobadas = $stmt->get_result()->fetch_assoc()['total'];
-
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM INSCRIPCIONES WHERE CED_USU = ? AND ESTADO_INS = 'Preinscrito'");
-$stmt->bind_param("s", $cedula);
-$stmt->execute();
-$eventosPendientes = $stmt->get_result()->fetch_assoc()['total'];
-
-
-// --- INICIO DEL CÓDIGO AÑADIDO ---
-// RECORDATORIOS DE NOTA MÍNIMA PENDIENTE (Eventos que requieren una calificación para aprobar)
 $stmt = $conn->prepare("
-    SELECT DISTINCT 
-        i.ID_INS,
-        e.TIT_EVE_CUR,
-        req.VALOR_MINIMO_APROBATORIO,
-        r.NOM_REQ,
-        e.FEC_FIN_EVE_CUR
-    FROM 
-        INSCRIPCIONES i
-    INNER JOIN 
-        EVENTOS_CURSOS e ON i.ID_EVE_CUR = e.ID_EVE_CUR
-    INNER JOIN 
-        EVENTOS_REQUISITOS req ON e.ID_EVE_CUR = req.ID_EVE_CUR /* Requisito de Nota */
-    LEFT JOIN
-        REQUISITOS r ON req.ID_REQ = r.ID_REQ
-    WHERE 
-        i.CED_USU = ? 
-        AND i.ESTADO_INS IN ('Inscrito', 'Preinscrito') 
-        AND req.VALOR_MINIMO_APROBATORIO IS NOT NULL /* Solo si requiere nota de aprobación */
-        AND i.ESTADO_INS != 'Completado' /* Excluir eventos ya finalizados/aprobados */
+    SELECT e.*, t.NOM_TIPO_EVE,
+           (SELECT COUNT(*) FROM INSCRIPCIONES WHERE ID_EVE_CUR = e.ID_EVE_CUR AND CED_USU = ?) AS inscrito
+    FROM EVENTOS_CURSOS e
+    JOIN TIPOS_EVENTO t ON e.ID_TIPO_EVE = t.ID_TIPO_EVE
+    WHERE e.ID_EVE_CUR = ? AND e.ACTIVO = 1
 ");
-$stmt->bind_param("s", $cedula);
+$stmt->bind_param("si", $cedula, $id);
 $stmt->execute();
-$recordatoriosNota = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-// --- FIN DEL CÓDIGO AÑADIDO ---
+$evento = $stmt->get_result()->fetch_assoc();
 
+if (!$evento) {
+    header("Location: buscar_eventos.php");
+    exit();
+}
 
-// Participaciones por mes (últimos 6 meses)
-$participacionesPorMes = [];
-for ($i = 5; $i >= 0; $i--) {
-    $mes = date('Y-m', strtotime("-$i months"));
-    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM INSCRIPCIONES i 
-                           INNER JOIN EVENTOS_CURSOS e ON i.ID_EVE_CUR = e.ID_EVE_CUR
-                           WHERE i.CED_USU = ? AND DATE_FORMAT(e.FEC_INI_EVE_CUR, '%Y-%m') = ?");
-    $stmt->bind_param("ss", $cedula, $mes);
-    $stmt->execute();
-    $participacionesPorMes[] = $stmt->get_result()->fetch_assoc()['count'];
-}
-$mesesLabels = [];
-for ($i = 5; $i >= 0; $i--) {
-    $mesesLabels[] = date('M', strtotime("-$i months"));
-}
+// Requisitos
+$requisitos = $conn->query("
+    SELECT r.ID_REQ, r.NOM_REQ, r.TIPO
+    FROM EVENTOS_REQUISITOS er
+    JOIN REQUISITOS r ON er.ID_REQ = r.ID_REQ
+    WHERE er.ID_EVE_CUR = $id
+")->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -80,11 +40,11 @@ for ($i = 5; $i >= 0; $i--) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Usuario - UTA</title>
+    <title><?= htmlspecialchars($evento['TIT_EVE_CUR']) ?> - UTA</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Mismo CSS que antes */
         :root {
             --primary: #a30000;
             --primary-hover: #d51313;
@@ -345,14 +305,21 @@ for ($i = 5; $i >= 0; $i--) {
             .sidebar a:hover { padding-left: 16px; }
             .content { margin-left: 80px; padding: 20px; }
         }
+        .content { margin-left: 260px; padding: 40px; }
+        .page-header { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 25px; margin-bottom: 30px; }
+        .card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); }
+        .btn-inscribir { background: var(--primary); color: white; padding: 12px 30px; border-radius: 12px; font-weight: 600; 
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-inscribir:hover { background: var(--primary-hover); }
     </style>
 </head>
 <body>
+
     <div class="sidebar">
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="usuarios_inicio.php" class="active"><i class="fas fa-home"></i> <span>Inicio</span></a>
+        <a href="usuarios_inicio.php"><i class="fas fa-home"></i> <span>Inicio</span></a>
         <a href="mis_eventos.php"><i class="fas fa-calendar-alt"></i> <span>Mis Eventos</span></a>
         <a href="buscar_eventos.php"><i class="fas fa-search"></i> <span>Buscar Eventos</span></a>
         <a href="perfil_usuario.php"><i class="fas fa-user"></i> <span>Perfil</span></a>
@@ -360,108 +327,57 @@ for ($i = 5; $i >= 0; $i--) {
     </div>
 
     <div class="content">
-        <h1 class="mb-4">Dashboard Usuario</h1>
-        <p>Bienvenido, <?= ucfirst($_SESSION['rol_nombre']) ?> (<?= $_SESSION['correo'] ?>)</p>
-
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Mis Eventos</div>
-                    <div class="card-body text-center">
-                        <h2><?= $misEventos ?></h2>
-                        <p>Eventos en los que participas.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Inscripciones Aprobadas</div>
-                    <div class="card-body text-center">
-                        <h2><?= $inscripcionesAprobadas ?></h2>
-                        <p>Inscripciones confirmadas.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Eventos Pendientes</div>
-                    <div class="card-body text-center">
-                        <h2><?= $eventosPendientes ?></h2>
-                        <p>Eventos por confirmar.</p>
-                    </div>
-                </div>
-            </div>
+        <div class="page-header">
+            <i class="fas fa-info-circle"></i>
+            <h1>Detalle del Evento</h1>
         </div>
 
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header-custom" style="background-color: #ffc107; color: #333;">
-                        <i class="fas fa-exclamation-triangle"></i> Recordatorios de Aprobación (Nota Mínima)
+        <div class="card">
+            <div class="card-header-custom"><?= htmlspecialchars($evento['NOM_TIPO_EVE']) ?></div>
+            <div class="card-body p-4">
+                <h3><?= htmlspecialchars($evento['TIT_EVE_CUR']) ?></h3>
+                <p class="text-muted"><?= nl2br(htmlspecialchars($evento['DES_EVE_CUR'])) ?></p>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <p><strong>Fecha:</strong> <?= date('d/m/Y', strtotime($evento['FEC_INI_EVE_CUR'])) ?> 
+                            <?= $evento['FEC_FIN_EVE_CUR'] ? ' al ' . date('d/m/Y', strtotime($evento['FEC_FIN_EVE_CUR'])) : '' ?>
+                        </p>
+                        <p><strong>Lugar:</strong> <?= htmlspecialchars($evento['LUGAR']) ?></p>
+                        <p><strong>Cupos:</strong> <?= $evento['CUPOS_DISPONIBLES'] ?> / <?= $evento['CAPACIDAD_MAXIMA'] ?></p>
                     </div>
-                    <div class="card-body">
-                        <?php if (count($recordatoriosNota) > 0): ?>
-                            <ul class="list-group list-group-flush">
-                                <?php foreach ($recordatoriosNota as $recordatorio): ?>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fas fa-certificate text-warning me-2"></i>
-                                            Para el evento <strong><?= htmlspecialchars($recordatorio['TIT_EVE_CUR']) ?></strong>, debes obtener
-                                            una calificación mínima de <strong><?= number_format($recordatorio['VALOR_MINIMO_APROBATORIO'], 2) ?></strong>
-                                            en el requisito "<?= htmlspecialchars($recordatorio['NOM_REQ']) ?>".
-                                        </div>
-                                        <span class="badge bg-warning text-dark p-2">
-                                            ¡Pendiente de Nota!
-                                        </span>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php else: ?>
-                            <div class="alert alert-info text-center" role="alert">
-                                <i class="fas fa-info-circle me-2"></i> Actualmente, no tienes eventos inscritos que requieran una nota de aprobación mínima.
-                            </div>
-                        <?php endif; ?>
+                    <div class="col-md-6">
+                        <p><strong>Modalidad:</strong> <?= $evento['MOD_EVE_CUR'] == 'Pagado' ? 'Pagado ($' . $evento['COS_EVE_CUR'] . ')' : 'Gratis' ?></p>
+                        <p><strong>Horas:</strong> <?= $evento['HORAS_TOTALES'] ?? 'No especificado' ?></p>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">Participaciones por Mes</div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="participacionesChart"></canvas>
-                        </div>
-                    </div>
+
+                <?php if (!empty($requisitos)): ?>
+                    <hr>
+                    <h5>Requisitos para inscribirse:</h5>
+                    <ul>
+                        <?php foreach ($requisitos as $r): ?>
+                            <li><?= htmlspecialchars($r['NOM_REQ']) ?> (<?= $r['TIPO'] ?>)</li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+
+                <div class="mt-4">
+                    <?php if ($evento['inscrito']): ?>
+                        <button class="btn btn-success" disabled>
+                            <i class="fas fa-check"></i> Ya estás inscrito
+                        </button>
+                    <?php elseif ($evento['CUPOS_DISPONIBLES'] > 0): ?>
+                        <a href="inscribirme.php?id=<?= $id ?>" class="btn-inscribir">
+                            <i class="fas fa-user-plus"></i> Inscribirme
+                        </a>
+                    <?php else: ?>
+                        <button class="btn btn-danger" disabled>Cupos agotados</button>
+                    <?php endif; ?>
+                    <a href="buscar_eventos.php" class="btn btn-secondary ms-2">Volver</a>
                 </div>
             </div>
         </div>
     </div>
-
-    <script>
-        // Gráfico con Chart.js
-        const ctx = document.getElementById('participacionesChart').getContext('2d');
-        const participacionesChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: <?= json_encode($mesesLabels) ?>,
-                datasets: [{
-                    label: 'Participaciones',
-                    data: <?= json_encode($participacionesPorMes) ?>,
-                    backgroundColor: 'rgba(163, 0, 0, 0.2)', /* Rojo con opacidad */
-                    borderColor: 'rgba(163, 0, 0, 1)',
-                    borderWidth: 2,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    </script>
 </body>
 </html>
