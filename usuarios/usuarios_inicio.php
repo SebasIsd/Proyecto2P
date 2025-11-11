@@ -1,4 +1,3 @@
-<!-- Actualización para usuarios_inicio.php: Dashboard para Usuarios Normales con estilos ajustados al tema rojo -->
 <?php
 session_start();
 
@@ -28,6 +27,36 @@ $stmt = $conn->prepare("SELECT COUNT(*) as total FROM INSCRIPCIONES WHERE CED_US
 $stmt->bind_param("s", $cedula);
 $stmt->execute();
 $eventosPendientes = $stmt->get_result()->fetch_assoc()['total'];
+
+
+// --- INICIO DEL CÓDIGO AÑADIDO ---
+// RECORDATORIOS DE NOTA MÍNIMA PENDIENTE (Eventos que requieren una calificación para aprobar)
+$stmt = $conn->prepare("
+    SELECT DISTINCT 
+        i.ID_INS,
+        e.TIT_EVE_CUR,
+        req.VALOR_MINIMO_APROBATORIO,
+        r.NOM_REQ,
+        e.FEC_FIN_EVE_CUR
+    FROM 
+        INSCRIPCIONES i
+    INNER JOIN 
+        EVENTOS_CURSOS e ON i.ID_EVE_CUR = e.ID_EVE_CUR
+    INNER JOIN 
+        EVENTOS_REQUISITOS req ON e.ID_EVE_CUR = req.ID_EVE_CUR /* Requisito de Nota */
+    LEFT JOIN
+        REQUISITOS r ON req.ID_REQ = r.ID_REQ
+    WHERE 
+        i.CED_USU = ? 
+        AND i.ESTADO_INS IN ('Inscrito', 'Preinscrito') 
+        AND req.VALOR_MINIMO_APROBATORIO IS NOT NULL /* Solo si requiere nota de aprobación */
+        AND i.ESTADO_INS != 'Completado' /* Excluir eventos ya finalizados/aprobados */
+");
+$stmt->bind_param("s", $cedula);
+$stmt->execute();
+$recordatoriosNota = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+// --- FIN DEL CÓDIGO AÑADIDO ---
+
 
 // Participaciones por mes (últimos 6 meses)
 $participacionesPorMes = [];
@@ -319,7 +348,6 @@ for ($i = 5; $i >= 0; $i--) {
     </style>
 </head>
 <body>
-    <!-- Sidebar Navbar Lateral Izquierdo -->
     <div class="sidebar">
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
@@ -331,12 +359,10 @@ for ($i = 5; $i >= 0; $i--) {
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a>
     </div>
 
-    <!-- Contenido Principal -->
     <div class="content">
         <h1 class="mb-4">Dashboard Usuario</h1>
         <p>Bienvenido, <?= ucfirst($_SESSION['rol_nombre']) ?> (<?= $_SESSION['correo'] ?>)</p>
 
-        <!-- Tarjetas de Estadísticas Personales -->
         <div class="row mb-4">
             <div class="col-md-4">
                 <div class="card">
@@ -367,7 +393,38 @@ for ($i = 5; $i >= 0; $i--) {
             </div>
         </div>
 
-        <!-- Gráfico de Participaciones por Mes -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header-custom" style="background-color: #ffc107; color: #333;">
+                        <i class="fas fa-exclamation-triangle"></i> Recordatorios de Aprobación (Nota Mínima)
+                    </div>
+                    <div class="card-body">
+                        <?php if (count($recordatoriosNota) > 0): ?>
+                            <ul class="list-group list-group-flush">
+                                <?php foreach ($recordatoriosNota as $recordatorio): ?>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-certificate text-warning me-2"></i>
+                                            Para el evento <strong><?= htmlspecialchars($recordatorio['TIT_EVE_CUR']) ?></strong>, debes obtener
+                                            una calificación mínima de <strong><?= number_format($recordatorio['VALOR_MINIMO_APROBATORIO'], 2) ?></strong>
+                                            en el requisito "<?= htmlspecialchars($recordatorio['NOM_REQ']) ?>".
+                                        </div>
+                                        <span class="badge bg-warning text-dark p-2">
+                                            ¡Pendiente de Nota!
+                                        </span>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php else: ?>
+                            <div class="alert alert-info text-center" role="alert">
+                                <i class="fas fa-info-circle me-2"></i> Actualmente, no tienes eventos inscritos que requieran una nota de aprobación mínima.
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
