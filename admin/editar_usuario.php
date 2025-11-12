@@ -377,9 +377,13 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
                     <h5 class="modal-title"><i class="fas fa-user-edit me-2"></i> Editar Usuario</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form id="formEditar" method="POST" action="actualizar_usuario.php">
+                <form id="formEditarUsuario" method="POST" action="actualizar_usuario.php">
                     <div class="modal-body">
-                        <input type="hidden" name="cedula" id="cedula">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="cedula" class="form-label">Cédula</label>
+                                <input type="text" class="form-control" id="cedula" name="cedula" readonly>
+                            </div>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Primer Nombre *</label>
@@ -408,6 +412,10 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
                             <div class="col-12">
                                 <label class="form-label">Dirección</label>
                                 <textarea class="form-control" name="direccion" id="direccion" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="fec_nac_usu" class="form-label">Fecha de Nacimiento</label>
+                                <input type="date" class="form-control" id="fec_nac_usu" name="fec_nac_usu">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Rol *</label>
@@ -450,21 +458,83 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function cargarUsuario(usuario) {
-            document.getElementById('cedula').value = usuario.CED_USU;
-            document.getElementById('nom_pri').value = usuario.NOM_PRI_USU;
-            document.getElementById('nom_seg').value = usuario.NOM_SEG_USU || '';
-            document.getElementById('ape_pri').value = usuario.APE_PRI_USU;
-            document.getElementById('ape_seg').value = usuario.APE_SEG_USU || '';
-            document.getElementById('correo').value = usuario.COR_USU;
-            document.getElementById('telefono').value = usuario.TEL_USU || '';
-            document.getElementById('direccion').value = usuario.DIR_USU || '';
-            document.getElementById('rol_id').value = usuario.ID_ROL_USU;
-            document.getElementById('carrera_id').value = usuario.ID_CARRERA_USU || '';
-            document.getElementById('activo').checked = usuario.ACTIVO == 1;
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    
+    function cargarUsuario(usuario) {
+        document.getElementById('cedula').value = usuario.CED_USU;
+        document.getElementById('nom_pri').value = usuario.NOM_PRI_USU;
+        document.getElementById('nom_seg').value = usuario.NOM_SEG_USU || '';
+        document.getElementById('ape_pri').value = usuario.APE_PRI_USU;
+        document.getElementById('ape_seg').value = usuario.APE_SEG_USU || '';
+        document.getElementById('correo').value = usuario.COR_USU;
+        document.getElementById('telefono').value = usuario.TEL_USU || '';
+        document.getElementById('direccion').value = usuario.DIR_USU || '';
+        document.getElementById('fec_nac_usu').value = usuario.FEC_NAC_USU || ''; 
+        document.getElementById('rol_id').value = usuario.ID_ROL_USU;
+        document.getElementById('carrera_id').value = usuario.ID_CARRERA_USU || '';
+        document.getElementById('activo').checked = usuario.ACTIVO == 1;
+        
+        document.getElementById('clave').value = '';
+        
+        var myModal = new bootstrap.Modal(document.getElementById('modalEditarUsuario'));
+        myModal.show();
+    }
+
+
+    // Lógica para enviar el formulario por AJAX y recargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('formEditarUsuario');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // 🔑 SOLUCIÓN: DETENER LA REDIRECCIÓN PREDETERMINADA DEL FORMULARIO
+                e.preventDefault(); 
+                
+                const formData = new FormData(this);
+
+                // Asegurar que 'activo' se envía como 1 o 0
+                const activoCheckbox = document.getElementById('activo');
+                if (activoCheckbox.checked) {
+                    formData.set('activo', 1);
+                } else {
+                    formData.set('activo', 0); 
+                }
+                
+                fetch('actualizar_usuario.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    // Verifica que la respuesta sea un OK HTTP (200-299)
+                    if (!response.ok) {
+                        throw new Error('Respuesta de red fallida con estado: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Manejar la respuesta JSON
+                    if (data.success) {
+                        alert("✅ Éxito: " + data.message + " Recargando página...");
+                        // 🔑 RECARGAR LA PÁGINA TRAS EL ÉXITO
+                        window.location.reload(); 
+                        
+                    } else {
+                        alert("❌ Error: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    // Manejar errores de conexión o parsing de JSON
+                    console.error('Error en la petición AJAX:', error);
+                    alert("Hubo un error de conexión con el servidor o en el procesamiento. Revisa la consola.");
+                });
+            });
+        } else {
+            // Esto ayuda a depurar si el ID del formulario está mal
+            console.error('Error: No se encontró el elemento con ID "formEditarUsuario".');
         }
-    </script>
+    });
+
+</script>
 </body>
 </html>
