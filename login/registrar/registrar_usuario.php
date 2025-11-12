@@ -104,23 +104,32 @@ $stmt->close();
 try {
     // 1. Generar Token de Verificación
     $token = bin2hex(random_bytes(32));
-    $expira = (new DateTime())->modify('+1 day')->format('Y-m-d H:i:s'); // Válido por 1 día
+    $token_exp = date('Y-m-d H:i:s', strtotime('+24 hours')); // Válido por 1 día
 
     // 2. Encriptar la contraseña
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
     
     // 3. Modificar el INSERT para incluir el token y ACTIVO = 0
-    $sql = "INSERT INTO USUARIOS 
-            (CED_USU, NOM_PRI_USU, NOM_SEG_USU, APE_PRI_USU, APE_SEG_USU, COR_USU, PAS_USU, TEL_USU, DIR_USU, FEC_NAC_USU, ID_ROL_USU, ID_CARRERA_USU, ACTIVO, VERIFICACION_TOKEN, VERIFICACION_EXPIRA)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)"; // ACTIVO=0
+$sql = "INSERT INTO USUARIOS 
+        (CED_USU, NOM_PRI_USU, NOM_SEG_USU, APE_PRI_USU, APE_SEG_USU, COR_USU, PAS_USU, TEL_USU, DIR_USU, FEC_NAC_USU, ID_ROL_USU, ID_CARRERA_USU, ACTIVO, VERIFICACION_TOKEN, VERIFICACION_EXPIRA) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param(
-        "ssssssssssiisss", // 15 parámetros
-        $cedula, $nomPri, $nomSeg, $apePri, $apeSeg,
-        $correo, $passwordHash, $telefono, $direccion, $fechaNac,
-        $rol, $carrera,
-        $token, $expira // Nuevos valores
+    $stmt->bind_param("ssssssssssiiss", 
+        $cedula, 
+        $nomPri, 
+        $nomSeg, 
+        $apePri, 
+        $apeSeg, 
+        $correo,    
+        $passwordHash, 
+        $telefono, 
+        $direccion, 
+        $fechaNac, 
+        $rol,           // ID_ROL_USU (i)
+        $carrera,       // ID_CARRERA_USU (i)
+        $token,         // VERIFICACION_TOKEN (s)
+        $token_exp      // VERIFICACION_EXPIRA (s) <--- ESTA DEBE SER LA VARIABLE GENERADA
     );
 
     if ($stmt->execute()) {
@@ -146,7 +155,7 @@ try {
         $mail->Subject = 'Verifica tu cuenta - Eventos UTA';
         
         // CAMBIA "https://tusitio.com" por tu dominio real
-        $enlaceVerificacion = "http://localhost/Proyecto2P/login/registrar/verificar.php?token=" . $token;
+        $enlaceVerificacion = "http://localhost/Proyecto2P/login/registrar/verificar.php?token=".$token;
 
         $mail->Body    = "
             <h1>¡Bienvenido a Eventos UTA, $nomPri!</h1>
