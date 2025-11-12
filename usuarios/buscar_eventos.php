@@ -10,12 +10,14 @@ require_once '../includes/conexion.php';
 $cedula = $_SESSION['cedula'];
 
 // Filtros
-$tipo = $_GET['tipo'] ?? '';
-$buscar = trim($_GET['q'] ?? '');
+$tipo = $_GET['tipo'] ?? '';              // Tipo de curso/evento
+$buscar = trim($_GET['q'] ?? '');         // Nombre del evento
+$modalidad = $_GET['modalidad'] ?? '';    // Presencial / Virtual
+$mod_evento = $_GET['mod_evento'] ?? '';  // Gratis / Pagado
 
-// Consulta base
+// Consulta base mejorada
 $sql = "
-    SELECT 
+    SELECT DISTINCT
         e.ID_EVE_CUR,
         e.TIT_EVE_CUR,
         e.DES_EVE_CUR,
@@ -23,29 +25,51 @@ $sql = "
         e.FEC_FIN_EVE_CUR,
         e.MOD_EVE_CUR,
         e.COS_EVE_CUR,
+        e.LUGAR,
         t.NOM_TIPO_EVE,
         e.CUPOS_DISPONIBLES,
         e.CAPACIDAD_MAXIMA,
         (e.CUPOS_DISPONIBLES > 0) AS tiene_cupos
     FROM EVENTOS_CURSOS e
     JOIN TIPOS_EVENTO t ON e.ID_TIPO_EVE = t.ID_TIPO_EVE
+    LEFT JOIN EVENTOS_CARRERAS ec ON e.ID_EVE_CUR = ec.ID_EVE_CUR
+    JOIN USUARIOS u ON u.CED_USU = ?
     WHERE e.ACTIVO = 1
       AND e.FEC_FIN_EVE_CUR >= CURDATE()
+      AND (ec.ID_CARRERA = u.ID_CARRERA_USU OR ec.ID_CARRERA IS NULL)
 ";
 
-$params = [];
-$types = '';
+$params = [$cedula];
+$types = 's';
 
-if ($tipo) {
-    $sql .= " AND e.ID_TIPO_EVE = ?";
-    $params[] = $tipo;
-    $types .= 'i';
-}
+// 🔍 Filtro por nombre
 if ($buscar) {
     $sql .= " AND e.TIT_EVE_CUR LIKE ?";
     $params[] = "%$buscar%";
     $types .= 's';
 }
+
+// 💰 Filtro por tipo de evento (Gratis/Pagado)
+if ($mod_evento && in_array($mod_evento, ['Gratis', 'Pagado'])) {
+    $sql .= " AND e.MOD_EVE_CUR = ?";
+    $params[] = $mod_evento;
+    $types .= 's';
+}
+
+// 📘 Filtro por tipo de curso/evento
+if ($tipo) {
+    $sql .= " AND e.ID_TIPO_EVE = ?";
+    $params[] = $tipo;
+    $types .= 'i';
+}
+
+// 🧑‍🏫 Filtro por modalidad (si aplica)
+if ($modalidad && in_array($modalidad, ['Presencial', 'Virtual'])) {
+    $sql .= " AND e.LUGAR LIKE ?";
+    $params[] = "%$modalidad%";
+    $types .= 's';
+}
+
 
 $sql .= " ORDER BY e.FEC_INI_EVE_CUR ASC";
 
@@ -54,9 +78,10 @@ if ($params) $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $eventos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Tipos para filtro
+// Tipos de evento (para el select)
 $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER BY NOM_TIPO_EVE")->fetch_all(MYSQLI_ASSOC);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -67,191 +92,277 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #a30000;
-            --primary-hover: #d51313;
-            --primary-light: #ffebeb;
-            --gray-light: #f8f9fa;
-            --gray: #6c757d;
-            --dark: #333;
-            --shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-            --radius: 16px;
+    :root {
+        --primary: #a30000;
+        --primary-hover: #d51313;
+        --primary-light: #ffebeb;
+        --gray-light: #f8f9fa;
+        --gray: #6c757d;
+        --dark: #333;
+        --shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        --radius: 16px;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+        color: var(--dark);
+        min-height: 100vh;
+    }
+
+    /* --- SIDEBAR --- */
+    .sidebar {
+        position: fixed;
+        top: 0; left: 0;
+        width: 260px;
+        height: 100vh;
+        background: var(--primary);
+        color: white;
+        padding: 25px 0;
+        box-shadow: 5px 0 20px rgba(0,0,0,0.15);
+        z-index: 1000;
+    }
+
+    .sidebar .logo {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 0 25px;
+    }
+
+    .sidebar .logo img {
+        width: 130px;
+        border-radius: 50%;
+        border: 5px solid rgba(255,255,255,0.25);
+        transition: all 0.3s;
+    }
+
+    .sidebar .logo img:hover {
+        transform: scale(1.08);
+        border-color: white;
+    }
+
+    .sidebar a {
+        color: rgba(255,255,255,0.9);
+        padding: 16px 28px;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+        border-left: 4px solid transparent;
+    }
+
+    .sidebar a i {
+        width: 24px;
+        margin-right: 14px;
+        font-size: 1.15rem;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+        background: var(--primary-hover);
+        color: white;
+        border-left-color: white;
+        padding-left: 32px;
+    }
+
+    /* --- CONTENIDO PRINCIPAL --- */
+    .content {
+        margin-left: 260px;
+        padding: 40px;
+    }
+
+    .page-header {
+        background: white;
+        padding: 25px 30px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-header i {
+        font-size: 1.8rem;
+        color: var(--primary);
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+
+    /* --- FORMULARIO DE BÚSQUEDA --- */
+    .search-bar {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 25px 30px;
+        margin-bottom: 35px;
+        transition: all 0.3s ease;
+    }
+
+    .search-bar:hover {
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .search-bar .form-control,
+    .search-bar .form-select {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-bar .form-control:focus,
+    .search-bar .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(163,0,0,0.15);
+    }
+
+    .search-bar .btn-primary {
+        background: var(--primary);
+        border: none;
+        padding: 10px 25px;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s;
+    }
+
+    .search-bar .btn-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+    }
+
+    .btn-clear {
+        background: var(--gray-light);
+        color: var(--dark);
+        border: 1px solid #ccc;
+        padding: 10px 25px;
+        font-weight: 500;
+        border-radius: 10px;
+        transition: all 0.3s;
+    }
+
+    .btn-clear:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    /* --- TARJETAS DE EVENTOS --- */
+    .event-card {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+
+    .event-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .event-card .card-header-custom {
+        background: var(--primary);
+        color: white;
+        padding: 16px 24px;
+        font-weight: 600;
+    }
+
+    .event-card .card-body {
+        padding: 24px;
+    }
+
+    .event-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .event-meta {
+        color: var(--gray);
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+
+    .badge-cupos {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+
+    .badge-disponible { background: #d4edda; color: #155724; }
+    .badge-agotado { background: #f8d7da; color: #721c24; }
+
+    .btn-inscribir {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+    }
+
+    .btn-inscribir:hover { background: var(--primary-hover); transform: translateY(-1px); color: white; }
+    .btn-inscribir.disabled { background: #ccc; cursor: not-allowed; pointer-events: none; color: #666; }
+
+    .btn-detalles {
+        background: #fff;
+        color: var(--primary);
+        border: 1px solid var(--primary);
+        padding: 10px 15px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-detalles:hover {
+        background: var(--primary-light);
+        color: var(--primary-hover);
+        border-color: var(--primary-hover);
+    }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 992px) {
+        .search-bar form .col-md-3,
+        .search-bar form .col-md-2 {
+            flex: 1 1 100%;
         }
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
-            color: var(--dark);
-            min-height: 100vh;
-        }
+    @media (max-width: 768px) {
+        .sidebar { width: 80px; }
+        .sidebar .logo img { width: 50px; }
+        .sidebar a span { display: none; }
+        .sidebar a { padding: 16px; justify-content: center; }
+        .sidebar a:hover { padding-left: 16px; }
+        .content { margin-left: 80px; padding: 20px; }
+        .event-item { flex-direction: column; align-items: flex-start; gap: 12px; }
+        .event-card .card-body .d-flex { flex-direction: column; gap: 10px; }
+        .btn-inscribir, .btn-detalles { width: 100%; justify-content: center; }
+    }
+    /* --- Ajuste visual para botones del buscador --- */
+#filtros-form .d-flex button {
+  flex: 1;
+  font-size: 0.95rem;
+}
 
-        .sidebar {
-            position: fixed;
-            top: 0; left: 0;
-            width: 260px;
-            height: 100vh;
-            background: var(--primary);
-            color: white;
-            padding: 25px 0;
-            box-shadow: 5px 0 20px rgba(0,0,0,0.15);
-            z-index: 1000;
-        }
+#filtros-form .btn-primary i,
+#filtros-form .btn-clear i {
+  margin-right: 6px;
+}
 
-        .sidebar .logo {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 0 25px;
-        }
+</style>
 
-        .sidebar .logo img {
-            width: 130px;
-            border-radius: 50%;
-            border: 5px solid rgba(255,255,255,0.25);
-            transition: all 0.3s;
-        }
-
-        .sidebar .logo img:hover {
-            transform: scale(1.08);
-            border-color: white;
-        }
-
-        .sidebar a {
-            color: rgba(255,255,255,0.9);
-            padding: 16px 28px;
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
-        }
-
-        .sidebar a i {
-            width: 24px;
-            margin-right: 14px;
-            font-size: 1.15rem;
-        }
-
-        .sidebar a:hover, .sidebar a.active {
-            background: var(--primary-hover);
-            color: white;
-            border-left-color: white;
-            padding-left: 32px;
-        }
-
-        .content {
-            margin-left: 260px;
-            padding: 40px;
-        }
-
-        .page-header {
-            background: white;
-            padding: 25px 30px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .page-header i {
-            font-size: 1.8rem;
-            color: var(--primary);
-        }
-
-        .page-header h1 {
-            margin: 0;
-            font-size: 1.6rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        /* CARD GENERAL (Mantengo el estilo original si se usa) */
-        .card {
-            background: white;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            transition: transform 0.2s;
-            margin-bottom: 20px;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-        }
-
-        .card-header-custom {
-            background: var(--primary);
-            color: white;
-            padding: 18px 28px;
-            font-weight: 600;
-            font-size: 1.15rem;
-        }
-
-        .card-body-custom {
-            padding: 25px;
-        }
-
-        /* --- Estilos específicos de evento --- */
-
-        .btn-inscribir {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-decoration: none; /* Asegura que el <a> se vea como botón */
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .btn-inscribir:hover { background: var(--primary-hover); transform: translateY(-1px); color: white; }
-        .btn-inscribir.disabled { background: #ccc; cursor: not-allowed; pointer-events: none; color: #666; }
-
-        .btn-detalles {
-            background: #fff;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .btn-detalles:hover {
-            background: var(--primary-light);
-            color: var(--primary-hover);
-            border-color: var(--primary-hover);
-        }
-
-        .event-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; transition: transform 0.2s; }
-        .event-card:hover { transform: translateY(-5px); }
-        .event-card .card-header-custom { background: var(--primary); color: white; padding: 16px 24px; font-weight: 600; }
-        .event-card .card-body { padding: 24px; }
-        .event-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; }
-        .event-meta { color: var(--gray); font-size: 0.9rem; margin-bottom: 12px; }
-        .badge-cupos { font-size: 0.75rem; padding: 5px 10px; border-radius: 20px; }
-        .badge-disponible { background: #d4edda; color: #155724; }
-        .badge-agotado { background: #f8d7da; color: #721c24; }
-
-        .search-bar { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 30px; }
-        .search-bar .form-control, .search-bar .form-select { border-radius: 12px; border: 2px solid #e9ecef; padding: 12px 16px; }
-        .search-bar .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 0.2rem rgba(163,0,0,0.15); }
-
-        @media (max-width: 768px) {
-            .sidebar { width: 80px; }
-            .sidebar .logo img { width: 50px; }
-            .sidebar a span { display: none; }
-            .sidebar a { padding: 16px; justify-content: center; }
-            .sidebar a:hover { padding-left: 16px; }
-            .content { margin-left: 80px; padding: 20px; }
-            .event-item { flex-direction: column; align-items: flex-start; gap: 12px; }
-            .event-card .card-body .d-flex { flex-direction: column; gap: 10px; }
-            .btn-inscribir, .btn-detalles { width: 100%; justify-content: center;}
-        }
-    </style>
 </head>
 <body>
 
@@ -272,26 +383,44 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
         </div>
 
         <div class="search-bar">
-            <form method="GET" class="row g-3">
-                <div class="col-md-6">
-                    <input type="text" class="form-control" name="q" placeholder="Buscar por título..." value="<?= htmlspecialchars($buscar) ?>">
+            <form class="row g-2 mb-4" method="get">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="q" placeholder="🔍 Buscar por nombre..." value="<?= htmlspecialchars($buscar) ?>">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-2">
+                    <select class="form-select" name="mod_evento">
+                        <option value="">Tipo de evento</option>
+                        <option value="Gratis" <?= $mod_evento=='Gratis'?'selected':'' ?>>Gratis</option>
+                        <option value="Pagado" <?= $mod_evento=='Pagado'?'selected':'' ?>>Pagado</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="modalidad">
+                        <option value="">Modalidad</option>
+                        <option value="Presencial" <?= $modalidad=='Presencial'?'selected':'' ?>>Presencial</option>
+                        <option value="Virtual" <?= $modalidad=='Virtual'?'selected':'' ?>>Virtual</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <select class="form-select" name="tipo">
-                        <option value="">Todos los tipos</option>
+                        <option value="">Tipo de curso</option>
                         <?php foreach ($tipos as $t): ?>
-                            <option value="<?= $t['ID_TIPO_EVE'] ?>" <?= $tipo == $t['ID_TIPO_EVE'] ? 'selected' : '' ?>>
+                            <option value="<?= $t['ID_TIPO_EVE'] ?>" <?= $tipo==$t['ID_TIPO_EVE']?'selected':'' ?>>
                                 <?= htmlspecialchars($t['NOM_TIPO_EVE']) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search"></i> Buscar
+                <div class="col-md-3 d-flex gap-2">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fa fa-search"></i> Buscar
+                    </button>
+                    <button type="button" class="btn-clear" onclick="window.location='buscar_eventos.php'">
+                        <i class="fa fa-eraser"></i> Limpiar
                     </button>
                 </div>
             </form>
+
         </div>
 
         <div class="row">
@@ -312,13 +441,13 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
                         ORDER BY er.ORDEN
                     ")->fetch_all(MYSQLI_ASSOC);
                     ?>
-                    <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="col-md-6 col-lg-4 mb-5">
                         <div class="event-card">
                             <div class="card-header-custom">
-                                <?= htmlspecialchars($e['NOM_TIPO_EVE']) ?>
+                                <?= htmlspecialchars($e['TIT_EVE_CUR']) ?>
                             </div>
                             <div class="card-body">
-                                <div class="event-title"><?= htmlspecialchars($e['TIT_EVE_CUR']) ?></div>
+                                <div class="event-title">Tipo de evento: <?= htmlspecialchars($e['NOM_TIPO_EVE']) ?></div>
                                 <div class="event-meta">
                                     <i class="fas fa-calendar"></i>
                                     <?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?>
@@ -340,7 +469,7 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
                                         data-id="<?= $e['ID_EVE_CUR'] ?>"
                                         data-modalidad="<?= $e['MOD_EVE_CUR'] == 'Pagado' ? 'Pagado ($' . number_format($e['COS_EVE_CUR'], 2) . ')' : 'Gratis' ?>"
                                         data-requisitos='<?= json_encode($requisitos) ?>'>
-                                    <i class="fas fa-info-circle"></i> Detalles
+                                    <i class="fas fa-info-circle"></i>   Detalles
                                 </button>
 
                                     <a href="detalle_evento.php?id=<?= $e['ID_EVE_CUR'] ?>"

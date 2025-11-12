@@ -1,0 +1,21 @@
+# 1. Dependencias de Composer
+# Esta carpeta la genera Composer y no debe subirse.
+/vendor/
+
+# 2. Archivos de Configuración y Secretos (¡El más importante!)
+# Usaremos un archivo .env para guardar TODAS las contraseñas.
+.env
+
+# 3. Archivos del Sistema Operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 4. Archivos del IDE (Editor de Código)
+.vscode/
+.idea/
+
+# 5. Archivos de Log y Cache
+*.log
+logs/
+cache/

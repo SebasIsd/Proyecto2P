@@ -1356,6 +1356,12 @@ require './home/autoridades.php';
             <button type="submit" class="btn-login">Ingresar</button>
           </form>
           <br>
+          <div class="text-center mt-2" style="font-size: 0.9rem;">
+            <a href="#" class="link-registro" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" data-bs-dismiss="modal">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+          <br>
           <div class="registro">
             ¿No tienes cuenta?
             <a href="Login/registrar/Registrarse.php">Registrate aquí</a>
@@ -1367,16 +1373,260 @@ require './home/autoridades.php';
   </div>
 </div>
 
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content login-modal-content">
+      <div class="modal-body p-0">
+        <div class="login-box">
+          <h2>Recuperar Contraseña</h2>
+          <form id="formRequestReset">
+            <p style="color: #ccc; font-size: 0.9rem;">Ingresa tu correo y te enviaremos un código de 6 dígitos.</p>
+            
+            <div id="msgRequestReset" class="mb-2"></div> 
+            
+            <div class="input-group">
+              <label for="emailRequest">Correo</label>
+              <input type="email" name="emailRequest" id="emailRequest" placeholder="tu_correo@uta.edu.ec" required>
+            </div>
+            
+            <button type="submit" class="btn-login" id="btnRequestReset">Enviar Código</button>
+          </form>
+          <div class="text-center mt-3">
+            <a href="#" class="link-registro" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">
+              Volver a Iniciar Sesión
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="resetCodeModal" tabindex="-1" aria-labelledby="resetCodeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content login-modal-content">
+      <div class="modal-body p-0">
+        <div class="login-box">
+          <h2>Verificar Código</h2>
+          <form id="formValidateCode">
+            <p style="color: #ccc; font-size: 0.9rem;">Revisa tu correo e ingresa el código de 6 dígitos.</p>
+            
+            <div id="msgValidateCode" class="mb-2"></div> 
+            
+            <input type="hidden" name="emailValidate" id="emailValidate"> 
+            
+            <div class="input-group">
+              <label for="resetCode">Código de 6 dígitos</label>
+              <input type="text" name="resetCode" id="resetCode" maxlength="6" inputmode="numeric" required>
+            </div>
+            
+            <button type="submit" class="btn-login" id="btnValidateCode">Verificar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content login-modal-content">
+      <div class="modal-body p-0">
+        <div class="login-box">
+          <h2>Establecer Nueva Contraseña</h2>
+          <form id="formNewPassword">
+            
+            <div id="msgNewPassword" class="mb-2"></div> 
+
+            <input type="hidden" name="emailNewPass" id="emailNewPass"> 
+            <input type="hidden" name="codeNewPass" id="codeNewPass"> 
+            
+            <div class="input-group">
+              <label for="newPassword">Nueva Contraseña</label>
+              <input type="password" name="newPassword" id="newPassword" placeholder="Mín. 8 caracteres" required>
+            </div>
+            <div class="input-group">
+              <label for="confirmPassword">Confirmar Contraseña</label>
+              <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Repite la contraseña" required>
+            </div>
+
+            <button type="submit" class="btn-login" id="btnNewPassword">Cambiar Contraseña</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-// Mostrar modal automáticamente si hay error de login
 document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('error') && urlParams.get('modal') === 'login') {
-        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-        loginModal.show();
+    
+    // Instancias de los Modales de Bootstrap
+    const forgotModalEl = document.getElementById('forgotPasswordModal');
+    const codeModalEl = document.getElementById('resetCodeModal');
+    const newPassModalEl = document.getElementById('newPasswordModal');
+
+    if (forgotModalEl) {
+        const forgotModal = new bootstrap.Modal(forgotModalEl);
+        const codeModal = new bootstrap.Modal(codeModalEl);
+        const newPassModal = new bootstrap.Modal(newPassModalEl);
+        
+        // Formularios
+        const formRequest = document.getElementById('formRequestReset');
+        const formValidate = document.getElementById('formValidateCode');
+        const formNewPass = document.getElementById('formNewPassword');
+        
+        // Contenedores de Mensajes
+        const msgRequest = document.getElementById('msgRequestReset');
+        const msgValidate = document.getElementById('msgValidateCode');
+        const msgNewPass = document.getElementById('msgNewPassword');
+
+        // Función para mostrar errores (usa tu clase .error)
+        function showMessage(container, message, isSuccess = false) {
+            const colorClass = isSuccess ? 'green' : ''; // Asumo 'green' para éxito
+            container.innerHTML = `<div class="error" style="color:${colorClass};">${message}</div>`;
+        }
+
+        // --- Paso 1: Solicitar Código ---
+        formRequest.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('emailRequest').value;
+            const btn = document.getElementById('btnRequestReset');
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+            showMessage(msgRequest, ''); // Limpiar
+
+            const formData = new FormData();
+            formData.append('email', email);
+
+            fetch('login/solicitar_reset.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showMessage(msgRequest, data.msg, true);
+                    document.getElementById('emailValidate').value = email; 
+                    setTimeout(() => {
+                        forgotModal.hide();
+                        codeModal.show();
+                    }, 1500);
+                } else {
+                    showMessage(msgRequest, data.msg, false);
+                }
+            })
+            .catch(err => {
+                showMessage(msgRequest, 'Error de conexión con el servidor.', false);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = 'Enviar Código';
+            });
+        });
+
+        // --- Paso 2: Validar Código ---
+        formValidate.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnValidateCode');
+            btn.disabled = true;
+            btn.textContent = 'Verificando...';
+            showMessage(msgValidate, '');
+
+            const formData = new FormData(formValidate);
+            const email = formData.get('emailValidate');
+            const code = formData.get('resetCode');
+
+            fetch('login/validar_codigo_reset.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('emailNewPass').value = email;
+                    document.getElementById('codeNewPass').value = code;
+                    codeModal.hide();
+                    newPassModal.show();
+                } else {
+                    showMessage(msgValidate, data.msg, false);
+                }
+            })
+            .catch(err => {
+                showMessage(msgValidate, 'Error de conexión.', false);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = 'Verificar';
+            });
+        });
+
+        // --- Paso 3: Establecer Nueva Contraseña ---
+        formNewPass.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            showMessage(msgNewPass, '');
+
+            if (newPass !== confirmPass) {
+                showMessage(msgNewPass, 'Las contraseñas no coinciden.', false);
+                return;
+            }
+            
+            // (Añade tu validación de fortaleza de contraseña de JS aquí si quieres)
+            const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@$#\-_])[A-Za-z\d!@$#\-_]{8,}$/;
+            if (!regex.test(newPass)) {
+                 showMessage(msgNewPass, 'La contraseña no es segura (mín 8 car, Mayús, minús, núm, símbolo !@$#_-).', false);
+                 return;
+            }
+            
+            const btn = document.getElementById('btnNewPassword');
+            btn.disabled = true;
+            btn.textContent = 'Guardando...';
+
+            const formData = new FormData(formNewPass);
+
+            fetch('login/actualizar_password.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showMessage(msgNewPass, data.msg, true);
+                    setTimeout(() => {
+                        newPassModal.hide();
+                        // Opcional: mostrar modal de login
+                        // const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                        // loginModal.show();
+                    }, 2500);
+                } else {
+                    showMessage(msgNewPass, data.msg, false);
+                }
+            })
+            .catch(err => {
+                showMessage(msgNewPass, 'Error de conexión.', false);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = 'Cambiar Contraseña';
+            });
+        });
+
+        // Limpiar mensajes cuando los modales se cierran
+        [forgotModalEl, codeModalEl, newPassModalEl].forEach(modalEl => {
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                showMessage(msgRequest, '');
+                showMessage(msgValidate, '');
+                showMessage(msgNewPass, '');
+                
+                formRequest.reset();
+                formValidate.reset();
+                formNewPass.reset();
+            });
+        });
     }
 });
 </script>
 </body>
-
 </html>
