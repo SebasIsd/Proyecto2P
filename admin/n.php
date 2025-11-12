@@ -751,14 +751,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         const res = await fetch('guardarEvento.php', { method: 'POST', body: data });
-        const text = await res.text();
-        console.log('Respuesta guardarEvento.php:', text);
-        const json = JSON.parse(text);
-        if (json.success) {
+           const ct = res.headers.get('content-type') || '';
+      const payload = ct.includes('application/json') ? await res.json() : { success:false, message: await res.text() };
+        if (payload.success) {
           alert('Evento guardado correctamente.');
           formEvento.reset();
         } else {
-          alert('Error: ' + json.message);
+          alert('Error: ' + (payload.message || 'No se pudo guardar'));
+        console.error('Respuesta servidor:', payload);
         }
       } catch (err) {
         console.error('Error al guardar evento:', err);

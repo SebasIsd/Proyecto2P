@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', '0');          // para que no se impriman warnings en HTML
+ini_set('log_errors', '1');
 header('Content-Type: application/json; charset=utf-8');
 require_once '../includes/conexion.php';
 
@@ -68,7 +71,7 @@ try {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     $stmt->bind_param(
-        "ssssssssiiisii",
+        "ssssssssssiiiis",
         $titulo, $descripcion, $insDesde, $insHasta, $fechaInicio, $fechaFin, $modalidad, $costo,
         $lugar, $detalle, $capacidad, $cupos, $horas, $idTipo, $responsable
     );
@@ -123,7 +126,6 @@ try {
 } catch (Exception $e) {
     // Revertir transacción
     @$conn->rollback();
-
     http_response_code(400);
     echo json_encode([
         "success" => false,
