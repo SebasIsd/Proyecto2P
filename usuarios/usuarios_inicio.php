@@ -2,11 +2,11 @@
 session_start();
 
 // Verificar que haya una sesión activa y que sea docente o estudiante
-if (!isset($_SESSION['correo']) || 
-    !(strtolower($_SESSION['rol_nombre']) === 'docente' || strtolower($_SESSION['rol_nombre']) === 'estudiante')) {
+if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'asistente') {
     header("Location: ../index.php");
     exit();
 }
+
 
 require_once __DIR__ . '/../includes/conexion.php'; // Conexión a la BD
 
