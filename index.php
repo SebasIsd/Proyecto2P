@@ -3,6 +3,7 @@
 require './home/autoridades.php';
 ?>
 
+
 <!DOCTYPE html>
 <html>
 
@@ -148,6 +149,18 @@ require './home/autoridades.php';
     </header>
     <!-- end header section -->
     <!-- slider section -->
+     <?php
+$sliderData = include __DIR__ . "/home/slider.php";
+// Validación segura
+if (!is_array($sliderData)) {
+    $sliderData = [
+        ["titulo" => "Sin datos", "descripcion" => "No se pudo cargar información"],
+        ["titulo" => "Sin datos", "descripcion" => "No se pudo cargar información"],
+        ["titulo" => "Sin datos", "descripcion" => "No se pudo cargar información"]
+    ];
+}
+?>
+
     <section class="slider_section ">
       <div id="customCarousel1" class="carousel slide" data-ride="carousel">
         <div class="carousel-inner">
@@ -157,10 +170,10 @@ require './home/autoridades.php';
                 <div class="col-md-7 col-lg-6 ">
                   <div class="detail-box">
                     <h1>
-                      Universidad Tecnica de Ambato
+                     <?= $sliderData[0]["titulo"] ?>
                     </h1>
                     <p>
-                      Eventos disponibles para ti en la UTA. Inscribete y participa en los mejores eventos de la ciudad de Ambato. 
+                    <?= $sliderData[0]["descripcion"] ?> 
                     </p>
                     <div class="btn-box">
                       <a href="" class="btn1">
@@ -178,12 +191,10 @@ require './home/autoridades.php';
                 <div class="col-md-7 col-lg-6 ">
                   <div class="detail-box">
                     <h1>
-                      Mas info (Mision y Vision)
+                      <?= $sliderData[1]["titulo"] ?>
                     </h1>
                     <p>
-                      Doloremque, itaque aperiam facilis rerum, commodi, temporibus sapiente ad mollitia laborum quam
-                      quisquam esse error unde. Tempora ex doloremque, labore, sunt repellat dolore, iste magni quos
-                      nihil ducimus libero ipsam.
+                     <?= $sliderData[1]["descripcion"] ?> 
                     </p>
                     <div class="btn-box">
                       <a href="" class="btn1">
@@ -201,12 +212,10 @@ require './home/autoridades.php';
                 <div class="col-md-7 col-lg-6 ">
                   <div class="detail-box">
                     <h1>
-                      Mas Info (Valores)
+                       <?= $sliderData[2]["titulo"] ?>
                     </h1>
                     <p>
-                      Doloremque, itaque aperiam facilis rerum, commodi, temporibus sapiente ad mollitia laborum quam
-                      quisquam esse error unde. Tempora ex doloremque, labore, sunt repellat dolore, iste magni quos
-                      nihil ducimus libero ipsam.
+                    <?= $sliderData[2]["descripcion"] ?> 
                     </p>
                     <div class="btn-box">
                       <a href="" class="btn1">
