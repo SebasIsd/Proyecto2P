@@ -17,15 +17,42 @@ $stmt->bind_param("i", $id_evento);
 $stmt->execute();
 $evento = $stmt->get_result()->fetch_assoc();
 
+// Si no hay cupos, redirigir a lista de espera
 if ($evento['CUPOS_DISPONIBLES'] <= 0) {
-    echo json_encode(['success' => false, 'message' => 'No hay cupos disponibles']);
+    // Verificar si ya está en lista de espera
+    $check_waitlist = $conn->prepare("SELECT * FROM lista_espera WHERE ID_EVE_CUR = ? AND CED_USU = ? AND ESTADO = 'Activa'");
+    $check_waitlist->bind_param("is", $id_evento, $cedula);
+    $check_waitlist->execute();
+    
+    if ($check_waitlist->get_result()->num_rows > 0) {
+        echo json_encode(['success' => false, 'message' => 'Ya estás en la lista de espera para este evento']);
+        exit;
+    }
+    
+    // Agregar a lista de espera
+    $conn->begin_transaction();
+    try {
+        // Obtener última posición
+        $last_pos = $conn->query("SELECT COALESCE(MAX(POSICION), 0) as last_pos FROM lista_espera WHERE ID_EVE_CUR = $id_evento")->fetch_assoc()['last_pos'];
+        $nueva_posicion = $last_pos + 1;
+        
+        $stmt = $conn->prepare("INSERT INTO lista_espera (ID_EVE_CUR, CED_USU, POSICION, ESTADO) VALUES (?, ?, ?, 'Activa')");
+        $stmt->bind_param("isi", $id_evento, $cedula, $nueva_posicion);
+        $stmt->execute();
+        
+        $conn->commit();
+        echo json_encode(['success' => true, 'message' => 'Agregado a lista de espera. Posición: ' . $nueva_posicion]);
+    } catch (Exception $e) {
+        $conn->rollback();
+        echo json_encode(['success' => false, 'message' => 'Error al agregar a lista de espera: ' . $e->getMessage()]);
+    }
     exit;
 }
 
 $conn->begin_transaction();
 
 try {
-    // Insertar inscripción (FEC_CIE_INS = FEC_FIN_EVE_CUR, asumiendo)
+    // Insertar inscripción
     $stmt = $conn->prepare("
         INSERT INTO INSCRIPCIONES (CED_USU, ID_EVE_CUR, FEC_INI_INS, FEC_CIE_INS, ESTADO_INS, EST_PAG_INS) 
         VALUES (?, ?, NOW(), (SELECT FEC_FIN_EVE_CUR FROM EVENTOS_CURSOS WHERE ID_EVE_CUR = ?), 'Preinscrito', 'Pendiente')
@@ -37,97 +64,118 @@ try {
     // Reducir cupos
     $conn->query("UPDATE EVENTOS_CURSOS SET CUPOS_DISPONIBLES = CUPOS_DISPONIBLES - 1 WHERE ID_EVE_CUR = $id_evento");
 
+    // Obtener requisitos del evento
+    $requisitos = $conn->query("
+        SELECT r.ID_REQ, r.NOM_REQ, r.TIPO 
+        FROM EVENTOS_REQUISITOS er 
+        JOIN REQUISITOS r ON er.ID_REQ = r.ID_REQ 
+        WHERE er.ID_EVE_CUR = $id_evento
+    ")->fetch_all(MYSQLI_ASSOC);
+
+    // Procesar cada requisito
+    foreach ($requisitos as $requisito) {
+        $id_req = $requisito['ID_REQ'];
+        $campo = 'req_' . $id_req;
+        
+        switch ($requisito['TIPO']) {
+            case 'DOCUMENTO':
+                if (isset($_FILES[$campo]) && $_FILES[$campo]['error'] == 0) {
+                    $file = $_FILES[$campo];
+                    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                    
+                    if (!in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'])) {
+                        throw new Exception("Formato no permitido en {$file['name']}");
+                    }
+                    if ($file['size'] > 5 * 1024 * 1024) {
+                        throw new Exception("Archivo demasiado grande: {$file['name']}");
+                    }
+
+                    $uploadDir = '../uploads/requisitos/';
+                    if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+                    $nombre = time() . "_req_{$id_req}_" . $cedula . ".$ext";
+                    $ruta = $uploadDir . $nombre;
+
+                    if (!move_uploaded_file($file['tmp_name'], $ruta)) {
+                        throw new Exception("Error al subir requisito: {$requisito['NOM_REQ']}");
+                    }
+
+                    $stmt = $conn->prepare("
+                        INSERT INTO EVIDENCIAS (ID_INS, ID_REQ, NOMBRE_ARCHIVO, URL_ARCHIVO, TIPO_MIME, TAMANIO_BYTES, ESTADO_VALIDACION, REGISTRADO_POR)
+                        VALUES (?, ?, ?, ?, ?, ?, 'Pendiente', ?)
+                    ");
+                    $tipo_mime = $file['type'];
+                    $tamanio = $file['size'];
+                    $stmt->bind_param("iississ", $id_ins, $id_req, $nombre, $ruta, $tipo_mime, $tamanio, $cedula);
+                    $stmt->execute();
+                } else {
+                    throw new Exception("El requisito {$requisito['NOM_REQ']} es obligatorio");
+                }
+                break;
+
+            case 'TEXTO_CORTO':
+            case 'TEXTO_LARGO':
+                if (isset($_POST[$campo]) && !empty(trim($_POST[$campo]))) {
+                    $valor = trim($_POST[$campo]);
+                    $stmt = $conn->prepare("
+                        INSERT INTO EVIDENCIAS (ID_INS, ID_REQ, VALOR_TEXTO, ESTADO_VALIDACION, REGISTRADO_POR)
+                        VALUES (?, ?, ?, 'Pendiente', ?)
+                    ");
+                    $stmt->bind_param("iiss", $id_ins, $id_req, $valor, $cedula);
+                    $stmt->execute();
+                } else {
+                    throw new Exception("El requisito {$requisito['NOM_REQ']} es obligatorio");
+                }
+                break;
+
+            case 'NUMERICO':
+                // Para requisitos numéricos, normalmente se llenan después por el docente
+                $stmt = $conn->prepare("
+                    INSERT INTO EVIDENCIAS (ID_INS, ID_REQ, ESTADO_VALIDACION, REGISTRADO_POR)
+                    VALUES (?, ?, 'Pendiente', ?)
+                ");
+                $stmt->bind_param("iis", $id_ins, $id_req, $cedula);
+                $stmt->execute();
+                break;
+        }
+    }
+
     // Manejar pago si es 'Pagado'
     if ($evento['MOD_EVE_CUR'] == 'Pagado') {
-        if (isset($_FILES['comprobante_pago']) && $_FILES['comprobante_pago']['error'] == 0) {
-            $uploadDir = '../uploads/comprobantes/';
-            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-            $comprobante = time() . '_' . basename($_FILES['comprobante_pago']['name']);
-            if (!move_uploaded_file($_FILES['comprobante_pago']['tmp_name'], $uploadDir . $comprobante)) {
-                throw new Exception('Error al subir comprobante');
-            }
-            $stmt = $conn->prepare("
-                INSERT INTO PAGOS (ID_INS, FEC_PAG, MON_PAG, MET_PAG, URL_COMPROBANTE, ESTADO_VALIDACION) 
-                VALUES (?, NOW(), ?, 'Transferencia', ?, 'Pendiente')
-            ");
-            $stmt->bind_param("ids", $id_ins, $evento['COS_EVE_CUR'], $comprobante);
-            $stmt->execute();
-        } else {
-            throw new Exception('Comprobante requerido para eventos pagados');
+        if (!isset($_FILES['comprobante_pago']) || $_FILES['comprobante_pago']['error'] != 0) {
+            throw new Exception("El comprobante de pago es obligatorio para eventos pagados");
         }
-    }
 
-    // Guardar evidencias para requisitos
-// === SUBIR REQUISITOS (Cédula, etc.) ===
-foreach ($_POST as $key => $value) {
-    if (str_starts_with($key, 'req_')) {
-        $id_req = substr($key, 4);
-        $tipo_req = $conn->query("SELECT TIPO FROM REQUISITOS WHERE ID_REQ = $id_req")->fetch_assoc()['TIPO'];
-
-        if ($tipo_req === 'ARCHIVO' && isset($_FILES[$key]) && $_FILES[$key]['error'] == 0) {
-            $file = $_FILES[$key];
-            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-            if (!in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'])) {
-                throw new Exception("Formato no permitido en {$file['name']}");
-            }
-            if ($file['size'] > 5 * 1024 * 1024) {
-                throw new Exception("Archivo demasiado grande: {$file['name']}");
-            }
-
-            $uploadDir = '../uploads/requisitos/';
-            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-            $nombre = time() . "_req_{$id_req}_" . $cedula . ".$ext";
-            $ruta = $uploadDir . $nombre;
-
-            if (!move_uploaded_file($file['tmp_name'], $ruta)) {
-                throw new Exception("Error al subir requisito");
-            }
-
-            $stmt = $conn->prepare("
-                INSERT INTO EVIDENCIAS (ID_INS, ID_REQ, NOMBRE_ARCHIVO, URL_ARCHIVO, ESTADO_VALIDACION, REGISTRADO_POR)
-                VALUES (?, ?, ?, ?, 'Pendiente', ?)
-            ");
-            $stmt->bind_param("iisss", $id_ins, $id_req, $nombre, $ruta, $cedula);
-            $stmt->execute();
+        $file = $_FILES['comprobante_pago'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'])) {
+            throw new Exception("Formato de comprobante no permitido");
         }
-    }
-}
+        if ($file['size'] > 5 * 1024 * 1024) {
+            throw new Exception("Comprobante demasiado grande");
+        }
 
-// === SUBIR COMPROBANTE DE PAGO (solo si es pagado) ===
-if ($evento['MOD_EVE_CUR'] == 'Pagado') {
-    if (!isset($_FILES['comprobante_pago']) || $_FILES['comprobante_pago']['error'] != 0) {
-        throw new Exception("El comprobante de pago es obligatorio");
-    }
+        $uploadDir = '../uploads/comprobantes/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+        $nombre = time() . "_pago_" . $cedula . ".$ext";
+        $ruta = $uploadDir . $nombre;
 
-    $file = $_FILES['comprobante_pago'];
-    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    if (!in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'])) {
-        throw new Exception("Formato de comprobante no permitido");
+        if (!move_uploaded_file($file['tmp_name'], $ruta)) {
+            throw new Exception("Error al subir comprobante");
+        }
+        
+        $stmt = $conn->prepare("
+            INSERT INTO PAGOS (ID_INS, FEC_PAG, MON_PAG, MET_PAG, URL_COMPROBANTE, ESTADO_VALIDACION)
+            VALUES (?, NOW(), ?, 'Transferencia', ?, 'Pendiente')
+        ");
+        $stmt->bind_param("ids", $id_ins, $evento['COS_EVE_CUR'], $nombre);
+        $stmt->execute();
     }
-    if ($file['size'] > 5 * 1024 * 1024) {
-        throw new Exception("Comprobante demasiado grande");
-    }
-
-    $uploadDir = '../uploads/comprobantes/';
-    if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-    $nombre = time() . "_pago_" . $cedula . ".$ext";
-    $ruta = $uploadDir . $nombre;
-
-    if (!move_uploaded_file($file['tmp_name'], $ruta)) {
-        throw new Exception("Error al subir comprobante");
-    }
-
-    $stmt = $conn->prepare("
-        INSERT INTO PAGOS (ID_INS, FEC_PAG, MON_PAG, URL_COMPROBANTE, ESTADO_VALIDACION)
-        VALUES (?, NOW(), ?, ?, 'Pendiente')
-    ");
-    $stmt->bind_param("ids", $id_ins, $evento['COS_EVE_CUR'], $nombre);
-    $stmt->execute();
-}
 
     $conn->commit();
     echo json_encode(['success' => true, 'message' => 'Inscripción enviada. Esperando revisión.']);
+    
 } catch (Exception $e) {
     $conn->rollback();
     echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
 }
+?>

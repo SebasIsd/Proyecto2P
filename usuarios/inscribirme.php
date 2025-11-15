@@ -150,6 +150,10 @@ $requisitos = $conn->query("
             transition: transform 0.2s;
         }
 
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
         .card-header-custom {
             background: var(--primary);
             color: white;
@@ -158,136 +162,23 @@ $requisitos = $conn->query("
             font-size: 1.15rem;
         }
 
-        .table {
-            margin: 0;
-        }
-
-        .table thead {
+        .btn-inscribir {
             background: var(--primary);
             color: white;
-        }
-
-        .table thead th {
-            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
             font-weight: 600;
-            padding: 16px;
-            font-size: 0.95rem;
-        }
-
-        .table tbody td {
-            padding: 16px;
-            vertical-align: middle;
-            border-color: #eee;
-        }
-
-        .table tbody tr:hover {
-            background: var(--primary-light);
-        }
-
-        .badge {
-            font-size: 0.8rem;
-            padding: 6px 12px;
-            border-radius: 20px;
-        }
-
-        .badge-success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge-danger {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .btn-edit {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            transition: all 0.3s;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-        }
-
-        .btn-edit:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(163,0,0,0.2);
-        }
-
-        .avatar-circle {
-            width: 46px;
-            height: 46px;
-            border-radius: 50%;
-            background: var(--primary-light);
-            color: var(--primary);
-            font-weight: bold;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 3px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        /* Modal */
-        .modal-content {
-            border-radius: var(--radius);
-            border: none;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-
-        .modal-header {
-            background: var(--primary);
-            color: white;
-            border-radius: var(--radius) var(--radius) 0 0;
-            padding: 18px 25px;
-        }
-
-        .modal-header .btn-close {
-            filter: brightness(0) invert(1);
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .form-control, .form-select {
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            padding: 12px 16px;
-            font-size: 0.95rem;
+            gap: 8px;
             transition: all 0.3s;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 0.2rem rgba(163,0,0,0.15);
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 8px;
-        }
-
-        .btn-save-modal {
-            background: var(--primary);
-            color: white;
             border: none;
-            padding: 12px 28px;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.3s;
         }
 
-        .btn-save-modal:hover {
+        .btn-inscribir:hover {
             background: var(--primary-hover);
-            transform: translateY(-2px);
+            color: white;
         }
 
         @media (max-width: 768px) {
@@ -297,102 +188,10 @@ $requisitos = $conn->query("
             .sidebar a { padding: 16px; justify-content: center; }
             .sidebar a:hover { padding-left: 16px; }
             .content { margin-left: 80px; padding: 20px; }
-        }
-        .badge-preinscrito { background: #fff3cd; color: #856404; }
-        .badge-confirmado { background: #d4edda; color: #155724; }
-        .badge-cancelado { background: #f8d7da; color: #721c24; }
-        .badge-asistio { background: #d1ecf1; color: #0c5460; }
-
-        .btn-ver {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-            display: inline-flex;   
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-        }
-
-        .btn-ver:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-        }
-
-        .btn-cancelar {
-            background: transparent;
-            color: #dc3545;
-            border: 1px solid #dc3545;
-            padding: 6px 12px;
-            border-radius: 10px;
-            font-size: 0.8rem;
-            transition: all 0.3s;
-        }
-
-        .btn-cancelar:hover {
-            background: #dc3545;
-            color: white;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--gray);
-        }
-
-        .empty-state i {
-            font-size: 3.5rem;
-            color: #ccc;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar { width: 80px; }
-            .sidebar .logo img { width: 50px; }
-            .sidebar a span { display: none; }
-            .sidebar a { padding: 16px; justify-content: center; }
-            .sidebar a:hover { padding-left: 16px; }
-            .content { margin-left: 80px; padding: 20px; }
-            .event-item { flex-direction: column; align-items: flex-start; gap: 12px; }
-        }
-        .event-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 0;
-            border-bottom: 1px dashed #eee;
-            margin: 0 10px;
-        }
-
-        .event-item:last-child {
-            border-bottom: none;
-        }
-
-        .event-info h5 {
-            margin: 0 0 6px;
-            font-size: 1.1rem;
-            color: var(--dark);
-            font-weight: 600;
-        }
-
-        .event-info small {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        .event-badge {
-            font-size: 0.75rem;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-weight: 600;
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar igual -->
     <div class="sidebar">
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
@@ -403,7 +202,8 @@ $requisitos = $conn->query("
         <a href="perfil_usuario.php"><i class="fas fa-user"></i> <span>Perfil</span></a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a>
     </div>
- <div class="content">
+
+    <div class="content">
         <div class="page-header">
             <i class="fas fa-user-edit"></i>
             <h1>Inscribirme al Evento</h1>
@@ -420,17 +220,27 @@ $requisitos = $conn->query("
                             <i class="fas fa-info-circle"></i> Este evento no requiere requisitos adicionales.
                         </div>
                     <?php else: ?>
+                        <h5 class="mb-3">Requisitos del Evento:</h5>
                         <?php foreach ($requisitos as $r): ?>
                             <div class="mb-3">
-                                <label class="form-label text-danger"><?= htmlspecialchars($r['NOM_REQ']) ?> * (OBLIGATORIO)</label>
+                                <label class="form-label <?= $r['TIPO'] !== 'NUMERICO' ? 'text-danger' : '' ?>">
+                                    <?= htmlspecialchars($r['NOM_REQ']) ?> 
+                                    <?php if ($r['TIPO'] !== 'NUMERICO'): ?>* (OBLIGATORIO)<?php endif; ?>
+                                </label>
                                 <?php if ($r['TIPO'] === 'DOCUMENTO'): ?>
-                                    <input type="file" class="form-control" name="req_<?= $r['ID_REQ'] ?>" required accept=".pdf,.jpg,.png" onchange="previewFile(this, 'preview_req_<?= $r['ID_REQ'] ?>')">
+                                    <input type="file" class="form-control" name="req_<?= $r['ID_REQ'] ?>" required accept=".pdf,.jpg,.jpeg,.png" onchange="previewFile(this, 'preview_req_<?= $r['ID_REQ'] ?>')">
                                     <canvas id="preview_req_<?= $r['ID_REQ'] ?>" style="max-width: 200px; display: none; margin-top: 10px;"></canvas>
                                     <small class="text-muted">Máx. 5MB. Formatos: PDF, JPG, PNG</small>
                                 <?php elseif ($r['TIPO'] === 'TEXTO_CORTO'): ?>
-                                    <input type="text" class="form-control" name="req_<?= $r['ID_REQ'] ?>" required>
+                                    <input type="text" class="form-control" name="req_<?= $r['ID_REQ'] ?>" required maxlength="500">
                                 <?php elseif ($r['TIPO'] === 'TEXTO_LARGO'): ?>
-                                    <textarea class="form-control" name="req_<?= $r['ID_REQ'] ?>" rows="3" required></textarea>
+                                    <textarea class="form-control" name="req_<?= $r['ID_REQ'] ?>" rows="3" required maxlength="500"></textarea>
+                                <?php elseif ($r['TIPO'] === 'NUMERICO'): ?>
+                                    <!-- NO mostrar input para el usuario -->
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i> Este requisito será evaluado y completado por el docente/administrador.
+                                    </div>
+                                    <input type="hidden" name="req_<?= $r['ID_REQ'] ?>" value="0">
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
@@ -445,7 +255,7 @@ $requisitos = $conn->query("
                     <?php endif; ?>
 
                     <div class="mt-4">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn-inscribir">
                             <i class="fas fa-paper-plane"></i> Enviar Inscripción
                         </button>
                         <a href="detalle_evento.php?id=<?= $id ?>" class="btn btn-secondary">Cancelar</a>
@@ -484,7 +294,7 @@ $requisitos = $conn->query("
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    window.location.href = 'mis_eventos.php'; // Redirigir a mis eventos
+                    window.location.href = 'mis_eventos.php';
                 } else {
                     alert('Error: ' + data.message);
                 }

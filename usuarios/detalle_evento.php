@@ -362,6 +362,8 @@ $requisitos = $conn->query("
                     </ul>
                 <?php endif; ?>
 
+                <!-- ... código anterior igual ... -->
+
                 <div class="mt-4">
                     <?php if ($evento['inscrito']): ?>
                         <button class="btn btn-success" disabled>
@@ -372,7 +374,10 @@ $requisitos = $conn->query("
                             <i class="fas fa-user-plus"></i> Inscribirme
                         </a>
                     <?php else: ?>
-                        <button class="btn btn-danger" disabled>Cupos agotados</button>
+                        <!-- Botón para lista de espera cuando no hay cupos -->
+                        <button class="btn btn-warning" onclick="agregarListaEspera(<?= $id ?>)">
+                            <i class="fas fa-clock"></i> Entrar en Lista de Espera
+                        </button>
                     <?php endif; ?>
                     <a href="buscar_eventos.php" class="btn btn-secondary ms-2">Volver</a>
                 </div>
