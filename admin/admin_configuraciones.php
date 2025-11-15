@@ -46,6 +46,8 @@ for ($i = 5; $i >= 0; $i--) {
     <title>Dashboard Administrador - UTA</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -328,54 +330,179 @@ for ($i = 5; $i >= 0; $i--) {
 
     <!-- Contenido Principal -->
     <div class="content">
-        <h1 class="mb-4">Dashboard Administrador</h1>
-        <p>Bienvenido, <?= ucfirst($_SESSION['rol_nombre']) ?> (<?= $_SESSION['correo'] ?>)</p>
+       <h1 class="mb-4">Configuraciones de Interfaz</h1>
+<p>Bienvenido, <?= ucfirst($_SESSION['rol_nombre']) ?> (<?= $_SESSION['correo'] ?>)</p>
 
-        <!-- Tarjetas de Estadísticas -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Total Eventos</div>
-                    <div class="card-body text-center">
-                        <h2><?= $totalEventos ?></h2>
-                        <p>Eventos creados en la plataforma.</p>
+<div class="accordion" id="configAccordion">
+
+    <!-- HOME -->
+  <!-- HOME -->
+        <?php  
+$slider = include __DIR__ . "../../home/slider.php";  
+?>
+<div class="accordion-item mb-3">
+    <h2 class="accordion-header">
+        <button class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#homeConfig1">
+            <i class="fas fa-home me-2"></i> Configuración de Home
+        </button>
+    </h2>
+   
+
+   <div id="homeConfig1" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+        <div class="accordion-body">
+        <!-- Comienso slider -->
+            <p class="text-muted">Edicion del slider en portada</p>
+
+            <!-- BOTÓN EDITAR -->
+            <button id="btnEditarSlider" class="btn btn-warning mb-3">Editar Slider</button>
+
+            <form id="sliderForm">
+
+                <?php for ($i = 0; $i < 3; $i++): ?>
+                <div class="card mb-3 p-3 border">
+
+                    <h5 class="mb-3">Item <?= $i+1 ?></h5>
+
+                    <div class="mb-3">
+                        <label class="form-label">Título</label>
+                        <input type="text" 
+                               name="titulo_<?= $i+1 ?>" 
+                               class="form-control slider-input"
+                               value="<?= $slider[$i]['titulo'] ?>"
+                               disabled>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea name="descripcion_<?= $i+1 ?>" 
+                                  class="form-control slider-input"
+                                  rows="3"
+                                  disabled><?= $slider[$i]['descripcion'] ?></textarea>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Usuarios Registrados</div>
-                    <div class="card-body text-center">
-                        <h2><?= $usuariosRegistrados ?></h2>
-                        <p>Usuarios activos en el sistema.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Inscripciones Pendientes</div>
-                    <div class="card-body text-center">
-                        <h2><?= $inscripcionesPendientes ?></h2>
-                        <p>Inscripciones por aprobar.</p>
-                    </div>
-                </div>
-            </div>
+                <?php endfor; ?>
+
+                <button type="submit" id="btnGuardarSlider" class="btn btn-success" disabled>
+                    Guardar
+                </button>
+            </form>
+
         </div>
+        <script>
+document.getElementById("btnEditarSlider").addEventListener("click", function() {
+    const inputs = document.querySelectorAll(".slider-input");
+    inputs.forEach(input => input.disabled = false);
 
-        <!-- Gráfico de Eventos por Mes -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">Eventos por Mes</div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="eventosChart"></canvas>
-                        </div>
-                    </div>
+    document.getElementById("btnGuardarSlider").disabled = false;
+});
+</script>
+<script>
+document.getElementById("sliderForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let formData = new FormData(this);
+
+    fetch("../home/guardar_slider.php", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("Datos guardados correctamente");
+
+            // bloquear de nuevo
+            document.querySelectorAll(".slider-input").forEach(i => i.disabled = true);
+            document.getElementById("btnGuardarSlider").disabled = true;
+        } else {
+            alert("Error: " + data.msg);
+        }
+    })
+    .catch(err => {
+        alert("Error en la conexión.");
+        console.log(err);
+    });
+});
+</script>
+<!-- fin slider -->
+    <!-- Mision -->
+
+    
+    <!-- mision fin -->
+
+
+
+
+    </div>
+</div>
+
+
+    <!-- CONTACTANOS -->
+    <div class="accordion-item mb-3" style="border-radius: var(--radius); overflow:hidden; box-shadow: var(--shadow);">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" 
+                    type="button"
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#contactConfig">
+                <i class="fas fa-envelope me-2"></i> Configuración de Contáctanos
+            </button>
+        </h2>
+
+        <div id="contactConfig" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+            <div class="accordion-body">
+                <p class="text-muted">Aquí puedes editar información de contacto, mapa e información de la facultad.</p>
+
+                <div class="mb-3">
+                    <label class="form-label">Correo de Contacto</label>
+                    <input type="email" class="form-control" placeholder="correo@ejemplo.com">
                 </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" class="form-control" placeholder="(03) 252-XXXX">
+                </div>
+
+                <button class="btn-save-modal">Guardar Cambios</button>
             </div>
         </div>
     </div>
+
+    <!-- FOOTER -->
+    <div class="accordion-item mb-3" style="border-radius: var(--radius); overflow:hidden; box-shadow: var(--shadow);">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#footerConfig">
+                <i class="fas fa-bars me-2"></i> Configuración de Footer
+            </button>
+        </h2>
+
+        <div id="footerConfig" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+            <div class="accordion-body">
+                <p class="text-muted">Edita la información del pie de página, redes sociales y texto legal.</p>
+
+                <div class="mb-3">
+                    <label class="form-label">Texto del Footer</label>
+                    <textarea class="form-control" rows="3" placeholder="Descripción del footer..."></textarea>
+                </div>
+
+                <button class="btn-save-modal">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+     
+      
+
+        <!-- Gráfico de Eventos por Mes -->
+   
 
     <script>
         // Gráfico con Chart.js
