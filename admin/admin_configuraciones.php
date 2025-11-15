@@ -518,43 +518,351 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <!-- mision fin -->
 
-
+    
 
 
     </div>
+
+
+    
 </div>
 
 
     <!-- CONTACTANOS -->
+     
+     <?php
+$contacto = include "../home/contactanos.php";
+?>
+
     <div class="accordion-item mb-3" style="border-radius: var(--radius); overflow:hidden; box-shadow: var(--shadow);">
-        <h2 class="accordion-header">
-            <button class="accordion-button collapsed" 
-                    type="button"
-                    data-bs-toggle="collapse" 
-                    data-bs-target="#contactConfig">
-                <i class="fas fa-envelope me-2"></i> Configuración de Contáctanos
-            </button>
-        </h2>
+    <h2 class="accordion-header">
+        <button class="accordion-button collapsed" 
+                type="button"
+                data-bs-toggle="collapse" 
+                data-bs-target="#contactConfig">
+            <i class="fas fa-envelope me-2"></i> Configuración de Contáctanos
+        </button>
+    </h2>
 
-        <div id="contactConfig" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
-            <div class="accordion-body">
-                <p class="text-muted">Aquí puedes editar información de contacto, mapa e información de la facultad.</p>
+    <div id="contactConfig" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+        <div class="accordion-body">
+             <h1 class="mb-4">Configuracion de nosotros</h1>
+            <p class="text-muted">Aquí puedes editar información de contacto, mapa e información de la facultad.</p>
 
-                <div class="mb-3">
-                    <label class="form-label">Correo de Contacto</label>
-                    <input type="email" class="form-control" placeholder="correo@ejemplo.com">
+            <button id="btnEditarContacto" class="btn-edit">Habilitar edicion</button>
+            <br><br>
+
+            <form id="contactoForm">
+
+                <div class="card mb-3 p-3 border">
+                    <h5 class="mb-3">Descripción</h5>
+                    <textarea name="des_noso" class="form-control contacto-field" rows="3" disabled><?= $contacto['des_noso'] ?></textarea>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Teléfono</label>
-                    <input type="text" class="form-control" placeholder="(03) 252-XXXX">
+                <div class="card mb-3 p-3 border">
+                    <h5 class="mb-3">Enlace (Mapa / Información)</h5>
+                    <input type="text" name="link_noso" class="form-control contacto-field"
+                           value="<?= $contacto['link_noso'] ?>" disabled>
                 </div>
 
-                <button class="btn-save-modal">Guardar Cambios</button>
+                <button type="submit" id="btnGuardarContacto" class="btn-edit" disabled style="margin-left: 10px;">
+                    Guardar
+                </button>
+            </form>
+
+<?php $desarrolladores = include "../home/desarrolladores.php"; ?>
+ <br>
+            <br>
+<button class="btn-edit mb-3" 
+        data-bs-toggle="modal" 
+        data-bs-target="#modalAddDev">
+    <i class="fas fa-user-plus me-2"></i> Agregar Desarrollador
+</button>
+
+<div class="card mt-4">
+    <div class="card-header-custom">
+        <i class="fas fa-users-cog me-2"></i> Desarrolladores del Sistema
+    </div>
+    <div class="card-body p-0">
+
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Foto</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Descripción</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php foreach ($desarrolladores as $d): ?>
+                    <tr>
+                        <td>
+<img src="../<?= $d['ruta_completa'] ?>" class="rounded" width="50">
+                        </td>
+                        <td>
+                            <strong><?= htmlspecialchars($d['nombre'] . " " . $d['apellido']) ?></strong>
+                        </td>
+                        <td><?= htmlspecialchars($d['correo']) ?></td>
+                        <td><?= htmlspecialchars($d['descripcion']) ?></td>
+                        <td>
+                            <button class="btn-edit"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalEditDev"
+                                onclick='cargarDesarrollador(<?= json_encode($d) ?>)'>
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="modalEditDev" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-edit me-2"></i> Editar Desarrollador</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+
+            <form id="formEditarDev" enctype="multipart/form-data">
+                <div class="modal-body">
+
+                    <input type="hidden" name="ruta_actual" id="ruta_actual">
+
+                    <div class="row g-3">
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre *</label>
+                            <input type="text" id="dev_nombre" name="nombre" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Apellido *</label>
+                            <input type="text" id="dev_apellido" name="apellido" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Correo *</label>
+                            <input type="email" id="dev_correo" name="correo" class="form-control" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Descripción *</label>
+                            <textarea id="dev_descripcion" name="descripcion" rows="3" class="form-control" required></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Foto (opcional)</label>
+                            <input type="file" name="foto" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                          <br>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-save-modal">
+                        <i class="fas fa-save me-2"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+
         </div>
     </div>
+</div>
 
+<!-- MODAL AGREGAR DESARROLLADOR -->
+<div class="modal fade" id="modalAddDev" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+           
+            <div class="modal-header">
+               
+                <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i> Agregar Desarrollador</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form id="formAgregarDev" enctype="multipart/form-data">
+                <div class="modal-body">
+
+                    <div class="row g-3">
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre *</label>
+                            <input type="text" name="nombre" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Apellido *</label>
+                            <input type="text" name="apellido" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Correo *</label>
+                            <input type="email" name="correo" class="form-control" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Descripción *</label>
+                            <textarea name="descripcion" rows="3" class="form-control" required></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Foto *</label>
+                            <input type="file" name="foto" class="form-control" required>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-save-modal">
+                        <i class="fas fa-save me-2"></i> Guardar
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById("formAgregarDev").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let datos = new FormData(this);
+
+    fetch("../home/desarrolladores_agregar.php", {
+        method: "POST",
+        body: datos
+    })
+    .then(r => r.json())
+    .then(res => {
+        alert(res.msg);
+
+        if (res.status === "success") {
+            location.reload(); // Recargar la tabla automáticamente
+        }
+    });
+});
+</script>
+
+
+<script>
+function cargarDesarrollador(data) {
+    document.getElementById("dev_nombre").value = data.nombre;
+    document.getElementById("dev_apellido").value = data.apellido;
+    document.getElementById("dev_correo").value = data.correo;
+    document.getElementById("dev_descripcion").value = data.descripcion;
+
+    document.getElementById("ruta_actual").value = data.ruta; 
+    document.getElementById("dev_imagen").src = data.ruta_completa;
+}
+
+document.getElementById("formEditarDev").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let correo = document.getElementById("dev_correo").value;
+
+    if (!correo.endsWith("@uta.edu.ec")) {
+        alert("El correo debe terminar en @uta.edu.ec");
+        return;
+    }
+
+    let datos = new FormData(this);
+
+    fetch("../home/desarrolladores_guardar.php", {
+        method: "POST",
+        body: datos
+    })
+    .then(r => r.json())
+    .then(res => {
+        alert(res.msg);
+        if (res.status === "success") {
+            location.reload();
+        }
+    });
+});
+
+</script>
+
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const btnEditar = document.getElementById("btnEditarContacto");
+    const btnGuardar = document.getElementById("btnGuardarContacto");
+    const campos = document.querySelectorAll(".contacto-field");
+
+    // Habilitar edición
+    btnEditar.addEventListener("click", () => {
+        campos.forEach(c => c.disabled = false);
+        btnGuardar.disabled = false;
+        btnEditar.disabled = true;
+    });
+
+    // Validación + Guardado
+    document.getElementById("contactoForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        let des = this.des_noso.value.trim();
+        let link = this.link_noso.value.trim();
+
+        let errores = [];
+
+        if (des.length === 0) errores.push("La descripción no puede estar vacía.");
+        if (!/^https:\/\//.test(link)) errores.push("El enlace debe iniciar con https://");
+
+        if (errores.length > 0) {
+            alert(errores.join("\n"));
+            return;
+        }
+
+        let datos = new FormData(this);
+
+        fetch("../home/contactanos_guardar.php", {
+            method: "POST",
+            body: datos
+        })
+        .then(r => r.json())
+        .then(res => {
+            alert(res.msg);
+            if (res.status === "success") {
+                campos.forEach(c => c.disabled = true);
+                btnGuardar.disabled = true;
+                btnEditar.disabled = false;
+            }
+        });
+    });
+});
+</script>
+
+
+
+
+
+
+    <!-- fin CONTACTANOS -->
     <!-- FOOTER -->
  <?php
 $footer = include __DIR__ . "/../home/footer.php"; // Ajusta la ruta según tu archivo
@@ -627,37 +935,82 @@ $footer = include __DIR__ . "/../home/footer.php"; // Ajusta la ruta según tu a
 </div>
 
 <script>
-document.getElementById("btnEditarFooter").addEventListener("click", function() {
-    document.querySelectorAll(".footer-field").forEach(f => f.disabled = false);
-    document.getElementById("btnGuardarFooter").disabled = false;
-    this.disabled = true;
-});
+document.addEventListener("DOMContentLoaded", () => {
 
-document.getElementById("footerForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    let formData = new FormData(this);
+    const btnEditar = document.getElementById("btnEditarFooter");
+    const btnGuardar = document.getElementById("btnGuardarFooter");
+    const campos = document.querySelectorAll(".footer-field");
 
-    fetch("../home/guardar_footer.php", {
-        method: "POST",
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(data.status === "success"){
-            alert("Datos guardados correctamente");
-            document.querySelectorAll(".footer-field").forEach(f => f.disabled = true);
-            document.getElementById("btnGuardarFooter").disabled = true;
-            document.getElementById("btnEditarFooter").disabled = false;
-        } else {
-            alert("Error: " + data.msg);
-        }
-    })
-    .catch(err => {
-        alert("Error en la conexión.");
-        console.log(err);
+    // Habilitar edición
+    btnEditar.addEventListener("click", () => {
+        campos.forEach(campo => campo.removeAttribute("disabled"));
+        btnGuardar.disabled = false;
+        btnEditar.disabled = true;
     });
+
+    // Validación y envío
+    document.getElementById("footerForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        let telefono = this.telefono.value.trim();
+        let correo   = this.correo.value.trim();
+        let face     = this.face.value.trim();
+        let insta    = this.ins_gra.value.trim();
+
+        // Validaciones
+        let errores = [];
+
+        // Teléfono: +5939... o 09...
+        if (!/^(\+5939\d{8}|09\d{8})$/.test(telefono)) {
+            errores.push("Teléfono inválido. Debe iniciar con +5939 o 09 y tener 10 dígitos.");
+        }
+
+        // Correo: @uta.edu.ec
+        if (!/^[a-zA-Z0-9._%+-]+@uta\.edu\.ec$/.test(correo)) {
+            errores.push("Correo inválido. Debe ser @uta.edu.ec");
+        }
+
+        // Facebook e Instagram no vacíos y comiencen con https
+        if (!face || !/^https:\/\//.test(face)) {
+            errores.push("Facebook debe comenzar con https y no puede estar vacío.");
+        }
+
+        if (!insta || !/^https:\/\//.test(insta)) {
+            errores.push("Instagram/Gráfica debe comenzar con https y no puede estar vacío.");
+        }
+
+        if (errores.length > 0) {
+            alert(errores.join("\n"));
+            return;
+        }
+
+        // Enviar datos
+        let formData = new FormData(this);
+
+        fetch("../home/guardar_footer.php", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.msg);
+            if (data.status === "success") {
+                // Bloquear campos de nuevo
+                campos.forEach(campo => campo.setAttribute("disabled", true));
+                btnGuardar.disabled = true;
+                btnEditar.disabled = false;
+            }
+        })
+        .catch(err => {
+            alert("Error en la conexión.");
+            console.log(err);
+        });
+
+    });
+
 });
 </script>
+
 
      <!-- fin FOOTER -->
 
