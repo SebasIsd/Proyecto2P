@@ -1266,6 +1266,26 @@ if (!is_array($misionVision)) {
   <!-- end client section -->
 
   <!-- footer section -->
+
+<?php
+$footerData = include __DIR__ . '/home/footer.php';
+
+// Seguridad: validar array
+if (!is_array($footerData)) {
+    $footerData = [
+        "telefono"  => "Información no disponible",
+        "correo"    => "Información no disponible",
+        "Des_logo"  => "Información no disponible",
+        "face"      => "#",
+        "ins_gra"   => "#",
+        "dias"      => "Información no disponible",
+        "horas"     => "Información no disponible",
+        "derechos"  => "Información no disponible"
+    ];
+}
+?>
+
+
   <footer class="footer_section">
     <div class="container">
       <div class="row">
@@ -1275,22 +1295,17 @@ if (!is_array($misionVision)) {
               Contacto
             </h4>
             <div class="contact_link_box">
-              <a href="">
-                <i class="fa fa-map-marker" aria-hidden="true"></i>
-                <span>
-                  Location
-                </span>
-              </a>
-              <a href="">
+             
+              <a>
                 <i class="fa fa-phone" aria-hidden="true"></i>
                 <span>
-                  Call +01 1234567890
+                   <?= htmlspecialchars($footerData["telefono"]) ?>
                 </span>
               </a>
-              <a href="">
+              <a>
                 <i class="fa fa-envelope" aria-hidden="true"></i>
                 <span>
-                  demo@gmail.com
+               <?= htmlspecialchars($footerData["correo"]) ?>
                 </span>
               </a>
             </div>
@@ -1302,47 +1317,33 @@ if (!is_array($misionVision)) {
               Feane
             </a>
             <p>
-              Necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin
-              words, combined with
+               <?= htmlspecialchars($footerData["Des_logo"]) ?>
             </p>
             <div class="footer_social">
-              <a href="">
-                <i class="fa fa-facebook" aria-hidden="true"></i>
-              </a>
-              <a href="">
-                <i class="fa fa-twitter" aria-hidden="true"></i>
-              </a>
-              <a href="">
-                <i class="fa fa-linkedin" aria-hidden="true"></i>
-              </a>
-              <a href="">
+              <a href="<?= htmlspecialchars($footerData["face"]) ?>">
+              <i class="fa fa-facebook" aria-hidden="true"></i>
+            </a>  
+            
+              <a href="<?= htmlspecialchars($footerData["ins_gra"]) ?>">
                 <i class="fa fa-instagram" aria-hidden="true"></i>
               </a>
-              <a href="">
-                <i class="fa fa-pinterest" aria-hidden="true"></i>
-              </a>
+
             </div>
           </div>
         </div>
         <div class="col-md-4 footer-col">
           <h4>
-            Opening Hours
+            Horarios De atencion
           </h4>
-          <p>
-            Everyday
-          </p>
-          <p>
-            10.00 Am -10.00 Pm
-          </p>
+           <p><?= htmlspecialchars($footerData["dias"]) ?></p>
+          <p><?= htmlspecialchars($footerData["horas"]) ?></p>
         </div>
       </div>
       <div class="footer-info">
-        <p>
-          &copy; <span id="displayYear"></span> All Rights Reserved By
-          <a href="https://html.design/">Free Html Templates</a><br><br>
-          &copy; <span id="displayYear"></span> Distributed By
-          <a href="https://themewagon.com/" target="_blank">ThemeWagon</a>
-        </p>
+       <p>
+        &copy; <span id="displayYear"></span>
+        <?= htmlspecialchars($footerData["derechos"]) ?>
+      </p>  
       </div>
     </div>
   </footer> 
