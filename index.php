@@ -318,6 +318,48 @@ if (!is_array($sliderData)) {
   </div>
 </section>
   <!-- end offer section -->
+<!-- section Mision y vision -->
+<?php
+// incluir el archivo que retorna el arreglo
+// ajusta la ruta si index.php no está en la raíz (ejemplo asumido: index.php en la raíz del proyecto)
+$misionVision = include __DIR__ . '/home/mision_vision.php';
+
+// seguridad: asegurarnos de que sea un array con claves esperadas
+if (!is_array($misionVision)) {
+    $misionVision = [
+        "mision" => "Información no disponible",
+        "vision" => "Información no disponible"
+    ];
+}
+?>
+
+<section class="about_section layout_padding">
+  <div class="container">
+    
+
+    <div class="row mt-4">
+      <!-- Misión -->
+      <div class="col-md-6">
+        <div class="box">
+          <h3><strong>Misión</strong></h3>
+          <p><?= htmlspecialchars($misionVision["mision"], ENT_QUOTES, 'UTF-8') ?></p>
+        </div>
+      </div>
+
+      <!-- Visión -->
+      <div class="col-md-6">
+        <div class="box">
+          <h3><strong>Visión</strong></h3>
+          <p><?= htmlspecialchars($misionVision["vision"], ENT_QUOTES, 'UTF-8') ?></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- final mision y vision -->
+
 
   <!-- food section -->
 
