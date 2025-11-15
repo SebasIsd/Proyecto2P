@@ -198,7 +198,6 @@ $requisitos = $conn->query("
         </div>
         <a href="usuarios_inicio.php"><i class="fas fa-home"></i> <span>Inicio</span></a>
         <a href="mis_eventos.php" class="active"><i class="fas fa-calendar-alt"></i> <span>Mis Eventos</span></a>
-        <a href="lista_espera.php"><i class="fas fa-clock"></i> <span>Lista de Espera</span></a>
         <a href="buscar_eventos.php"><i class="fas fa-search"></i> <span>Buscar Eventos</span></a>
         <a href="perfil_usuario.php"><i class="fas fa-user"></i> <span>Perfil</span></a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a>

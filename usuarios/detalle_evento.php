@@ -381,26 +381,6 @@ $requisitos = $conn->query("
                     <?php endif; ?>
                     <a href="buscar_eventos.php" class="btn btn-secondary ms-2">Volver</a>
                 </div>
-
-                <script>
-                function agregarListaEspera(idEvento) {
-                    if (!confirm('¿Deseas entrar en la lista de espera para este evento?')) return;
-                    
-                    fetch('procesar_inscripcion.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: 'id_evento=' + idEvento
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        alert(data.message);
-                        if (data.success) {
-                            window.location.href = 'lista_espera.php';
-                        }
-                    })
-                    .catch(() => alert('Error de conexión'));
-                }
-                </script>
             </div>
         </div>
     </div>
