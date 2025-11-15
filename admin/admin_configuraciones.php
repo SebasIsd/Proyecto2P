@@ -556,29 +556,109 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
 
     <!-- FOOTER -->
-    <div class="accordion-item mb-3" style="border-radius: var(--radius); overflow:hidden; box-shadow: var(--shadow);">
-        <h2 class="accordion-header">
-            <button class="accordion-button collapsed"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#footerConfig">
-                <i class="fas fa-bars me-2"></i> Configuración de Footer
-            </button>
-        </h2>
+ <?php
+$footer = include __DIR__ . "/../home/footer.php"; // Ajusta la ruta según tu archivo
+?>
 
-        <div id="footerConfig" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
-            <div class="accordion-body">
-                <p class="text-muted">Edita la información del pie de página, redes sociales y texto legal.</p>
+<div class="accordion-item mb-3">
+    <h2 class="accordion-header">
+        <button class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#footerConfig">
+            <i class="fas fa-bars me-2"></i> Configuración de Footer
+        </button>
+    </h2>
 
-                <div class="mb-3">
-                    <label class="form-label">Texto del Footer</label>
-                    <textarea class="form-control" rows="3" placeholder="Descripción del footer..."></textarea>
+    <div id="footerConfig" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+        <div class="accordion-body">
+            <p class="text-muted">Edita la información del pie de página, redes sociales y texto legal.</p>
+
+            <button id="btnEditarFooter" class="btn-edit">Editar Footer</button>
+            <br><br>
+
+            <form id="footerForm">
+
+                <div class="card mb-3 p-3 border">
+                    <h5 class="mb-3">Teléfono</h5>
+                    <input type="text" name="telefono" class="form-control footer-field" value="<?= $footer['telefono'] ?>" disabled>
                 </div>
 
-                <button class="btn-save-modal">Guardar Cambios</button>
-            </div>
+                <div class="card mb-3 p-3 border">
+                    <h5 class="mb-3">Correo</h5>
+                    <input type="email" name="correo" class="form-control footer-field" value="<?= $footer['correo'] ?>" disabled>
+                </div>
+
+                <div class="card mb-3 p-3 border">
+                    <h5 class="mb-3">Descripción del Logo</h5>
+                    <input type="text" name="Des_logo" class="form-control footer-field" value="<?= $footer['Des_logo'] ?>" disabled>
+                </div>
+
+                <div class="card mb-3 p-3 border">
+                    <h5 class="mb-3">Facebook</h5>
+                    <input type="text" name="face" class="form-control footer-field" value="<?= $footer['face'] ?>" disabled>
+                </div>
+
+                <div class="card mb-3 p-3 border">
+                    <h5 class="mb-3">Instagram/Gráfica</h5>
+                    <input type="text" name="ins_gra" class="form-control footer-field" value="<?= $footer['ins_gra'] ?>" disabled>
+                </div>
+
+                <div class="card mb-3 p-3 border">
+                    <h5 class="mb-3">Días de Atención</h5>
+                    <input type="text" name="dias" class="form-control footer-field" value="<?= $footer['dias'] ?>" disabled>
+                </div>
+
+                <div class="card mb-3 p-3 border">
+                    <h5 class="mb-3">Horas de Atención</h5>
+                    <input type="text" name="horas" class="form-control footer-field" value="<?= $footer['horas'] ?>" disabled>
+                </div>
+
+                <div class="card mb-3 p-3 border">
+                    <h5 class="mb-3">Derechos</h5>
+                    <textarea name="derechos" class="form-control footer-field" rows="3" disabled><?= $footer['derechos'] ?></textarea>
+                </div>
+
+                <button type="submit" id="btnGuardarFooter" class="btn-edit" disabled style="margin-left: 10px;">Guardar</button>
+            </form>
+
         </div>
     </div>
+</div>
+
+<script>
+document.getElementById("btnEditarFooter").addEventListener("click", function() {
+    document.querySelectorAll(".footer-field").forEach(f => f.disabled = false);
+    document.getElementById("btnGuardarFooter").disabled = false;
+    this.disabled = true;
+});
+
+document.getElementById("footerForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    let formData = new FormData(this);
+
+    fetch("../home/guardar_footer.php", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.status === "success"){
+            alert("Datos guardados correctamente");
+            document.querySelectorAll(".footer-field").forEach(f => f.disabled = true);
+            document.getElementById("btnGuardarFooter").disabled = true;
+            document.getElementById("btnEditarFooter").disabled = false;
+        } else {
+            alert("Error: " + data.msg);
+        }
+    })
+    .catch(err => {
+        alert("Error en la conexión.");
+        console.log(err);
+    });
+});
+</script>
+
      <!-- fin FOOTER -->
 
 </div>
