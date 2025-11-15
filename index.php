@@ -1272,7 +1272,7 @@ if (!is_array($misionVision)) {
         <div class="col-md-4 footer-col">
           <div class="footer_contact">
             <h4>
-              Contact Us
+              Contacto
             </h4>
             <div class="contact_link_box">
               <a href="">
@@ -1345,7 +1345,7 @@ if (!is_array($misionVision)) {
         </p>
       </div>
     </div>
-  </footer>
+  </footer> 
   <!-- footer section -->
 
   <!-- jQery -->
