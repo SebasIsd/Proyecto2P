@@ -337,58 +337,50 @@ if (!is_array($nosData)) {
   <!-- end book section -->
 
   <!-- client section -->
+<?php
+$devs = include __DIR__ . "/home/desarrolladores.php";
 
-  <section class="client_section layout_padding-bottom">
-    <div class="container">
-      <div class="heading_container heading_center psudo_white_primary mb_45">
-        <h2>
-          What Says Our Customers
-        </h2>
-      </div>
-      <div class="carousel-wrap row ">
-        <div class="owl-carousel client_owl-carousel">
-          <div class="item">
-            <div class="box">
-              <div class="detail-box">
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                  dolore magna aliqua. Ut enim ad minim veniam
-                </p>
-                <h6>
-                  Moana Michell
-                </h6>
-                <p>
-                  magna aliqua
-                </p>
-              </div>
-              <div class="img-box">
-                <img src="images/client1.jpg" alt="" class="box-img">
-              </div>
+?>
+ <section class="client_section layout_padding-bottom">
+  <div class="container">
+    <div class="heading_container heading_center psudo_white_primary mb_45">
+      <h2>Desarrolladores</h2>
+    </div>
+
+    <div class="carousel-wrap row">
+      <div class="owl-carousel client_owl-carousel">
+
+        <?php foreach ($devs as $dev): ?>
+        <div class="item">
+          <div class="box">
+            <div class="detail-box">
+             
+
+              <h6>
+                <?= $dev["nombre"] . " " . $dev["apellido"] ?>
+              </h6>
+               <p>
+                <?= $dev["descripcion"] ?>
+              </p>
+
+              <p>
+                <?= $dev["correo"] ?>
+              </p>
             </div>
-          </div>
-          <div class="item">
-            <div class="box">
-              <div class="detail-box">
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                  dolore magna aliqua. Ut enim ad minim veniam
-                </p>
-                <h6>
-                  Mike Hamell
-                </h6>
-                <p>
-                  magna aliqua
-                </p>
-              </div>
-              <div class="img-box">
-                <img src="images/client2.jpg" alt="" class="box-img">
-              </div>
+
+            <div class="img-box">
+              <img src="<?= $dev["ruta_completa"] ?>" alt="" class="box-img">
             </div>
+
           </div>
         </div>
+        <?php endforeach; ?>
+
       </div>
     </div>
-  </section>
+
+  </div>
+</section>
 
   <!-- end client section -->
 
