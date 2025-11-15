@@ -353,12 +353,13 @@ $slider = include __DIR__ . "../../home/slider.php";
 
    <div id="homeConfig1" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
         <div class="accordion-body">
+       <h1 class="mb-4">Habilitar edicion</h1>
+
         <!-- Comienso slider -->
-            <p class="text-muted">Edicion del slider en portada</p>
-
             <!-- BOTÓN EDITAR -->
-            <button id="btnEditarSlider" class="btn btn-warning mb-3">Editar Slider</button>
-
+            <button id="btnEditarSlider" class="btn-edit">Editar Slider</button>
+                <br>
+                 <br>
             <form id="sliderForm">
 
                 <?php for ($i = 0; $i < 3; $i++): ?>
@@ -385,7 +386,7 @@ $slider = include __DIR__ . "../../home/slider.php";
                 </div>
                 <?php endfor; ?>
 
-                <button type="submit" id="btnGuardarSlider" class="btn btn-success" disabled>
+                <button type="submit" id="btnGuardarSlider" class="btn-edit" disabled>
                     Guardar
                 </button>
             </form>
@@ -428,9 +429,93 @@ document.getElementById("sliderForm").addEventListener("submit", function(e) {
 });
 </script>
 <!-- fin slider -->
+ <br>
+                 <br>
+  <h1 class="mb-4">Mision y Vision</h1>
     <!-- Mision -->
+     
+<?php
+$misionVision = include "../home/mision_vision.php";
+?>
+<button type="button" id="btnEditarMV" class="btn-edit"   style="margin-left: 20px;">Habilitar edicion</button>
+<br>
+                 <br>
+ <form id="mvForm"> 
 
-    
+    <div class="card mb-3 p-3 border">
+        <h5 class="mb-3">Misión</h5>
+        <textarea id="inputMision" class="form-control mv-field" rows="4" readonly></textarea>
+    </div>
+
+    <div class="card mb-3 p-3 border">
+        <h5 class="mb-3">Visión</h5>
+        <textarea id="inputVision" class="form-control mv-field" rows="4" readonly></textarea>
+    </div>
+
+    <button type="button" id="btnGuardarMV" class="btn-edit" disabled  style="margin-left: 20px;">Guardar</button>
+</form>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("inputMision").value = `<?= $misionVision["mision"] ?>`;
+    document.getElementById("inputVision").value = `<?= $misionVision["vision"] ?>`;
+});
+</script>
+<script>
+function guardarMisionVision() {
+    let datos = new FormData();
+    datos.append("mision", document.getElementById("inputMision").value);
+    datos.append("vision", document.getElementById("inputVision").value);
+
+    fetch("./home/mision_vision_guardar.php", {
+        method: "POST",
+        body: datos
+    })
+    .then(r => r.json())
+    .then(res => {
+        alert(res.msg);
+    });
+}
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // Cargar datos de PHP
+    document.getElementById("inputMision").value = `<?= $misionVision["mision"] ?>`;
+    document.getElementById("inputVision").value = `<?= $misionVision["vision"] ?>`;
+
+    // Botón Editar
+    document.getElementById("btnEditarMV").addEventListener("click", function() {
+        document.querySelectorAll(".mv-field").forEach(campo => campo.removeAttribute("readonly"));
+        document.getElementById("btnGuardarMV").disabled = false;
+        this.disabled = true; // desactivar botón editar
+    });
+
+    // Botón Guardar
+    document.getElementById("btnGuardarMV").addEventListener("click", function() {
+        let datos = new FormData();
+        datos.append("mision", document.getElementById("inputMision").value);
+        datos.append("vision", document.getElementById("inputVision").value);
+
+        fetch("../home/mision_vision_guardar.php", {
+            method: "POST",
+            body: datos
+        })
+        .then(r => r.json())
+        .then(res => {
+            alert(res.msg);
+            if(res.ok){
+                // Volver a bloquear campos y habilitar editar
+                document.querySelectorAll(".mv-field").forEach(campo => campo.setAttribute("readonly", true));
+                document.getElementById("btnEditarMV").disabled = false;
+                document.getElementById("btnGuardarMV").disabled = true;
+            }
+        });
+    });
+});
+</script>
+
+
     <!-- mision fin -->
 
 
@@ -494,6 +579,7 @@ document.getElementById("sliderForm").addEventListener("submit", function(e) {
             </div>
         </div>
     </div>
+     <!-- fin FOOTER -->
 
 </div>
 
