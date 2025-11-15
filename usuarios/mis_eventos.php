@@ -22,6 +22,7 @@ $eventos = $conn->query("
         t.NOM_TIPO_EVE,
         i.ESTADO_INS,
         i.EST_PAG_INS,
+        i.ID_INS,  -- IMPORTANTE: agregar este campo
         p.URL_COMPROBANTE AS COMPROBANTE_PAGO,
         i.FEC_INI_INS
     FROM INSCRIPCIONES i
@@ -427,12 +428,12 @@ $eventos = $conn->query("
         </div>
         <a href="usuarios_inicio.php"><i class="fas fa-home"></i> <span>Inicio</span></a>
         <a href="mis_eventos.php" class="active"><i class="fas fa-calendar-alt"></i> <span>Mis Eventos</span></a>
+        <a href="lista_espera.php"><i class="fas fa-clock"></i> <span>Lista de Espera</span></a>
         <a href="buscar_eventos.php"><i class="fas fa-search"></i> <span>Buscar Eventos</span></a>
         <a href="perfil_usuario.php"><i class="fas fa-user"></i> <span>Perfil</span></a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a>
     </div>
 
- <!-- Contenido -->
     <div class="content">
         <div class="page-header">
             <h2 class="text-dark"><i class="fas fa-calendar-check"></i> Mis Eventos</h2>
@@ -454,13 +455,12 @@ $eventos = $conn->query("
                     WHERE er.ID_EVE_CUR = {$e['ID_EVE_CUR']}
                 ")->fetch_all(MYSQLI_ASSOC);
 
-                // Cargar evidencias subidas por el usuario
+                // Cargar evidencias subidas por el usuario - CONSULTA CORREGIDA
                 $evidencias = $conn->query("
-                    SELECT r.NOM_REQ, r.TIPO, e.VALOR_TEXTO, e.NOMBRE_ARCHIVO, e.URL_ARCHIVO, e.TIPO_MIME
+                    SELECT r.ID_REQ, r.NOM_REQ, r.TIPO, e.VALOR_TEXTO, e.VALOR_NUMERICO, e.NOMBRE_ARCHIVO, e.URL_ARCHIVO, e.TIPO_MIME
                     FROM EVIDENCIAS e
                     JOIN REQUISITOS r ON e.ID_REQ = r.ID_REQ
-                    JOIN INSCRIPCIONES i ON e.ID_INS = i.ID_INS
-                    WHERE i.ID_EVE_CUR = {$e['ID_EVE_CUR']} AND i.CED_USU = '$cedula'
+                    WHERE e.ID_INS = {$e['ID_INS']}
                 ")->fetch_all(MYSQLI_ASSOC);
                 ?>
 
@@ -514,7 +514,7 @@ $eventos = $conn->query("
                                     <button class="btn btn-sm btn-outline-primary" 
                                             data-bs-toggle="modal" 
                                             data-bs-target="#documentosModal"
-                                            onclick="cargarDocumentos(<?= $e['ID_EVE_CUR'] ?>, '<?= addslashes($e['TIT_EVE_CUR']) ?>', '<?= $e['COMPROBANTE_PAGO'] ?>', <?= json_encode($evidencias) ?>)">
+                                            onclick="cargarDocumentos(<?= $e['ID_EVE_CUR'] ?>, '<?= addslashes($e['TIT_EVE_CUR']) ?>', '<?= $e['COMPROBANTE_PAGO'] ?>', <?= htmlspecialchars(json_encode($evidencias), ENT_QUOTES, 'UTF-8') ?>)">
                                         <i class="fas fa-folder-open"></i> Ver Documentos
                                     </button>
                                 </div>
@@ -526,7 +526,7 @@ $eventos = $conn->query("
                                 <i class="fas fa-eye"></i> Detalles
                             </a>
 
-                            <?php if ($e['REQUIERE_ASISTENCIA'] && $e['ESTADO_INS'] == 'Inscrito'
+                            <?php if ($e['REQUIERE_ASISTENCIA'] && $e['ESTADO_INS'] == 'Confirmado'
                                 && strtotime($e['FEC_INI_EVE_CUR']) <= time()
                                 && strtotime($e['FEC_FIN_EVE_CUR']) >= time()): ?>
                                 <button class="btn btn-sm btn-success" onclick="registrarAsistencia(<?= $e['ID_EVE_CUR'] ?>)">
@@ -591,6 +591,9 @@ $eventos = $conn->query("
         }
 
         function cargarDocumentos(id_evento, titulo, comprobante, evidencias) {
+            console.log("Comprobante:", comprobante);
+            console.log("Evidencias:", evidencias);
+            
             const modalTitulo = document.getElementById('modalTituloDocs');
             const modalBody = document.getElementById('modalContenidoDocs');
             
@@ -598,25 +601,14 @@ $eventos = $conn->query("
             let html = '';
 
             // COMPROBANTE
-            if (comprobante) {
+            if (comprobante && comprobante !== 'null' && comprobante !== '') {
                 const path = '../uploads/comprobantes/' + comprobante;
                 const ext = comprobante.split('.').pop().toLowerCase();
                 html += `<div class="mb-4 p-3 border rounded bg-light">
                     <h6 class="text-primary"><i class="fas fa-file-invoice-dollar"></i> Comprobante de Pago</h6>`;
+                
                 if (['jpg', 'jpeg', 'png'].includes(ext)) {
-                    html += `<canvas id="canvas-comprobante" class="img-fluid" style="max-height: 500px;"></canvas>
-                             <script>
-                                 const img = new Image();
-                                 img.src = '${path}';
-                                 img.onload = () => {
-                                     const canvas = document.getElementById('canvas-comprobante');
-                                     const ctx = canvas.getContext('2d');
-                                     const maxW = 700;
-                                     canvas.width = Math.min(img.width, maxW);
-                                     canvas.height = canvas.width * (img.height / img.width);
-                                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                                 };
-                             <\/script>`;
+                    html += `<img src="${path}" class="img-fluid" style="max-height: 500px;" alt="Comprobante de pago">`;
                 } else if (ext === 'pdf') {
                     html += `<embed src="${path}" type="application/pdf" width="100%" height="600px" />`;
                 }
@@ -630,27 +622,20 @@ $eventos = $conn->query("
                     html += `<div class="mb-3 p-3 border rounded">
                         <strong>${ev.NOM_REQ} (${ev.TIPO})</strong><br>`;
                     if (ev.TIPO === 'TEXTO_CORTO' && ev.VALOR_TEXTO) {
-                        html += `<p class="mb-0">"${ev.VALOR_TEXTO}"</p>`;
+                        html += `<p class="mb-0 mt-2"><strong>Texto:</strong> "${ev.VALOR_TEXTO}"</p>`;
+                    } else if (ev.TIPO === 'NUMERICO') {
+                        if (ev.VALOR_NUMERICO) {
+                            html += `<p class="mb-0 mt-2"><strong>Nota:</strong> ${ev.VALOR_NUMERICO}</p>`;
+                        } else {
+                            html += `<p class="mb-0 mt-2 text-muted"><i>Pendiente de evaluación</i></p>`;
+                        }
                     } else if (ev.NOMBRE_ARCHIVO) {
                         const path = '../uploads/requisitos/' + ev.NOMBRE_ARCHIVO;
                         const ext = ev.NOMBRE_ARCHIVO.split('.').pop().toLowerCase();
                         if (['jpg', 'jpeg', 'png'].includes(ext)) {
-                            const canvasId = 'canvas-req-' + ev.ID_REQ;
-                            html += `<canvas id="${canvasId}" class="img-fluid" style="max-height: 400px;"></canvas>
-                                     <script>
-                                         const img${ev.ID_REQ} = new Image();
-                                         img${ev.ID_REQ}.src = '${path}';
-                                         img${ev.ID_REQ}.onload = () => {
-                                             const c = document.getElementById('${canvasId}');
-                                             const ctx = c.getContext('2d');
-                                             const maxW = 600;
-                                             c.width = Math.min(img${ev.ID_REQ}.width, maxW);
-                                             c.height = c.width * (img${ev.ID_REQ}.height / img${ev.ID_REQ}.width);
-                                             ctx.drawImage(img${ev.ID_REQ}, 0, 0, c.width, c.height);
-                                         };
-                                     <\/script>`;
+                            html += `<img src="${path}" class="img-fluid mt-2" style="max-height: 400px;" alt="${ev.NOM_REQ}">`;
                         } else if (ext === 'pdf') {
-                            html += `<embed src="${path}" type="application/pdf" width="100%" height="500px" class="border rounded" />`;
+                            html += `<embed src="${path}" type="application/pdf" width="100%" height="500px" class="border rounded mt-2" />`;
                         }
                     } else {
                         html += `<span class="text-muted">No entregado</span>`;
