@@ -376,7 +376,7 @@ if (!is_array($misionVision)) {
 
                     let btnTodos = document.createElement("li");
                     btnTodos.textContent = "Todos";
-                    btnTodos.dataset.filter = data.todos;
+                    btnTodos.dataset.filter = ".all";
                     btnTodos.classList.add("active");
                     contenedor.appendChild(btnTodos);
 
