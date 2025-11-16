@@ -2,16 +2,20 @@
 // home/contactanos.php
 // Devuelve un array con los datos de la tabla contactanos.
 
-include __DIR__ . '/../includes/conexion.php'; // ruta relativa
+// home/contactanos.php
 
+include __DIR__ . '/../includes/conexion.php';
+
+// Valores por defecto
 $data = [
     "id"        => "Información no disponible",
     "des_noso"  => "Información no disponible",
-    "link_noso" => "Información no disponible"
+    "link_noso" => "Información no disponible",
+    "ruta"      => "default.png" // imagen por defecto si algo falla
 ];
 
-// Consulta a la tabla contactanos
-$sql = "SELECT id, des_noso, link_noso 
+// Consulta con la nueva columna incluida
+$sql = "SELECT id, des_noso, link_noso, ruta 
         FROM contactanos
         LIMIT 1";
 
@@ -23,9 +27,10 @@ if ($res && $res->num_rows > 0) {
     $data = [
         "id"        => $row["id"]        ?? $data["id"],
         "des_noso"  => $row["des_noso"]  ?? $data["des_noso"],
-        "link_noso" => $row["link_noso"] ?? $data["link_noso"]
+        "link_noso" => $row["link_noso"] ?? $data["link_noso"],
+        "ruta"      => $row["ruta"]      ?? $data["ruta"]
     ];
 }
 
-// Devuelve el array sin imprimir nada
 return $data;
+
