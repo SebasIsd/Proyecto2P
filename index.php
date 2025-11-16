@@ -360,17 +360,62 @@ if (!is_array($misionVision)) {
     <div class="container">
       <div class="heading_container heading_center">
         <h2>
-          Our Menu
+         Eventos
         </h2>
-      </div>
+      </div>  
 
-      <ul class="filters_menu">
-        <li class="active" data-filter="*">All</li>
-        <li data-filter=".burger">Burger</li>
-        <li data-filter=".pizza">Pizza</li>
-        <li data-filter=".pasta">Pasta</li>
-        <li data-filter=".fries">Fries</li>
-      </ul>
+     <ul class="filters_menu" id="filtrosCarreras">
+    <!-- Se llenará dinámicamente -->
+</ul>
+<ul class="filters_menu" id="filtrosCarreras">
+</ul>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    fetch("./login/registrar/car.php")
+        .then(res => res.json())
+        .then(data => {
+            let contenedor = document.getElementById("filtrosCarreras");
+
+            // Botón "Todos"
+            let btnTodos = document.createElement("li");
+            btnTodos.textContent = "Todos";
+            btnTodos.dataset.filter = data.todos;
+            btnTodos.classList.add("active");
+            contenedor.appendChild(btnTodos);
+
+            // Botón "Sin carrera"
+            let btnSin = document.createElement("li");
+            btnSin.textContent = "Sin carrera";
+            btnSin.dataset.filter = data.sin_carrera;
+            contenedor.appendChild(btnSin);
+
+            // Botones dinámicos de cada carrera
+            data.carreras.forEach(c => {
+                let li = document.createElement("li");
+                li.dataset.filter = `.carrera_${c.id}`;
+                li.textContent = c.nombre;
+                contenedor.appendChild(li);
+            });
+
+            // 🔥 Recuperar animación de selección
+            contenedor.querySelectorAll("li").forEach(li => {
+                li.addEventListener("click", function () {
+
+                    contenedor.querySelectorAll("li").forEach(item => {
+                        item.classList.remove("active");
+                    });
+
+                    this.classList.add("active");
+                });
+            });
+        });
+
+});
+</script>
+
+
 
       <div class="filters-content">
         <div class="row grid">
