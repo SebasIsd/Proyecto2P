@@ -552,7 +552,8 @@ $contacto = include "../home/contactanos.php";
             <button id="btnEditarContacto" class="btn-edit">Habilitar edicion</button>
             <br><br>
 
-            <form id="contactoForm">
+           <form id="contactoForm" enctype="multipart/form-data">
+
 
                 <div class="card mb-3 p-3 border">
                     <h5 class="mb-3">Descripción</h5>
@@ -564,6 +565,22 @@ $contacto = include "../home/contactanos.php";
                     <input type="text" name="link_noso" class="form-control contacto-field"
                            value="<?= $contacto['link_noso'] ?>" disabled>
                 </div>
+                <div class="card mb-3 p-3 border">
+    <h5 class="mb-3">Imagen (Sección Nosotros)</h5>
+
+    <!-- Vista previa -->
+    <img id="previewImgNosotros"
+         src="../images/nosotros/<?= $contacto['ruta'] ?>"
+         style="width:180px; border-radius:10px; border:2px solid #ccc; margin-bottom:10px;">
+
+    <!-- Input de archivo -->
+   <input type="file" 
+       name="imgNosotros" 
+       id="imgNosotros" 
+       class="form-control contacto-field" 
+       style="margin-top:10px;" 
+       disabled>
+</div>
 
                 <button type="submit" id="btnGuardarContacto" class="btn-edit" disabled style="margin-left: 10px;">
                     Guardar
@@ -853,9 +870,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnEditar.disabled = false;
             }
         });
+    });   //  ←🔥 AQUÍ FALTABA EL CIERRE
+
+    // Vista previa de la nueva imagen
+    document.getElementById("imgNosotros").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            document.getElementById("previewImgNosotros").src = URL.createObjectURL(file);
+        }
     });
+
 });
 </script>
+
 
 
 
