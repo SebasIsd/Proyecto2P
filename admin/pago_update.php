@@ -7,6 +7,7 @@ if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'admi
 }
 
 require_once __DIR__ . '/../includes/conexion.php';
+require_once __DIR__ . '/../includes/inscripciones_helper.php'; 
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: verificar_pagos.php");
@@ -49,18 +50,7 @@ if ($stmt) {
     $stmt->close();
 }
 
-// 2. Opcional: actualizar el estado de pago en INSCRIPCIONES
-//    Si el pago está aprobado -> EST_PAG_INS = 'Pagado'
-//    Si está Pendiente o Rechazado -> EST_PAG_INS = 'Pendiente'
-$estadoPagoIns = ($estado === 'Aprobado') ? 'Pagado' : 'Pendiente';
-
-$sql2 = "UPDATE INSCRIPCIONES SET EST_PAG_INS = ? WHERE ID_INS = ?";
-$stmt2 = $conn->prepare($sql2);
-if ($stmt2) {
-    $stmt2->bind_param("si", $estadoPagoIns, $idIns);
-    $stmt2->execute();
-    $stmt2->close();
-}
+actualizarEstadoInscripcion($conn, $idIns);
 
 // Volver a la pantalla anterior
 $destino = $_SERVER['HTTP_REFERER'] ?? "verificar_pagos.php?evento=".$idEvento;

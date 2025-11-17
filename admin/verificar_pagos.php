@@ -188,7 +188,7 @@ if ($eventId) {
     <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> <span>Gestionar Usuarios</span></a>
     <a href="evidencias_global.php"><i class="fa fa-clipboard-check me-2"></i> <span>Gestionar Evidencias</span></a>
     <a href="verificar_pagos.php" class="active"><i class="fa fa-money-bill me-2"></i> <span>Gestionar Pagos</span></a>
-    <a href="../certificados/certificado.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
+    <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
     <a href="#"><i class="fas fa-chart-bar me-2"></i> <span>Estadísticas</span></a>
     <a href="perfil.php"><i class="fas fa-user me-2"></i> <span>Perfil</span></a>
     <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> <span>Cerrar Sesión</span></a>

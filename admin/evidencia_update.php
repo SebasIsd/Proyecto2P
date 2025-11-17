@@ -8,6 +8,7 @@ if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'admi
 }
 
 require_once __DIR__ . '/../includes/conexion.php';
+require_once __DIR__ . '/../includes/inscripciones_helper.php';
 
 // 2. Validar método
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -89,6 +90,7 @@ $stmt->bind_param(
 $stmt->execute();
 $stmt->close();
 
+actualizarEstadoInscripcion($conn, $idIns);
 // 5. Redirigir de vuelta a la página anterior, conservando filtros si es posible
 $destino = $_SERVER['HTTP_REFERER'] ?? "evidencias_global.php?evento=$idEvento";
 header("Location: $destino");
