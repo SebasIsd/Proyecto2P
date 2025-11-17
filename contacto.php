@@ -53,9 +53,9 @@ require './home/autoridades.php';
     <header class="header_section">
       <div class="container">
         <nav class="navbar navbar-expand-lg custom_nav-container ">
-          <a class="navbar-brand" href="index.html">
+          <a class="navbar-brand" href="index.php">
             <span>
-              Eventos disponibles
+             Eventos CTT UTA
             </span>
           </a>
 
@@ -70,7 +70,7 @@ require './home/autoridades.php';
                 <a class="nav-link" href="index.php">Inicio <span class="sr-only">(current)</span></a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="">Eventos</a>
+                
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="contacto.php">Contactanos</a>
@@ -167,9 +167,7 @@ if (!is_array($sliderData)) {
                     <?= $sliderData[0]["descripcion"] ?> 
                     </p>
                     <div class="btn-box">
-                      <a href="" class="btn1">
-                        Ver mas Informacion
-                      </a>
+                       <!-- boton saber mas -->
                     </div>
                   </div>
                 </div>
@@ -188,9 +186,7 @@ if (!is_array($sliderData)) {
                      <?= $sliderData[1]["descripcion"] ?> 
                     </p>
                     <div class="btn-box">
-                      <a href="" class="btn1">
-                        Contactanos
-                      </a>
+                         <!-- boton contactanos -->
                     </div>
                   </div>
                 </div>
@@ -209,9 +205,7 @@ if (!is_array($sliderData)) {
                     <?= $sliderData[2]["descripcion"] ?> 
                     </p>
                     <div class="btn-box">
-                      <a href="" class="btn1">
-                        Saber mas
-                      </a>
+                        <!-- boton saber mas -->
                     </div>
                   </div>
                 </div>
@@ -245,7 +239,7 @@ if (!is_array($nosData)) {
 }
 ?>
 
-  <section class="about_section layout_padding">
+  <section class="about_section layout_padding" style="background-color: #6f0909;">
     <div class="container  ">
 
       <div class="row">
@@ -318,7 +312,7 @@ if (!is_array($nosData)) {
             </div>
 
             <div class="btn_box">
-              <button type="submit">Enviar comentario</button>
+              <button type="submit" style="background-color: #6f0909;">Enviar comentario</button>
             </div>
 
           </form>
@@ -411,7 +405,7 @@ $devs = include __DIR__ . "/home/desarrolladores.php";
  <section class="client_section layout_padding-bottom">
   <div class="container">
     <div class="heading_container heading_center psudo_white_primary mb_45">
-      <h2>Desarrolladores</h2>
+      <h2 style="color:#6f0909;">Desarrolladores</h2>
     </div>
 
     <div class="carousel-wrap row">
@@ -419,8 +413,8 @@ $devs = include __DIR__ . "/home/desarrolladores.php";
 
         <?php foreach ($devs as $dev): ?>
         <div class="item">
-          <div class="box">
-            <div class="detail-box">
+          <div class="box" >
+            <div class="detail-box" style="background-color: #6f0909;">
              
 
               <h6>
@@ -434,11 +428,11 @@ $devs = include __DIR__ . "/home/desarrolladores.php";
                 
               </p>
    <a href="<?= $dev['github_url'] ?>" target="_blank">
-    <i class="fa fa-github" aria-hidden="true"></i>
+    <i class="fa fa-github" aria-hidden="true" style="color:black;"></i>
 </a>
 
 <a href="<?= $dev['whatsapp_url'] ?>" target="_blank">
-    <i class="fa fa-whatsapp" aria-hidden="true"></i>
+    <i class="fa fa-whatsapp" aria-hidden="true" style="color:green;"></i>
 </a>
 
 <a href="<?= $dev['correo_url'] ?>" target="_blank">
@@ -450,8 +444,8 @@ $devs = include __DIR__ . "/home/desarrolladores.php";
 
             </div>
 
-            <div class="img-box">
-              <img src="<?= $dev["ruta_completa"] ?>" alt="" class="box-img">
+            <div class="img-box" >
+              <img src="<?= $dev["ruta_completa"] ?>" alt="" class="box-img" >
             </div>
       
 
@@ -488,7 +482,7 @@ if (!is_array($footerData)) {
 ?>
 
 
-  <footer class="footer_section">
+  <footer class="footer_section" style="background-color: #6f0909;>
     <div class="container">
       <div class="row">
         <div class="col-md-4 footer-col">
@@ -548,7 +542,12 @@ if (!is_array($footerData)) {
       </p>  
       </div>
     </div>
+
+
+    
   </footer> 
+
+
   <!-- footer section -->
 
   <!-- jQery -->

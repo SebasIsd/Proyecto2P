@@ -53,9 +53,9 @@ require './home/autoridades.php';
     <header class="header_section">
       <div class="container">
         <nav class="navbar navbar-expand-lg custom_nav-container ">
-          <a class="navbar-brand" href="index.html">
+          <a class="navbar-brand" href="index.php">
             <span>
-              Eventos disponibles
+              Eventos CTT UTA
             </span>
           </a>
 
@@ -70,7 +70,7 @@ require './home/autoridades.php';
                 <a class="nav-link" href="index.php">Inicio <span class="sr-only">(current)</span></a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="">Eventos</a>
+               
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="contacto.php">Contactanos</a>
@@ -169,9 +169,7 @@ if (!is_array($sliderData)) {
                     <?= $sliderData[0]["descripcion"] ?> 
                     </p>
                     <div class="btn-box">
-                      <a href="" class="btn1">
-                        Ver mas Informacion
-                      </a>
+                      
                     </div>
                   </div>
                 </div>
@@ -190,9 +188,7 @@ if (!is_array($sliderData)) {
                      <?= $sliderData[1]["descripcion"] ?> 
                     </p>
                     <div class="btn-box">
-                      <a href="" class="btn1">
-                        Contactanos
-                      </a>
+                      
                     </div>
                   </div>
                 </div>
@@ -211,9 +207,7 @@ if (!is_array($sliderData)) {
                     <?= $sliderData[2]["descripcion"] ?> 
                     </p>
                     <div class="btn-box">
-                      <a href="" class="btn1">
-                        Saber mas
-                      </a>
+                     
                     </div>
                   </div>
                 </div>
@@ -270,6 +264,22 @@ if (!is_array($sliderData)) {
                     </div>
                   <?php endif; ?>
                 </div>
+                <style>
+/* Sobrescribir botón outline-primary */
+.btn-outline-primary {
+    border-color: #6f0909 !important; /* borde rojo */
+    color: #6f0909 !important;        /* texto rojo */
+    transition: all 0.3s;              /* transición suave */
+}
+
+/* Hover */
+.btn-outline-primary:hover {
+    background-color: #6f0909 !important; /* fondo rojo */
+    color: white !important;               /* texto blanco */
+    border-color: #6f0909 !important;      /* borde rojo */
+}
+</style>
+
                 <div class="col-md-8 d-flex flex-column justify-content-center p-4">
                   <div style="font-size:1rem; color:#6d1313; font-weight:700;"><?= htmlspecialchars($cargo) ?></div>
                   <h5 class="fw-bold"><?= htmlspecialchars($encabezado) ?></h5>
@@ -326,7 +336,7 @@ if (!is_array($misionVision)) {
 }
 ?>
 
-<section class="about_section layout_padding">
+<section class="about_section layout_padding" style="background-color: #6f0909;">
   <div class="container">
     
 
@@ -355,13 +365,13 @@ if (!is_array($misionVision)) {
 
 
   <!-- food section -->
-<section class="food_section layout_padding-bottom">
+<section class="food_section layout_padding-bottom" >
     <div class="container">
         <div class="heading_container heading_center">
-            <h2>Eventos</h2>
+            <h2 style="color: #6f0909;">Eventos</h2>
         </div>
 
-        <ul class="filters_menu" id="filtrosCarreras">
+        <ul class="filters_menu" id="filtrosCarreras" >
             <!-- Se llena dinámicamente -->
         </ul>
 
@@ -466,20 +476,20 @@ function mostrarEventos(data) {
         div.className = `col-sm-6 col-lg-4 all ${claseCarrera}`;
 
         div.innerHTML = `
-            <div class="box">
+            <div class="box" >
                 <div>
                     <div class="img-box">
                         <img src="${evento.imagen}" alt="">
                     </div>
-                    <div class="detail-box">
+                    <div class="detail-box" style="background-color: #6f0909;">
                         <h5>${evento.nombre}</h5>
                         <p>${evento.descripcion}</p>
                         <div class="options">
                         <h6>Fecha de duracion</h6>
                             <h6>${evento.fecha}</h6>
                         </div>
-                        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal" 
-                        data-redirect="buscar_eventos.php">
+                        <button  class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal" 
+                        data-redirect="buscar_eventos.php" >
                         Inscribirse
                     </button>
                 </div>
@@ -527,6 +537,20 @@ function filtrarEventos(filtro) {
 }
 </script>
 
+<style>
+#filtrosCarreras li {
+    display: inline-block;
+    cursor: pointer;
+    background-color: #f0f0f0; /* color normal */
+    color: #000; /* letra normal */
+    transition: all 0.3s;
+}
+
+#filtrosCarreras li.active {
+    background-color: #6f0909; /* fondo cuando está activo */
+    color: white; /* letras blancas cuando activo */
+}
+</style>
 
 
     </div>
@@ -542,7 +566,7 @@ function filtrarEventos(filtro) {
       <p>Cargando comentarios...</p>
     </div>
 
-    <button class="btn btn-warning" onclick="location.href='contacto.php?from=add'">
+    <button class="btn btn-warning" onclick="location.href='contacto.php?from=add'" style="background-color: #6f0909; color: white;" >
   Añadir comentario
 </button>
 
@@ -620,7 +644,7 @@ if (!is_array($footerData)) {
 ?>
 
 
-  <footer class="footer_section">
+  <footer class="footer_section" style="background-color: #6f0909;">
     <div class="container">
       <div class="row">
         <div class="col-md-4 footer-col">
