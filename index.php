@@ -478,6 +478,11 @@ function mostrarEventos(data) {
                         <h6>Fecha de duracion</h6>
                             <h6>${evento.fecha}</h6>
                         </div>
+                        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal" 
+                        data-redirect="buscar_eventos.php">
+                        Inscribirse
+                    </button>
+                </div>
                     </div>
                 </div>
             </div>
@@ -838,6 +843,12 @@ if (!is_array($footerData)) {
     </div>
   </div>
 </div>
+<script>
+
+  
+</script>
+
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1006,6 +1017,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 formNewPass.reset();
             });
         });
+
+// --- Capturar redirección personalizada desde botones que abren el login ---
+const loginModalEl = document.getElementById('loginModal');
+if (loginModalEl) {
+    loginModalEl.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget; // botón que abrió el modal
+        const redirectPage = button?.getAttribute('data-redirect') || '';
+        let form = loginModalEl.querySelector('form');
+        if (form) {
+            let redirectInput = form.querySelector('input[name="redirect_to"]');
+            if (!redirectInput) {
+                redirectInput = document.createElement('input');
+                redirectInput.type = 'hidden';
+                redirectInput.name = 'redirect_to';
+                form.appendChild(redirectInput);
+            }
+            redirectInput.value = redirectPage;
+            console.log("🔹 Redirect capturado:", redirectPage); // para depuración
+        }
+    });
+}
+
+
     }
 });
 </script>
