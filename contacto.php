@@ -335,10 +335,20 @@ if (!is_array($nosData)) {
 </section>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const campo = document.getElementById("campoNombre");
-    if (campo) campo.focus();
+
+    // Detectar si viene desde el botón "Añadir comentario"
+    const urlParams = new URLSearchParams(window.location.search);
+    const from = urlParams.get('from');
+
+    // Si viene desde ?from=add => enfocar automáticamente
+    if (from === "add") {
+        const campo = document.getElementById("campoNombre");
+        if (campo) campo.focus();
+    }
+
 });
 </script>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -369,6 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (res.status === "success") {
                 this.reset();
                 document.getElementById("fechaActual").value = hoy;
+                window.location.href = "index.php#comentarios";
             }
         });
     });

@@ -528,7 +528,7 @@ function filtrarEventos(filtro) {
 </section>
 <!-- 🔵 Sección de comentarios -->
 <section class="comment_section layout_padding">
-  <div class="container">
+  <div class="container" id="comentarios">
     <div class="heading_container">
       <h2>Comentarios recientes</h2>
     </div>
@@ -537,9 +537,10 @@ function filtrarEventos(filtro) {
       <p>Cargando comentarios...</p>
     </div>
 
-    <div class="btn_box" style="margin-top: 20px;">
-      <a href="contacto.php" class="btn btn-primary">Agregar comentario</a>
-    </div>
+    <button class="btn btn-warning" onclick="location.href='contacto.php?from=add'">
+  Añadir comentario
+</button>
+
   </div>
 </section>
 <script>
@@ -574,7 +575,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 </script>
-  
+
 
 
   <!-- end seccion de comentarios section -->

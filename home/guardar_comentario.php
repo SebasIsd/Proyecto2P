@@ -23,7 +23,7 @@ if (!preg_match('/^[a-zA-Z0-9._%+-]+@uta\.edu\.ec$/', $correo)) {
     $errores[] = "El correo debe ser institucional (@uta.edu.ec).";
 }
 
-if (strlen(trim($comentario)) < 5) {
+if (strlen(trim($comentario)) < 0) {
     $errores[] = "El comentario es demasiado corto.";
 }
 
