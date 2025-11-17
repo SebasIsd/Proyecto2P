@@ -277,66 +277,108 @@ if (!is_array($nosData)) {
 
   <!-- end about section -->
 
-  <!-- book section -->
-  <section class="book_section layout_padding">
-    <div class="container">
-      <div class="heading_container">
-        <h2>
-          Book A Table
-        </h2>
-      </div>
-      <div class="row">
-        <div class="col-md-6">
-          <div class="form_container">
-            <form action="">
-              <div>
-                <input type="text" class="form-control" placeholder="Your Name" />
-              </div>
-              <div>
-                <input type="text" class="form-control" placeholder="Phone Number" />
-              </div>
-              <div>
-                <input type="email" class="form-control" placeholder="Your Email" />
-              </div>
-              <div>
-                <select class="form-control nice-select wide">
-                  <option value="" disabled selected>
-                    How many persons?
-                  </option>
-                  <option value="">
-                    2
-                  </option>
-                  <option value="">
-                    3
-                  </option>
-                  <option value="">
-                    4
-                  </option>
-                  <option value="">
-                    5
-                  </option>
-                </select>
-              </div>
-              <div>
-                <input type="date" class="form-control">
-              </div>
-              <div class="btn_box">
-                <button>
-                  Book Now
-                </button>
-              </div>
-            </form>
-          </div>
+ <!-- book section -->
+<section class="book_section layout_padding">
+  <div class="container">
+    <div class="heading_container">
+      <h2>Comentanos</h2>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form_container">
+          <form id="formComentario">
+            
+            <!-- Nombre -->
+            <div>
+              <input type="text" class="form-control" name="nombre" id="campoNombre" placeholder="Tu Nombre" required />
+            </div>
+
+            <!-- Teléfono -->
+            <div>
+              <input type="text" class="form-control" name="telefono" id="telefono"
+                     placeholder="Teléfono (09XXXXXXXX)" maxlength="10" required />
+            </div>
+
+            <!-- Correo -->
+            <div>
+              <input type="email" class="form-control" name="correo" id="correo"
+                     placeholder="correo@uta.edu.ec" required />
+            </div>
+
+            <!-- Comentario -->
+            <div>
+              <textarea class="form-control" name="comentario" rows="4"
+                        placeholder="Escribe tu comentario..." required></textarea>
+            </div>
+
+            <!-- Fecha actual bloqueada -->
+            <div>
+              <input type="date" class="form-control" name="fecha" id="fechaActual" readonly />
+            </div>
+
+            <div class="btn_box">
+              <button type="submit">Enviar comentario</button>
+            </div>
+
+          </form>
         </div>
-        <div class="col-md-6">
-          <div class="map_container ">
-            <div id="googleMap"></div>
-          </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="map_container">
+          <div id="googleMap"></div>
         </div>
       </div>
     </div>
-  </section>
-  <!-- end book section -->
+  </div>
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const campo = document.getElementById("campoNombre");
+    if (campo) campo.focus();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    // --- Establecer fecha actual ---
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById("fechaActual").value = hoy;
+
+    // --- Validación del teléfono ---
+    const tel = document.getElementById("telefono");
+    tel.addEventListener("input", (e) => {
+        e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    });
+
+    // --- Envío con fetch ---
+    document.getElementById("formComentario").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        let datos = new FormData(this);
+
+        fetch("./home/guardar_comentario.php", {   // ✔ Mantengo tu ruta original
+            method: "POST",
+            body: datos
+        })
+        .then(r => r.json())
+        .then(res => {
+            alert(res.msg);
+            if (res.status === "success") {
+                this.reset();
+                document.getElementById("fechaActual").value = hoy;
+            }
+        });
+    });
+
+});
+</script>
+
+
+<!-- end book section -->
+
 
   <!-- client section -->
 <?php

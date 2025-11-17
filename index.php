@@ -526,9 +526,58 @@ function filtrarEventos(filtro) {
 
     </div>
 </section>
+<!-- 🔵 Sección de comentarios -->
+<section class="comment_section layout_padding">
+  <div class="container">
+    <div class="heading_container">
+      <h2>Comentarios recientes</h2>
+    </div>
+
+    <div id="listaComentarios">
+      <p>Cargando comentarios...</p>
+    </div>
+
+    <div class="btn_box" style="margin-top: 20px;">
+      <a href="contacto.php" class="btn btn-primary">Agregar comentario</a>
+    </div>
+  </div>
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    fetch("./home/obtener_comentarios.php")
+        .then(r => r.json())
+        .then(comments => {
+
+            const cont = document.getElementById("listaComentarios");
+
+            if (comments.length === 0) {
+                cont.innerHTML = "<p>No hay comentarios aún.</p>";
+                return;
+            }
+
+            let html = "";
+
+            comments.forEach(c => {
+                html += `
+                <div class="comment_item" 
+                     style="border:1px solid #eee; padding:15px; border-radius:10px; margin-bottom:15px;">
+                  
+                  <p><strong>${c.nombre}</strong> <span style="color:#999;">(${c.fecha})</span></p>
+                  <p>${c.comentario}</p>
+                </div>
+                `;
+            });
+
+            cont.innerHTML = html;
+        });
+
+});
+</script>
+  
 
 
-  <!-- end food section -->
+  <!-- end seccion de comentarios section -->
 
   <!-- about section -->
 
