@@ -326,6 +326,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
         <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+         <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
+        <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
         <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
         <a href="#"><i class="fas fa-chart-bar me-2"></i> Estadísticas</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
