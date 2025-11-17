@@ -6,6 +6,7 @@ include __DIR__ . '/../includes/conexion.php';
 // Verificar campos
 $des = $_POST['des_noso'] ?? '';
 $link = $_POST['link_noso'] ?? '';
+$maps = $_POST['maps'] ?? '';   // <-- NUEVO
 $rutaFinal = null;
 
 // Si llega una imagen
@@ -22,17 +23,19 @@ if (!empty($_FILES['imgNosotros']['name'])) {
 }
 
 
-// Actualizar en BD
+// Construir SQL dinámico según si hay imagen o no
 if ($rutaFinal) {
-    $sql = "UPDATE contactanos SET des_noso=?, link_noso=?, ruta=?";
+    $sql = "UPDATE contactanos SET des_noso=?, link_noso=?, ruta=?, maps=?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sss", $des, $link, $rutaFinal);
+    $stmt->bind_param("ssss", $des, $link, $rutaFinal, $maps);
 } else {
-    $sql = "UPDATE contactanos SET des_noso=?, link_noso=?";
+    $sql = "UPDATE contactanos SET des_noso=?, link_noso=?, maps=?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ss", $des, $link);
+    $stmt->bind_param("sss", $des, $link, $maps);
 }
 
+
+// Ejecutar
 if ($stmt->execute()) {
     echo json_encode(["status" => "success", "msg" => "Datos guardados correctamente"]);
 } else {

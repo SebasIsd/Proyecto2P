@@ -514,6 +514,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 </script>
+<script>
+    
+</script>
+
 
 
     <!-- mision fin -->
@@ -642,6 +646,132 @@ $contacto = include "../home/contactanos.php";
 
     </div>
 </div>
+<br>
+<br>
+<div class="row mb-4">
+
+    <!-- Vista previa del mapa -->
+    <div class="col-md-6">
+        <div class="card p-3 border">
+            <h5 class="mb-3">Vista previa del mapa</h5>
+
+            <div id="previewMapaContainer"
+                 style="width:100%; height:300px; border-radius:10px; overflow:hidden; border:2px solid #ccc;">
+                <?= $contacto['maps'] ?> 
+            </div>
+        </div>
+    </div>
+
+    <!-- Editor -->
+    <div class="col-md-6">
+        <div class="card p-3 border">
+
+            <h5 class="mb-3">Editar iframe del mapa</h5>
+
+            <label class="form-label">Código iframe</label>
+
+            <textarea 
+                class="form-control" 
+                name="maps" 
+                rows="8"
+                id="campoIframe"
+                disabled
+            ><?= htmlspecialchars($contacto['maps']) ?></textarea>
+
+            <p class="text-muted mt-2" style="font-size:13px; font-style:italic;">
+                El iframe de Google Maps se guardará tal como lo pegues aquí.
+            </p>
+
+            <!-- BOTONES -->
+            <div class="mt-3">
+                <button type="button" id="btnEditar" class="btn btn-primary">
+                    Editar
+                </button>
+
+                <button type="submit" id="btnGuardar" class="btn btn-success" style="display:none;">
+                    Guardar cambios
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const campo = document.getElementById("campoIframe");
+    const btnEditar = document.getElementById("btnEditar");
+    const btnGuardar = document.getElementById("btnGuardar");
+    const preview = document.getElementById("previewMapaContainer");
+
+    // Habilitar edición
+    btnEditar.addEventListener("click", () => {
+        campo.disabled = false;
+        campo.focus();
+        btnEditar.style.display = "none";
+        btnGuardar.style.display = "inline-block";
+    });
+
+    // Actualizar vista previa en tiempo real
+    campo.addEventListener("input", () => {
+        preview.innerHTML = campo.value;
+    });
+
+    // Guardar solo el iframe (maps) al pulsar Guardar
+    btnGuardar.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        const mapsValue = campo.value.trim();
+
+        // Validación mínima: no vacío y contiene iframe o startsWith <iframe
+        if (mapsValue === "") {
+            alert("El campo del iframe no puede estar vacío.");
+            return;
+        }
+
+        if (!mapsValue.includes("<iframe")) {
+            // opcional: permitir también cadenas que empiecen por https (src directo)
+            if (!mapsValue.startsWith("https://")) {
+                if (!confirm("El contenido no parece ser un iframe. ¿Deseas guardarlo igual?")) {
+                    return;
+                }
+            }
+        }
+
+        // Crear FormData y enviar solo maps
+        const fd = new FormData();
+        fd.append("maps", mapsValue);
+
+        // Ajusta la ruta si tu archivo está en otra ubicación relativa
+        fetch("../home/contactanos_maps_guardar.php", {
+            method: "POST",
+            body: fd
+        })
+        .then(r => r.json())
+        .then(res => {
+            alert(res.msg || "Respuesta recibida");
+            if (res.status === "success") {
+                // Desactivar editor y cambiar botones
+                campo.disabled = true;
+                btnGuardar.style.display = "none";
+                btnEditar.style.display = "inline-block";
+
+                // Asegurar vista previa actualizada con lo guardado (ya lo hicimos antes)
+                preview.innerHTML = mapsValue;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error al guardar el mapa. Revisa la consola.");
+        });
+    });
+
+});
+</script>
+
+
+
 
 <div class="modal fade" id="modalEditDev" tabindex="-1">
     <div class="modal-dialog modal-lg">

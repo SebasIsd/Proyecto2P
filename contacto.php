@@ -325,11 +325,23 @@ if (!is_array($nosData)) {
         </div>
       </div>
 
-      <div class="col-md-6">
-        <div class="map_container">
-          <div id="googleMap"></div>
-        </div>
-      </div>
+     <div class="col-md-6">
+    <div class="map_container">
+      
+
+        <?php 
+        $contacto = include "./home/contactanos.php";
+
+        if (!empty($contacto["maps"])) {
+            echo $contacto["maps"];   // Esto imprime el iframe tal cual viene de la BD
+        } else {
+            echo "<p>No hay un mapa configurado.</p>";
+        }
+        ?>
+
+    </div>
+</div>
+
     </div>
   </div>
 </section>
