@@ -612,35 +612,92 @@ $contacto = include "../home/contactanos.php";
                     <tr>
                         <th>Foto</th>
                         <th>Nombre</th>
-                        <th>Correo</th>
+                        <th>Redes Social</th>
                         <th>Descripción</th>
                         <th>Acción</th>
                     </tr>
                 </thead>
 
-                <tbody>
-                    <?php foreach ($desarrolladores as $d): ?>
-                    <tr>
-                        <td>
-<img src="../<?= $d['ruta_completa'] ?>" class="rounded" width="50">
-                        </td>
-                        <td>
-                            <strong><?= htmlspecialchars($d['nombre'] . " " . $d['apellido']) ?></strong>
-                        </td>
-                        <td><?= htmlspecialchars($d['correo']) ?></td>
-                        <td><?= htmlspecialchars($d['descripcion']) ?></td>
-                        <td>
-                            <button class="btn-edit"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalEditDev"
-                                onclick='cargarDesarrollador(<?= json_encode($d) ?>)'>
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
+             <tbody>
+<?php foreach ($desarrolladores as $d): ?>
+<tr>
+    <!-- Foto -->
+    <td>
+        <img src="../<?= $d['ruta_completa'] ?>" class="rounded" width="50">
+    </td>
 
+    <!-- Nombre completo -->
+    <td>
+        <strong><?= htmlspecialchars($d['nombre'] . " " . $d['apellido']) ?></strong>
+    </td>
+
+    <!-- Contacto -->
+    <td>
+        <!-- GitHub -->
+        <a href="https://github.com/<?= htmlspecialchars($d['github']) ?>" target="_blank" title="GitHub">
+           <i class="fab fa-github" aria-hidden="true" style="color:black;"></i>
+        </a>
+
+        &nbsp;&nbsp;
+
+        <!-- WhatsApp -->
+        <a href="https://wa.me/<?= htmlspecialchars($d['telefono']) ?>" target="_blank" title="WhatsApp">
+            <i class="fab fa-whatsapp" style="color:green;"></i>
+        </a>
+
+        &nbsp;&nbsp;
+
+        <!-- Correo -->
+        <a href="mailto:<?= htmlspecialchars($d['correo']) ?>" title="Enviar correo">
+            <i class="fa fa-envelope fa-lg"></i>
+        </a>
+    </td>
+
+    <!-- Descripción -->
+    <td><?= htmlspecialchars($d['descripcion']) ?></td>
+
+    <!-- Acción: Editar y Eliminar -->
+    <td>
+        <button class="btn-edit"
+            data-bs-toggle="modal"
+            data-bs-target="#modalEditDev"
+            onclick='cargarDesarrollador(<?= json_encode($d) ?>)'>
+            <i class="fas fa-edit"></i> Editar
+        </button>
+
+        <button class="btn btn-danger btn-sm"
+            onclick="eliminarDesarrollador('<?= $d['ruta'] ?>')">
+            <i class="fa fa-trash"></i> Eliminar
+        </button>
+    </td>
+</tr>
+<?php endforeach; ?>
+</tbody>
+<script>
+function eliminarDesarrollador(ruta) {
+
+    if (!confirm("¿Seguro que deseas eliminar a este desarrollador?")) {
+        return;
+    }
+
+    let datos = new FormData();
+    datos.append("ruta", ruta);
+
+    fetch("../home/desarrolladores_eliminar.php", {
+        method: "POST",
+        body: datos
+    })
+    .then(r => r.json())
+    .then(res => {
+        alert(res.msg);
+        if (res.status === "success") {
+            location.reload();
+        }
+    });
+}
+</script>
+
+                                
             </table>
         </div>
 
@@ -808,6 +865,15 @@ document.addEventListener("DOMContentLoaded", () => {
                             <label class="form-label">Descripción *</label>
                             <textarea id="dev_descripcion" name="descripcion" rows="3" class="form-control" required></textarea>
                         </div>
+                            <div class="col-md-6">
+    <label class="form-label">GitHub *</label>
+    <input type="text" id="dev_github" name="github" class="form-control" required>
+</div>
+
+<div class="col-md-6">
+    <label class="form-label">Teléfono (WhatsApp) *</label>
+    <input type="text" id="dev_telefono" name="telefono" class="form-control" required>
+</div>
 
                         <div class="col-md-6">
                             <label class="form-label">Foto (opcional)</label>
@@ -870,6 +936,16 @@ document.addEventListener("DOMContentLoaded", () => {
                             <textarea name="descripcion" rows="3" class="form-control" required></textarea>
                         </div>
 
+                            <div class="col-md-6">
+    <label class="form-label">GitHub *</label>
+    <input type="text" name="github" class="form-control" required>
+</div>
+
+<div class="col-md-6">
+    <label class="form-label">Teléfono (WhatsApp) *</label>
+    <input type="text" name="telefono" class="form-control" required>
+</div>
+
                         <div class="col-md-6">
                             <label class="form-label">Foto *</label>
                             <input type="file" name="foto" class="form-control" required>
@@ -920,9 +996,13 @@ function cargarDesarrollador(data) {
     document.getElementById("dev_correo").value = data.correo;
     document.getElementById("dev_descripcion").value = data.descripcion;
 
+    document.getElementById("dev_github").value = data.github;
+    document.getElementById("dev_telefono").value = data.telefono;
+
     document.getElementById("ruta_actual").value = data.ruta; 
     document.getElementById("dev_imagen").src = data.ruta_completa;
 }
+
 
 document.getElementById("formEditarDev").addEventListener("submit", function(e) {
     e.preventDefault();

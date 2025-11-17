@@ -431,13 +431,29 @@ $devs = include __DIR__ . "/home/desarrolladores.php";
               </p>
 
               <p>
-                <?= $dev["correo"] ?>
+                
               </p>
+   <a href="<?= $dev['github_url'] ?>" target="_blank">
+    <i class="fa fa-github" aria-hidden="true"></i>
+</a>
+
+<a href="<?= $dev['whatsapp_url'] ?>" target="_blank">
+    <i class="fa fa-whatsapp" aria-hidden="true"></i>
+</a>
+
+<a href="<?= $dev['correo_url'] ?>" target="_blank">
+    <i class="fa fa-envelope" aria-hidden="true"></i>
+</a>
+
+
+
+
             </div>
 
             <div class="img-box">
               <img src="<?= $dev["ruta_completa"] ?>" alt="" class="box-img">
             </div>
+      
 
           </div>
         </div>

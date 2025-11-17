@@ -6,11 +6,19 @@ $nombre = $_POST["nombre"];
 $apellido = $_POST["apellido"];
 $correo = $_POST["correo"];
 $descripcion = $_POST["descripcion"];
-$ruta_actual = $_POST["ruta_actual"]; // nombre del archivo actual
+$github = $_POST["github"];
+$telefono = $_POST["telefono"];
+$ruta_actual = $_POST["ruta_actual"];
 
-// Validaciones
-if ($nombre == "" || $apellido == "" || $correo == "" || $descripcion == "") {
+// Validaciones básicas
+if ($nombre == "" || $apellido == "" || $correo == "" || $descripcion == "" || $github == "" || $telefono == "") {
     echo json_encode(["status" => "error", "msg" => "Todos los campos son obligatorios"]);
+    exit;
+}
+
+// Validación correo institucional
+if (!str_ends_with($correo, "@uta.edu.ec")) {
+    echo json_encode(["status" => "error", "msg" => "El correo debe terminar en @uta.edu.ec"]);
     exit;
 }
 
@@ -28,11 +36,11 @@ if (isset($_FILES["foto"]) && $_FILES["foto"]["error"] === 0) {
 }
 
 $sql = "UPDATE desarrolladores 
-        SET nombre=?, apellido=?, correo=?, descripcion=?, ruta=?
-        WHERE rutA=?";
+        SET nombre=?, apellido=?, correo=?, descripcion=?, ruta=?, github=?, telefono=?
+        WHERE ruta=?";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ssssss", $nombre, $apellido, $correo, $descripcion, $rutaFinal, $ruta_actual);
+$stmt->bind_param("ssssssss", $nombre, $apellido, $correo, $descripcion, $rutaFinal, $github, $telefono, $ruta_actual);
 
 if ($stmt->execute()) {
     echo json_encode(["status" => "success", "msg" => "Desarrollador actualizado correctamente"]);
