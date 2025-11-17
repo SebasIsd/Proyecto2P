@@ -172,9 +172,6 @@ if ($eventId) {
             transition: transform 0.2s;
         }
 
-        .card:hover {
-            transform: translateY(-3px);
-        }
 
         .card-header-custom {
             background: var(--primary);
@@ -409,8 +406,8 @@ if ($eventId) {
                 <th>Participante</th>
                 <th>Requisito</th>
                 <th>Tipo</th>
-                <th>Valor</th>
-                <th>Archivo</th>
+                <th class="col-valor">Valor</th>
+                <th class="col-archivo">Archivo</th>
                 <th>Estado</th>
                 <th>Observación</th>
                 <th class="text-center">Acción</th>
@@ -447,7 +444,7 @@ if ($eventId) {
                       <span class="badge bg-warning text-dark">Texto</span>
                     <?php endif; ?>
                   </td>
-                  <td style="min-width:180px">
+                  <td class="col-valor" style="min-width:180px">
                     <form class="form-evidencia" action="evidencia_update.php" method="post">
                       <input type="hidden" name="id_evento" value="<?= (int)$r['ID_EVE_CUR'] ?>">
                       <input type="hidden" name="id_ins" value="<?= (int)$r['ID_INS'] ?>">
@@ -468,16 +465,19 @@ if ($eventId) {
                         <span class="text-muted">—</span>
                       <?php endif; ?>
                   </td>
-                  <td style="min-width:160px">
-                    <?php if ($r['TIPO']==='DOCUMENTO' && $r['URL_ARCHIVO']): ?>
-                      <a class="btn btn-sm btn-outline-secondary" target="_blank"
-                         href="<?= htmlspecialchars($r['URL_ARCHIVO']) ?>">
-                        <i class="fa fa-file"></i> Ver documento
-                      </a>
-                    <?php else: ?>
-                      <span class="text-muted">—</span>
-                    <?php endif; ?>
-                  </td>
+                 <td class="col-archivo" style="min-width:160px">
+  <?php if ($r['TIPO']==='DOCUMENTO' && $r['URL_ARCHIVO']): ?>
+    <button type="button"
+            class="btn btn-sm btn-outline-secondary btn-ver-doc"
+            data-url="<?= htmlspecialchars($r['URL_ARCHIVO']) ?>"
+            data-nombre="<?= htmlspecialchars($r['NOMBRE_ARCHIVO'] ?: $r['NOM_REQ']) ?>">
+      <i class="fa fa-file"></i> Ver documento
+    </button>
+  <?php else: ?>
+    <span class="text-muted">—</span>
+  <?php endif; ?>
+</td>
+
                   <td style="min-width:150px">
                     <select name="estado" class="form-select">
                       <?php foreach ($estadosOpts as $opt): ?>
@@ -520,6 +520,23 @@ if ($eventId) {
       </div>
     <?php endif; ?>
   </div>
+  <!-- Modal para ver documento -->
+<div class="modal fade" id="docModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="docModalLabel">Documento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-0">
+        <iframe id="docFrame" src="" style="border:0; width:100%; height:80vh;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 
   <script>
     // Autofiltrado: cambia evento/tipo/estado o escribe en buscar -> submit automático (debounce)
@@ -528,6 +545,30 @@ if ($eventId) {
     const selTip = document.getElementById('tipoSel');
     const selEst = document.getElementById('estadoSel');
     const inpBus = document.getElementById('buscarInp');
+
+ function toggleColumnsByTipo() {
+      const tipo = selTip ? selTip.value : '';
+      const showCol = (selector, show) => {
+        document.querySelectorAll(selector).forEach(el => {
+          el.style.display = show ? '' : 'none';
+        });
+      };
+  // Lógica:
+  // - NUMERICO: mostrar Valor, ocultar Archivo
+  // - TEXTO_CORTO: mostrar Valor, ocultar Archivo
+  // - DOCUMENTO: mostrar Archivo, ocultar Valor
+  // - vacío (Todos): mostrar ambas
+  if (tipo === 'NUMERICO' || tipo === 'TEXTO_CORTO') {
+    showCol('.col-valor', true);
+    showCol('.col-archivo', false);
+  } else if (tipo === 'DOCUMENTO') {
+    showCol('.col-valor', false);
+    showCol('.col-archivo', true);
+  } else {
+    showCol('.col-valor', true);
+    showCol('.col-archivo', true);
+  }
+}
 
     function enableFilters(enabled){
       [selTip, selEst, inpBus].forEach(el => { if (el) el.disabled = !enabled; });
@@ -552,7 +593,12 @@ if ($eventId) {
       enableFilters(!!selEv.value);
     }
 
-    if (selTip)  selTip.addEventListener('change', debounceSubmit);
+if (selTip) {
+  selTip.addEventListener('change', () => {
+    toggleColumnsByTipo();   // actualización visual inmediata
+    debounceSubmit();        // recarga con filtro en el servidor
+  });
+}
     if (selEst)  selEst.addEventListener('change', debounceSubmit);
     if (inpBus)  inpBus.addEventListener('input', debounceSubmit);
 
@@ -569,6 +615,35 @@ if ($eventId) {
         });
       }
     });
+    toggleColumnsByTipo();
+
+    // ===== Modal "Ver documento" =====
+const docModalEl  = document.getElementById('docModal');
+const docFrame    = document.getElementById('docFrame');
+const docTitleEl  = document.getElementById('docModalLabel');
+
+if (docModalEl && docFrame && docTitleEl && window.bootstrap) {
+  const docModal = new bootstrap.Modal(docModalEl);
+
+  document.querySelectorAll('.btn-ver-doc').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      const url    = btn.dataset.url;
+      const nombre = btn.dataset.nombre || 'Documento';
+
+      docTitleEl.textContent = nombre;
+      docFrame.src = url;
+      docModal.show();
+    });
+  });
+
+  // Limpia el iframe al cerrar el modal (opcional, pero recomendado)
+  docModalEl.addEventListener('hidden.bs.modal', () => {
+    docFrame.src = '';
+  });
+}
+
+    
   </script>
 </body>
 </html>
