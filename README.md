@@ -81,6 +81,11 @@ Consulta la guía 👉 [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ---
 
+## Licencia
+Este proyecto está licenciado bajo la **MIT License** - ver el archivo [LICENSE](LICENSE) para detalles.
+
+---
+
 ## 🐞 Soporte y Contacto
 - 📬 Si encuentras errores, abre un **issue** en [GitHub Issues](https://github.com/SebasIsd/Proyecto2P/issues)
 - 🙌 Toda ayuda es bienvenida.
