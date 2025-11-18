@@ -465,9 +465,7 @@ if ($eventId) {
                       <?php else: ?>
                         <span class="text-muted">—</span>
                       <?php endif; ?>
-                       <button type="button" class="btn btn-uta btn-sm" data-bs-toggle="modal" data-bs-target="#confirmModal">
-    <i class="fa fa-save"></i> Guardar
-  </button>
+
                   </td>
                  <td class="col-archivo" style="min-width:160px">
   <?php if ($r['TIPO']==='DOCUMENTO' && $r['URL_ARCHIVO']): ?>
