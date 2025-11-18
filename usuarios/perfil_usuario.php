@@ -12,6 +12,23 @@ $stmt = $conn->prepare("SELECT CED_USU, NOM_PRI_USU, NOM_SEG_USU, APE_PRI_USU, A
 $stmt->bind_param("s", $cedula);
 $stmt->execute();
 $usuario = $stmt->get_result()->fetch_assoc();
+
+$stmt_cert = $conn->prepare("
+    SELECT 
+        e.TIT_EVE_CUR,
+        e.HORAS_TOTALES,
+        e.FEC_INI_EVE_CUR,
+        e.FEC_FIN_EVE_CUR,
+        i.ESTADO_INS,
+        i.RUTA_CERTIFICADO
+    FROM INSCRIPCIONES i
+    JOIN EVENTOS_CURSOS e ON i.ID_EVE_CUR = e.ID_EVE_CUR
+    WHERE i.CED_USU = ? AND i.ESTADO_INS = 'Completado' AND i.RUTA_CERTIFICADO IS NOT NULL
+    ORDER BY e.FEC_FIN_EVE_CUR DESC
+");
+$stmt_cert->bind_param("s", $cedula);
+$stmt_cert->execute();
+$certificados = $stmt_cert->get_result()->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -399,10 +416,98 @@ $usuario = $stmt->get_result()->fetch_assoc();
                             </p>
                         </div>
                     </div>
+                    
+                    <div class="card mt-4">
+                        <div class="card-header-custom">
+                            <i class="fas fa-award me-2"></i> 
+                            Certificados Otorgados a: <?= htmlspecialchars(trim($usuario['NOM_PRI_USU'] . ' ' . $usuario['APE_PRI_USU'])) ?>
+                        </div>
+                        <div class="card-body-custom">
+                            <?php if (empty($certificados)): ?>
+                                <p class="text-muted text-center mb-0">
+                                    <i class="fas fa-info-circle"></i> Aún no tienes certificados.
+                                </p>
+                            <?php else: ?>
+                                <ul class="list-group list-group-flush">
+                                    <?php foreach ($certificados as $cert): ?>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                            <div>
+                                                <h6 class="mb-1"><strong><?= htmlspecialchars($cert['TIT_EVE_CUR']) ?></strong></h6>
+                                                <small class="text-muted">
+                                                    <?= $cert['HORAS_TOTALES'] ?? 'N/A' ?> horas | 
+                                                    <?= date('d/m/Y', strtotime($cert['FEC_INI_EVE_CUR'])) ?> - <?= date('d/m/Y', strtotime($cert['FEC_FIN_EVE_CUR'])) ?> |
+                                                    <span class="badge" style="background-color: #d4edda; color: #155724;">Completado</span>
+                                                </small>
+                                            </div>
+                                            <button type="button"
+                                               class="btn btn-sm btn-outline-danger"
+                                               style="--bs-btn-color: var(--primary); --bs-btn-border-color: var(--primary); --bs-btn-hover-bg: var(--primary); --bs-btn-hover-color: #fff;"
+                                               title="Ver Certificado"
+                                               data-bs-toggle="modal" 
+                                               data-bs-target="#certificadoModal"
+                                               data-ruta-certificado="../<?= htmlspecialchars($cert['RUTA_CERTIFICADO']) ?>"
+                                               data-titulo-evento="<?= htmlspecialchars($cert['TIT_EVE_CUR']) ?>">
+                                                <i class="fas fa-file-pdf me-1"></i> Ver
+                                            </button>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                        </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <div class="modal fade" id="certificadoModal" tabindex="-1" aria-labelledby="certificadoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header" style="background: var(--primary); color: white;">
+                    <h5 class="modal-title" id="certificadoModalLabel">Certificado de Evento</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 0; height: 80vh;">
+                    <iframe id="certificadoFrame" src="" width="100%" height="100%" frameborder="0">
+                        Tu navegador no soporta iframes.
+                    </iframe>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    /* * SCRIPT PARA EL MODAL DE CERTIFICADO (NUEVO)
+     */
+    const certificadoModal = document.getElementById('certificadoModal');
+    if (certificadoModal) {
+        certificadoModal.addEventListener('show.bs.modal', function (event) {
+            // Obtener el botón que disparó el modal
+            const button = event.relatedTarget;
+            
+            // Extraer la información de los atributos data-*
+            const rutaCertificado = button.getAttribute('data-ruta-certificado');
+            const tituloEvento = button.getAttribute('data-titulo-evento');
+
+            // Actualizar el contenido del modal
+            const modalTitle = certificadoModal.querySelector('.modal-title');
+            const modalIframe = certificadoModal.querySelector('#certificadoFrame');
+
+            modalTitle.textContent = 'Certificado: ' + tituloEvento;
+            modalIframe.setAttribute('src', rutaCertificado);
+        });
+
+        // Opcional: Limpiar el iframe cuando se cierra el modal
+        certificadoModal.addEventListener('hide.bs.modal', function (event) {
+            const modalIframe = certificadoModal.querySelector('#certificadoFrame');
+            modalIframe.setAttribute('src', '');
+        });
+    }
+</script>
 
 </body>
 </html>

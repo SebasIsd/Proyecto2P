@@ -24,7 +24,8 @@ $eventos = $conn->query("
         i.EST_PAG_INS,
         i.ID_INS,  -- IMPORTANTE: agregar este campo
         p.URL_COMPROBANTE AS COMPROBANTE_PAGO,
-        i.FEC_INI_INS
+        i.FEC_INI_INS,
+        i.RUTA_CERTIFICADO
     FROM INSCRIPCIONES i
     JOIN EVENTOS_CURSOS e ON i.ID_EVE_CUR = e.ID_EVE_CUR
     JOIN TIPOS_EVENTO t ON e.ID_TIPO_EVE = t.ID_TIPO_EVE
@@ -630,6 +631,15 @@ $eventos = $conn->query("
         color: #dee2e6;
         margin-bottom: 15px;
     }
+    .btn-info-custom {
+        background: #17a2b8;
+        color: white;
+    }
+    .btn-info-custom:hover {
+        background: #138496;
+        color: white;
+        transform: translateY(-2px);
+    }
 </style>
 </head>
 <body>
@@ -775,6 +785,17 @@ $eventos = $conn->query("
                                 <i class="fas fa-eye"></i> Ver Detalles
                             </a>
 
+                            <?php if ($e['ESTADO_INS'] == 'Completado' && !empty($e['RUTA_CERTIFICADO'])): ?>
+                                <button type="button"
+                                   class="btn-action btn-info-custom" 
+                                   data-bs-toggle="modal" 
+                                   data-bs-target="#certificadoModal"
+                                   data-ruta-certificado="../<?= htmlspecialchars($e['RUTA_CERTIFICADO']) ?>"
+                                   data-titulo-evento="<?= htmlspecialchars($e['TIT_EVE_CUR']) ?>">
+                                    <i class="fas fa-award"></i> Ver Certificado
+                                </button>
+                            <?php endif; ?>
+
                             <?php if ($e['REQUIERE_ASISTENCIA'] && $e['ESTADO_INS'] == 'Confirmado'
                                 && strtotime($e['FEC_INI_EVE_CUR']) <= time()
                                 && strtotime($e['FEC_FIN_EVE_CUR']) >= time()): ?>
@@ -783,8 +804,18 @@ $eventos = $conn->query("
                                 </button>
                             <?php endif; ?>
 
-                            <?php if (in_array($e['ESTADO_INS'], ['Preinscrito', 'Inscrito'])): ?>
-                                <button class="btn-action btn-danger-custom" onclick="cancelarInscripcion(<?= $e['ID_EVE_CUR'] ?>)">
+                            <?php 
+                            // Solo mostramos el botón si está Preinscrito, Inscrito o Confirmado
+                            if (in_array($e['ESTADO_INS'], ['Preinscrito', 'Inscrito', 'Confirmado'])): 
+                                
+                                // Lo deshabilitamos si es 'Inscrito' o 'Confirmado' (según tu solicitud)
+                                $isDisabled = in_array($e['ESTADO_INS'], ['Inscrito', 'Confirmado']);
+                            ?>
+                                <button class="btn-action btn-danger-custom" 
+                                        onclick="cancelarInscripcion(<?= $e['ID_EVE_CUR'] ?>)"
+                                        <?php if ($isDisabled): ?>
+                                            disabled title="No se puede cancelar una inscripción ya confirmada/inscrita."
+                                        <?php endif; ?>>
                                     <i class="fas fa-times"></i> Cancelar Inscripción
                                 </button>
                             <?php endif; ?>
@@ -805,6 +836,25 @@ $eventos = $conn->query("
                 </div>
                 <div class="modal-body" id="modalContenidoDocs">
                     <!-- Se llena con JS -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="certificadoModal" tabindex="-1" aria-labelledby="certificadoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="certificadoModalLabel">Certificado de Evento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 0; height: 80vh;">
+                    <iframe id="certificadoFrame" src="" width="100%" height="100%" frameborder="0">
+                        Tu navegador no soporta iframes.
+                    </iframe>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -935,6 +985,32 @@ $eventos = $conn->query("
             } else if (noResults) {
                 noResults.remove();
             }
+        }
+
+        const certificadoModal = document.getElementById('certificadoModal');
+        if (certificadoModal) {
+            certificadoModal.addEventListener('show.bs.modal', function (event) {
+                // Obtener el botón que disparó el modal
+                const button = event.relatedTarget;
+                
+                // Extraer la información de los atributos data-*
+                const rutaCertificado = button.getAttribute('data-ruta-certificado');
+                const tituloEvento = button.getAttribute('data-titulo-evento');
+
+                // Actualizar el contenido del modal
+                const modalTitle = certificadoModal.querySelector('.modal-title');
+                const modalIframe = certificadoModal.querySelector('#certificadoFrame');
+
+                modalTitle.textContent = 'Certificado: ' + tituloEvento;
+                modalIframe.setAttribute('src', rutaCertificado);
+            });
+
+            // Opcional: Limpiar el iframe cuando se cierra el modal
+            // Esto detiene la carga del PDF y libera memoria
+            certificadoModal.addEventListener('hide.bs.modal', function (event) {
+                const modalIframe = certificadoModal.querySelector('#certificadoFrame');
+                modalIframe.setAttribute('src', '');
+            });
         }
 
         // También agrega esto para el empty state cuando no hay eventos
