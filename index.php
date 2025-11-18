@@ -83,7 +83,7 @@ if (!is_array($footerData)) {
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav  mx-auto ">
               <li class="nav-item active">
-                <a class="nav-link" href="index.php">Inicio <span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="index.php">Inicio <span class="sr-only"></span></a>
               </li>
               <li class="nav-item">
               </li>
