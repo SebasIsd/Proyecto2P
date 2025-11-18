@@ -325,17 +325,16 @@ if ($eventId) {
 </head>
 <body>
   <!-- Sidebar -->
-   <div class="sidebar">
+  <div class="sidebar">
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="#"><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
         <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
-         <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
-         <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
+        <a href="evidencias_global.php" class="active"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
+        <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
+        <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
         <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
-        <a href="#"><i class="fas fa-chart-bar me-2"></i> Estadísticas</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
         <a href="#"><i class="fas fa-cog me-2"></i> Configuraciones</a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
@@ -466,6 +465,9 @@ if ($eventId) {
                       <?php else: ?>
                         <span class="text-muted">—</span>
                       <?php endif; ?>
+                       <button type="button" class="btn btn-uta btn-sm" data-bs-toggle="modal" data-bs-target="#confirmModal">
+    <i class="fa fa-save"></i> Guardar
+  </button>
                   </td>
                  <td class="col-archivo" style="min-width:160px">
   <?php if ($r['TIPO']==='DOCUMENTO' && $r['URL_ARCHIVO']): ?>
@@ -492,9 +494,10 @@ if ($eventId) {
                               placeholder="Observación..."><?= htmlspecialchars($r['OBSERVACION'] ?? '') ?></textarea>
                   </td>
                   <td class="text-center">
-                      <button class="btn btn-uta btn-sm">
-                        <i class="fa fa-save"></i> Guardar
-                      </button>
+                      <button type="button" class="btn btn-uta btn-sm" data-bs-toggle="modal" data-bs-target="#confirmModal">
+  <i class="fa fa-save"></i> Guardar
+</button>
+
                     </form>
                   </td>
                 </tr>
@@ -532,6 +535,25 @@ if ($eventId) {
       </div>
       <div class="modal-body p-0">
         <iframe id="docFrame" src="" style="border:0; width:100%; height:80vh;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmModalLabel">Confirmar acción</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de que deseas guardar los cambios realizados en esta evidencia?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" id="confirmSaveBtn" class="btn btn-primary">Guardar</button>
       </div>
     </div>
   </div>
@@ -644,6 +666,24 @@ if (docModalEl && docFrame && docTitleEl && window.bootstrap) {
     docFrame.src = '';
   });
 }
+// Verifica que el botón de "Guardar" en el modal está bien referenciado
+const confirmSaveBtn = document.getElementById('confirmSaveBtn');
+
+// Verifica que el modal y el formulario estén presentes
+if (confirmSaveBtn) {
+  confirmSaveBtn.addEventListener('click', function () {
+    // Cerrar el modal
+    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    modal.hide();
+
+    // Encontrar el formulario y enviarlo
+    const form = document.querySelector('.form-evidencia');
+    if (form) {
+      form.submit();
+    }
+  });
+}
+
 
     
   </script>

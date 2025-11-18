@@ -180,19 +180,19 @@ if ($eventId) {
 <body>
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="logo">
-      <img src="../images/favico.png" alt="Logo UTA">
+        <div class="logo">
+            <img src="../images/favico.png" alt="Logo UTA">
+        </div>
+        <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
+        <a href="verificar_pagos.php" class="active"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
+        <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
+        <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
+        <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
+        <a href="#"><i class="fas fa-cog me-2"></i> Configuraciones</a>
+        <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
     </div>
-    <a href="#"><i class="fas fa-home me-2"></i> <span>Inicio</span></a>
-    <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> <span>Gestionar Eventos</span></a>
-    <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> <span>Gestionar Usuarios</span></a>
-    <a href="evidencias_global.php"><i class="fa fa-clipboard-check me-2"></i> <span>Gestionar Evidencias</span></a>
-    <a href="verificar_pagos.php" class="active"><i class="fa fa-money-bill me-2"></i> <span>Gestionar Pagos</span></a>
-    <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
-    <a href="#"><i class="fas fa-chart-bar me-2"></i> <span>Estadísticas</span></a>
-    <a href="perfil.php"><i class="fas fa-user me-2"></i> <span>Perfil</span></a>
-    <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> <span>Cerrar Sesión</span></a>
-  </div>
 
   <div class="content">
     <div class="card mb-3">

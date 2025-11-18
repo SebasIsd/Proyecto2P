@@ -95,4 +95,6 @@ actualizarEstadoInscripcion($conn, $idIns);
 $destino = $_SERVER['HTTP_REFERER'] ?? "evidencias_global.php?evento=$idEvento";
 header("Location: $destino");
 exit();
+
+
 ?>
