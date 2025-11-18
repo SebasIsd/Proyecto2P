@@ -24,6 +24,7 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,13 +52,14 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
 
         .sidebar {
             position: fixed;
-            top: 0; left: 0;
+            top: 0;
+            left: 0;
             width: 260px;
             height: 100vh;
             background: var(--primary);
             color: white;
             padding: 25px 0;
-            box-shadow: 5px 0 20px rgba(0,0,0,0.15);
+            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.15);
             z-index: 1000;
         }
 
@@ -70,7 +72,7 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
         .sidebar .logo img {
             width: 130px;
             border-radius: 50%;
-            border: 5px solid rgba(255,255,255,0.25);
+            border: 5px solid rgba(255, 255, 255, 0.25);
             transition: all 0.3s;
         }
 
@@ -80,7 +82,7 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
         }
 
         .sidebar a {
-            color: rgba(255,255,255,0.9);
+            color: rgba(255, 255, 255, 0.9);
             padding: 16px 28px;
             display: flex;
             align-items: center;
@@ -96,7 +98,8 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
             font-size: 1.15rem;
         }
 
-        .sidebar a:hover, .sidebar a.active {
+        .sidebar a:hover,
+        .sidebar a.active {
             background: var(--primary-hover);
             color: white;
             border-left-color: white;
@@ -209,7 +212,7 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
         .btn-edit:hover {
             background: var(--primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(163,0,0,0.2);
+            box-shadow: 0 4px 10px rgba(163, 0, 0, 0.2);
         }
 
         .avatar-circle {
@@ -224,14 +227,14 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
             align-items: center;
             justify-content: center;
             border: 3px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         /* Modal */
         .modal-content {
             border-radius: var(--radius);
             border: none;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
 
         .modal-header {
@@ -249,7 +252,8 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
             padding: 30px;
         }
 
-        .form-control, .form-select {
+        .form-control,
+        .form-select {
             border: 2px solid #e9ecef;
             border-radius: 12px;
             padding: 12px 16px;
@@ -257,9 +261,10 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
             transition: all 0.3s;
         }
 
-        .form-control:focus, .form-select:focus {
+        .form-control:focus,
+        .form-select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 0.2rem rgba(163,0,0,0.15);
+            box-shadow: 0 0 0 0.2rem rgba(163, 0, 0, 0.15);
         }
 
         .form-label {
@@ -284,15 +289,35 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
         }
 
         @media (max-width: 768px) {
-            .sidebar { width: 80px; }
-            .sidebar .logo img { width: 50px; }
-            .sidebar a span { display: none; }
-            .sidebar a { padding: 16px; justify-content: center; }
-            .sidebar a:hover { padding-left: 16px; }
-            .content { margin-left: 80px; padding: 20px; }
+            .sidebar {
+                width: 80px;
+            }
+
+            .sidebar .logo img {
+                width: 50px;
+            }
+
+            .sidebar a span {
+                display: none;
+            }
+
+            .sidebar a {
+                padding: 16px;
+                justify-content: center;
+            }
+
+            .sidebar a:hover {
+                padding-left: 16px;
+            }
+
+            .content {
+                margin-left: 80px;
+                padding: 20px;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Sidebar -->
@@ -302,10 +327,12 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
         </div>
         <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
         <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-        <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
-        <a href="#"><i class="fas fa-chart-bar me-2"></i> Estadísticas</a>
+        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
+        <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
+        <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
+        <a href="editar_usuario.php" class="active"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-        <a href="#"><i class="fas fa-cog me-2"></i> Configuraciones</a>
+        <a href="admin_configuraciones.php"><i class="fas fa-cog me-2"></i> Configuraciones</a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
     </div>
 
@@ -335,32 +362,32 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
                         </thead>
                         <tbody>
                             <?php foreach ($usuarios as $u): ?>
-                            <tr>
-                                <td>
-                                    <div class="avatar-circle">
-                                        <?= strtoupper(substr($u['NOM_PRI_USU'], 0, 1) . substr($u['APE_PRI_USU'], 0, 1)) ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <strong><?= htmlspecialchars($u['NOM_PRI_USU'] . ' ' . $u['APE_PRI_USU']) ?></strong><br>
-                                    <small class="text-muted"><?= htmlspecialchars($u['CED_USU']) ?></small>
-                                </td>
-                                <td><?= htmlspecialchars($u['COR_USU']) ?></td>
-                                <td><span class="badge bg-primary"><?= htmlspecialchars($u['NOM_ROL']) ?></span></td>
-                                <td>
-                                    <?php if ($u['ACTIVO']): ?>
-                                        <span class="badge badge-success">Activo</span>
-                                    <?php else: ?>
-                                        <span class="badge badge-danger">Inactivo</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <button class="btn-edit" data-bs-toggle="modal" data-bs-target="#editModal"
+                                <tr>
+                                    <td>
+                                        <div class="avatar-circle">
+                                            <?= strtoupper(substr($u['NOM_PRI_USU'], 0, 1) . substr($u['APE_PRI_USU'], 0, 1)) ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong><?= htmlspecialchars($u['NOM_PRI_USU'] . ' ' . $u['APE_PRI_USU']) ?></strong><br>
+                                        <small class="text-muted"><?= htmlspecialchars($u['CED_USU']) ?></small>
+                                    </td>
+                                    <td><?= htmlspecialchars($u['COR_USU']) ?></td>
+                                    <td><span class="badge bg-primary"><?= htmlspecialchars($u['NOM_ROL']) ?></span></td>
+                                    <td>
+                                        <?php if ($u['ACTIVO']): ?>
+                                            <span class="badge badge-success">Activo</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-danger">Inactivo</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <button class="btn-edit" data-bs-toggle="modal" data-bs-target="#editModal"
                                             onclick="cargarUsuario(<?= htmlspecialchars(json_encode($u)) ?>)">
-                                        <i class="fas fa-edit"></i> Editar
-                                    </button>
-                                </td>
-                            </tr>
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
@@ -384,157 +411,156 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
                                 <label for="cedula" class="form-label">Cédula</label>
                                 <input type="text" class="form-control" id="cedula" name="cedula" readonly>
                             </div>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Primer Nombre *</label>
-                                <input type="text" class="form-control" name="nom_pri" id="nom_pri" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Segundo Nombre</label>
-                                <input type="text" class="form-control" name="nom_seg" id="nom_seg">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Primer Apellido *</label>
-                                <input type="text" class="form-control" name="ape_pri" id="ape_pri" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Segundo Apellido</label>
-                                <input type="text" class="form-control" name="ape_seg" id="ape_seg">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Correo *</label>
-                                <input type="email" class="form-control" name="correo" id="correo" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Teléfono</label>
-                                <input type="text" class="form-control" name="telefono" id="telefono" pattern="\d{10}">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Dirección</label>
-                                <textarea class="form-control" name="direccion" id="direccion" rows="2"></textarea>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="fec_nac_usu" class="form-label">Fecha de Nacimiento</label>
-                                <input type="date" class="form-control" id="fec_nac_usu" name="fec_nac_usu">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Rol *</label>
-                                <select class="form-select" name="rol_id" id="rol_id" required>
-                                    <?php foreach ($roles as $r): ?>
-                                        <option value="<?= $r['ID_ROL'] ?>"><?= htmlspecialchars($r['NOM_ROL']) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Carrera</label>
-                                <select class="form-select" name="carrera_id" id="carrera_id">
-                                    <option value="">-- Sin carrera --</option>
-                                    <?php foreach ($carreras as $c): ?>
-                                        <option value="<?= $c['ID_CARRERA'] ?>"><?= htmlspecialchars($c['NOMBRE_CARRERA']) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Nueva Contraseña</label>
-                                <input type="password" class="form-control" name="clave" minlength="6">
-                                <small class="text-muted">Dejar en blanco para no cambiar</small>
-                            </div>
-                            <div class="col-md-6 d-flex align-items-end">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="activo" id="activo">
-                                    <label class="form-check-label" for="activo">Usuario Activo</label>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Primer Nombre *</label>
+                                    <input type="text" class="form-control" name="nom_pri" id="nom_pri" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Segundo Nombre</label>
+                                    <input type="text" class="form-control" name="nom_seg" id="nom_seg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Primer Apellido *</label>
+                                    <input type="text" class="form-control" name="ape_pri" id="ape_pri" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Segundo Apellido</label>
+                                    <input type="text" class="form-control" name="ape_seg" id="ape_seg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Correo *</label>
+                                    <input type="email" class="form-control" name="correo" id="correo" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="text" class="form-control" name="telefono" id="telefono" pattern="\d{10}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Dirección</label>
+                                    <textarea class="form-control" name="direccion" id="direccion" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="fec_nac_usu" class="form-label">Fecha de Nacimiento</label>
+                                    <input type="date" class="form-control" id="fec_nac_usu" name="fec_nac_usu">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Rol *</label>
+                                    <select class="form-select" name="rol_id" id="rol_id" required>
+                                        <?php foreach ($roles as $r): ?>
+                                            <option value="<?= $r['ID_ROL'] ?>"><?= htmlspecialchars($r['NOM_ROL']) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Carrera</label>
+                                    <select class="form-select" name="carrera_id" id="carrera_id">
+                                        <option value="">-- Sin carrera --</option>
+                                        <?php foreach ($carreras as $c): ?>
+                                            <option value="<?= $c['ID_CARRERA'] ?>"><?= htmlspecialchars($c['NOMBRE_CARRERA']) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Nueva Contraseña</label>
+                                    <input type="password" class="form-control" name="clave" minlength="6">
+                                    <small class="text-muted">Dejar en blanco para no cambiar</small>
+                                </div>
+                                <div class="col-md-6 d-flex align-items-end">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="activo" id="activo">
+                                        <label class="form-check-label" for="activo">Usuario Activo</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-save-modal">
-                            <i class="fas fa-save me-2"></i> Guardar Cambios
-                        </button>
-                    </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-save-modal">
+                                <i class="fas fa-save me-2"></i> Guardar Cambios
+                            </button>
+                        </div>
                 </form>
             </div>
         </div>
     </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    
-    function cargarUsuario(usuario) {
-        document.getElementById('cedula').value = usuario.CED_USU;
-        document.getElementById('nom_pri').value = usuario.NOM_PRI_USU;
-        document.getElementById('nom_seg').value = usuario.NOM_SEG_USU || '';
-        document.getElementById('ape_pri').value = usuario.APE_PRI_USU;
-        document.getElementById('ape_seg').value = usuario.APE_SEG_USU || '';
-        document.getElementById('correo').value = usuario.COR_USU;
-        document.getElementById('telefono').value = usuario.TEL_USU || '';
-        document.getElementById('direccion').value = usuario.DIR_USU || '';
-        document.getElementById('fec_nac_usu').value = usuario.FEC_NAC_USU || ''; 
-        document.getElementById('rol_id').value = usuario.ID_ROL_USU;
-        document.getElementById('carrera_id').value = usuario.ID_CARRERA_USU || '';
-        document.getElementById('activo').checked = usuario.ACTIVO == 1;
-        
-        document.getElementById('clave').value = '';
-        
-        var myModal = new bootstrap.Modal(document.getElementById('modalEditarUsuario'));
-        myModal.show();
-    }
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function cargarUsuario(usuario) {
+            document.getElementById('cedula').value = usuario.CED_USU;
+            document.getElementById('nom_pri').value = usuario.NOM_PRI_USU;
+            document.getElementById('nom_seg').value = usuario.NOM_SEG_USU || '';
+            document.getElementById('ape_pri').value = usuario.APE_PRI_USU;
+            document.getElementById('ape_seg').value = usuario.APE_SEG_USU || '';
+            document.getElementById('correo').value = usuario.COR_USU;
+            document.getElementById('telefono').value = usuario.TEL_USU || '';
+            document.getElementById('direccion').value = usuario.DIR_USU || '';
+            document.getElementById('fec_nac_usu').value = usuario.FEC_NAC_USU || '';
+            document.getElementById('rol_id').value = usuario.ID_ROL_USU;
+            document.getElementById('carrera_id').value = usuario.ID_CARRERA_USU || '';
+            document.getElementById('activo').checked = usuario.ACTIVO == 1;
 
+            document.getElementById('clave').value = '';
 
-    // Lógica para enviar el formulario por AJAX y recargar la página
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('formEditarUsuario');
-        
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                // 🔑 SOLUCIÓN: DETENER LA REDIRECCIÓN PREDETERMINADA DEL FORMULARIO
-                e.preventDefault(); 
-                
-                const formData = new FormData(this);
-
-                // Asegurar que 'activo' se envía como 1 o 0
-                const activoCheckbox = document.getElementById('activo');
-                if (activoCheckbox.checked) {
-                    formData.set('activo', 1);
-                } else {
-                    formData.set('activo', 0); 
-                }
-                
-                fetch('actualizar_usuario.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    // Verifica que la respuesta sea un OK HTTP (200-299)
-                    if (!response.ok) {
-                        throw new Error('Respuesta de red fallida con estado: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Manejar la respuesta JSON
-                    if (data.success) {
-                        alert("✅ Éxito: " + data.message + " Recargando página...");
-                        // 🔑 RECARGAR LA PÁGINA TRAS EL ÉXITO
-                        window.location.reload(); 
-                        
-                    } else {
-                        alert("❌ Error: " + data.message);
-                    }
-                })
-                .catch(error => {
-                    // Manejar errores de conexión o parsing de JSON
-                    console.error('Error en la petición AJAX:', error);
-                    alert("Hubo un error de conexión con el servidor o en el procesamiento. Revisa la consola.");
-                });
-            });
-        } else {
-            // Esto ayuda a depurar si el ID del formulario está mal
-            console.error('Error: No se encontró el elemento con ID "formEditarUsuario".');
+            var myModal = new bootstrap.Modal(document.getElementById('modalEditarUsuario'));
+            myModal.show();
         }
-    });
 
-</script>
+
+        // Lógica para enviar el formulario por AJAX y recargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('formEditarUsuario');
+
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    // 🔑 SOLUCIÓN: DETENER LA REDIRECCIÓN PREDETERMINADA DEL FORMULARIO
+                    e.preventDefault();
+
+                    const formData = new FormData(this);
+
+                    // Asegurar que 'activo' se envía como 1 o 0
+                    const activoCheckbox = document.getElementById('activo');
+                    if (activoCheckbox.checked) {
+                        formData.set('activo', 1);
+                    } else {
+                        formData.set('activo', 0);
+                    }
+
+                    fetch('actualizar_usuario.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => {
+                            // Verifica que la respuesta sea un OK HTTP (200-299)
+                            if (!response.ok) {
+                                throw new Error('Respuesta de red fallida con estado: ' + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Manejar la respuesta JSON
+                            if (data.success) {
+                                alert("✅ Éxito: " + data.message + " Recargando página...");
+                                // 🔑 RECARGAR LA PÁGINA TRAS EL ÉXITO
+                                window.location.reload();
+
+                            } else {
+                                alert("❌ Error: " + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            // Manejar errores de conexión o parsing de JSON
+                            console.error('Error en la petición AJAX:', error);
+                            alert("Hubo un error de conexión con el servidor o en el procesamiento. Revisa la consola.");
+                        });
+                });
+            } else {
+                // Esto ayuda a depurar si el ID del formulario está mal
+                console.error('Error: No se encontró el elemento con ID "formEditarUsuario".');
+            }
+        });
+    </script>
 </body>
+
 </html>
