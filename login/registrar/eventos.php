@@ -1,0 +1,37 @@
+<?php
+require_once '../../includes/conexion.php';
+
+$sql = "
+    SELECT 
+        e.ID_EVE_CUR,
+        e.TIT_EVE_CUR,
+        e.DES_EVE_CUR,
+        CONCAT(e.FEC_INI_EVE_CUR, ' - ', e.FEC_FIN_EVE_CUR) AS fecha,
+        ec.ID_CARRERA
+    FROM eventos_cursos e
+    LEFT JOIN eventos_carreras ec 
+        ON ec.ID_EVE_CUR = e.ID_EVE_CUR
+";
+
+$result = $conn->query($sql);
+
+$eventos = [];
+
+while ($fila = $result->fetch_assoc()) {
+    $eventos[] = [
+        "id"         => $fila["ID_EVE_CUR"],
+        "nombre"     => $fila["TIT_EVE_CUR"],
+        "descripcion"=> $fila["DES_EVE_CUR"],
+        "fecha"      => $fila["fecha"],
+        
+        // 👇 Imagen por defecto (CAMBIA ESTO CUANDO TENGAS COLUMNA REAL)
+        "imagen"     => "./images/default_event.jpg",
+
+        // Carreras
+        "id_carrera" => $fila["ID_CARRERA"] ?? 0
+    ];
+}
+
+header('Content-Type: application/json');
+echo json_encode($eventos);
+?>

@@ -55,7 +55,7 @@ require './home/autoridades.php';
         <nav class="navbar navbar-expand-lg custom_nav-container ">
           <a class="navbar-brand" href="index.php">
             <span>
-              Eventos CTT UTA
+             Eventos CTT UTA
             </span>
           </a>
 
@@ -70,7 +70,7 @@ require './home/autoridades.php';
                 <a class="nav-link" href="index.php">Inicio <span class="sr-only">(current)</span></a>
               </li>
               <li class="nav-item">
-               
+                
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="contacto.php">Contactanos</a>
@@ -78,23 +78,22 @@ require './home/autoridades.php';
             </ul>
             <div class="user_option">
               <a href="" class="user_link">
-               
               </a>
               <a class="cart_link" href="#">
-               
+                
                   <g>
                     <g>
                      
+                    </g>
+                  </g>
+                  <g>
+                    <g>
+                      
                     </g>
                   </g>
                   <g>
                     <g>
                     
-                    </g>
-                  </g>
-                  <g>
-                    <g>
-                     
                     </g>
                   </g>
                   <g>
@@ -131,7 +130,6 @@ require './home/autoridades.php';
               </a>
               <form class="form-inline">
                 <button class="btn  my-2 my-sm-0 nav_search-btn" type="submit">
-                 
                 </button>
               </form>
               <a href="#" class="order_online" data-bs-toggle="modal" data-bs-target="#loginModal">login</a>
@@ -169,7 +167,7 @@ if (!is_array($sliderData)) {
                     <?= $sliderData[0]["descripcion"] ?> 
                     </p>
                     <div class="btn-box">
-                      
+                       <!-- boton saber mas -->
                     </div>
                   </div>
                 </div>
@@ -188,7 +186,7 @@ if (!is_array($sliderData)) {
                      <?= $sliderData[1]["descripcion"] ?> 
                     </p>
                     <div class="btn-box">
-                      
+                         <!-- boton contactanos -->
                     </div>
                   </div>
                 </div>
@@ -207,7 +205,7 @@ if (!is_array($sliderData)) {
                     <?= $sliderData[2]["descripcion"] ?> 
                     </p>
                     <div class="btn-box">
-                     
+                        <!-- boton saber mas -->
                     </div>
                   </div>
                 </div>
@@ -227,399 +225,239 @@ if (!is_array($sliderData)) {
     </section>
     <!-- end slider section -->
   </div>
-
-  <!-- offer section -->
- <section class="offer_section layout_padding-bottom py-5">
-  <h1 class="text-center mb-4" style="font-size:34px; color:#6d1313;">AUTORIDADES</h1>
-  <div class="container">
-    <div class="row g-4">
-
-      <?php if (!empty($autoridades)): ?>
-        <?php foreach ($autoridades as $a): ?>
-          <?php
-            $id  = (int)$a['id'];
-            $modalId = "autoridadModal_$id";
-            $foto = $a['foto'] ?: 'images/placeholder.jpg';
-            $titulo = trim($a['titulo'] ?? '');
-            $nombre = trim($a['nombre'] ?? '');
-            $cargo  = trim($a['cargo'] ?? 'Autoridad');
-            $encabezado = trim(($titulo ? $titulo.' ' : '').$nombre);
-            $resumen = $a['resumen'] ?? '';
-            $direccion = $a['direccion'] ?? '';
-            $telefono  = $a['telefono'] ?? '';
-            $ext       = $a['telefono_ext'] ?? '';
-            $horario   = $a['horario'] ?? '';
-            $email     = $a['email'] ?? '';
-          ?>
-          <div class="col-12">
-            <div class="card shadow-sm border-0">
-              <div class="row g-0">
-                <div class="col-md-4 bg-light text-center p-3">
-                  <img src="<?= htmlspecialchars($foto) ?>" alt="<?= htmlspecialchars($encabezado) ?>" class="img-fluid rounded">
-                  <?php if ($email): ?>
-                    <div class="mt-2">
-                      <a href="mailto:<?= htmlspecialchars($email) ?>" style="color:#6d1313; font-weight:600;">
-                        <?= htmlspecialchars($email) ?>
-                      </a>
-                    </div>
-                  <?php endif; ?>
-                </div>
-                <style>
-/* Sobrescribir botón outline-primary */
-.btn-outline-primary {
-    border-color: #6f0909 !important; /* borde rojo */
-    color: #6f0909 !important;        /* texto rojo */
-    transition: all 0.3s;              /* transición suave */
-}
-
-/* Hover */
-.btn-outline-primary:hover {
-    background-color: #6f0909 !important; /* fondo rojo */
-    color: white !important;               /* texto blanco */
-    border-color: #6f0909 !important;      /* borde rojo */
-}
-</style>
-
-                <div class="col-md-8 d-flex flex-column justify-content-center p-4">
-                  <div style="font-size:1rem; color:#6d1313; font-weight:700;"><?= htmlspecialchars($cargo) ?></div>
-                  <h5 class="fw-bold"><?= htmlspecialchars($encabezado) ?></h5>
-                  <button class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#<?= $modalId ?>">Más detalles</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Modal -->
-          <div class="modal fade" id="<?= $modalId ?>" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title"><?= htmlspecialchars($encabezado) ?></h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                  <?php if ($resumen): ?><p><?= nl2br(htmlspecialchars($resumen)) ?></p><?php endif; ?>
-                  <ul>
-                    <?php if ($direccion): ?><li><strong>Dirección:</strong> <?= htmlspecialchars($direccion) ?></li><?php endif; ?>
-                    <?php if ($telefono): ?><li><strong>Teléfono:</strong> <?= htmlspecialchars($telefono) ?><?= $ext ? ' ext '.htmlspecialchars($ext) : '' ?></li><?php endif; ?>
-                    <?php if ($horario): ?><li><strong>Horario:</strong> <?= nl2br(htmlspecialchars($horario)) ?></li><?php endif; ?>
-                  </ul>
-                </div>
-                <div class="modal-footer">
-                  <?php if ($email): ?><a href="mailto:<?= htmlspecialchars($email) ?>" class="btn btn-primary">Contactar</a><?php endif; ?>
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <p class="text-center">No hay autoridades registradas.</p>
-      <?php endif; ?>
-
-    </div>
-  </div>
-</section>
-  <!-- end offer section -->
-<!-- section Mision y vision -->
-<?php
-// incluir el archivo que retorna el arreglo
-// ajusta la ruta si index.php no está en la raíz (ejemplo asumido: index.php en la raíz del proyecto)
-$misionVision = include __DIR__ . '/home/mision_vision.php';
-
-// seguridad: asegurarnos de que sea un array con claves esperadas
-if (!is_array($misionVision)) {
-    $misionVision = [
-        "mision" => "Información no disponible",
-        "vision" => "Información no disponible"
+  <br>
+  <!-- about section -->
+   <?php
+$nosData = include __DIR__ . "/home/contactanos.php";
+// Validación segura
+if (!is_array($nosData)) {
+    $nosData = [
+        ["titulo" => "Sin datos", "descripcion" => "No se pudo cargar información"],
+        ["titulo" => "Sin datos", "descripcion" => "No se pudo cargar información"],
+        ["titulo" => "Sin datos", "descripcion" => "No se pudo cargar información"]
     ];
 }
 ?>
 
-<section class="about_section layout_padding" style="background-color: #6f0909;">
-  <div class="container">
-    
+  <section class="about_section layout_padding" style="background-color: #6f0909;">
+    <div class="container  ">
 
-    <div class="row mt-4">
-      <!-- Misión -->
-      <div class="col-md-6">
-        <div class="box">
-          <h3><strong>Misión</strong></h3>
-          <p><?= htmlspecialchars($misionVision["mision"], ENT_QUOTES, 'UTF-8') ?></p>
+      <div class="row">
+        <div class="col-md-6 ">
+          <div class="img-box">
+            <img src="images/nosotros/<?= htmlspecialchars($nosData["ruta"]) ?>" alt="Nosotros">
+
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="detail-box">
+            <div class="heading_container">
+              
+              <h2>
+                Nosotros
+              </h2>
+            </div>
+            <p>
+           <?= $nosData["des_noso"] ?>
+            </p>
+            <a href=<?= htmlspecialchars($nosData["link_noso"]) ?>>
+              Read More
+            </a>    
+          </div>
         </div>
       </div>
-
-      <!-- Visión -->
-      <div class="col-md-6">
-        <div class="box">
-          <h3><strong>Visión</strong></h3>
-          <p><?= htmlspecialchars($misionVision["vision"], ENT_QUOTES, 'UTF-8') ?></p>
-        </div>
-      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-
-<!-- final mision y vision -->
-
-
-  <!-- food section -->
-<section class="food_section layout_padding-bottom" >
-    <div class="container">
-        <div class="heading_container heading_center">
-            <h2 style="color: #6f0909;">Eventos</h2>
-        </div>
-
-        <ul class="filters_menu" id="filtrosCarreras" >
-            <!-- Se llena dinámicamente -->
-        </ul>
-
-        <!-- 🟢 Script para crear los botones (NO se modifica) -->
-        <script>
-        document.addEventListener("DOMContentLoaded", () => {
-
-            fetch("./login/registrar/car.php")
-                .then(res => res.json())
-                .then(data => {
-                    let contenedor = document.getElementById("filtrosCarreras");
-
-                    let btnTodos = document.createElement("li");
-                    btnTodos.textContent = "Todos";
-                    btnTodos.dataset.filter = ".all";
-                    btnTodos.classList.add("active");
-                    contenedor.appendChild(btnTodos);
-
-                    let btnSin = document.createElement("li");
-                    btnSin.textContent = "Sin carrera";
-                    btnSin.dataset.filter = data.sin_carrera;
-                    contenedor.appendChild(btnSin);
-
-                    data.carreras.forEach(c => {
-                        let li = document.createElement("li");
-                        li.dataset.filter = `.carrera_${c.id}`;
-                        li.textContent = c.nombre;
-                        contenedor.appendChild(li);
-                    });
-
-                    contenedor.querySelectorAll("li").forEach(li => {
-                        li.addEventListener("click", function () {
-                            contenedor.querySelectorAll("li").forEach(item => item.classList.remove("active"));
-                            this.classList.add("active");
-
-                            filtrarEventos(this.dataset.filter);
-                        });
-                    });
-                });
-
-        });
-        </script>
-
-
-        <!-- 🤖 CONTENEDOR DONDE VAN LOS EVENTOS -->
-        <div class="filters-content">
-            <div class="row" id="contenedorEventos">
-                <!-- Aquí se insertan los eventos -->
-            </div>
-        </div>
-
-
-        <!-- 🟢 SCRIPT NUEVO PARA CARGAR LOS EVENTOS -->
-         
-        <script>
-document.addEventListener("DOMContentLoaded", () => {
-
-    console.clear();
-    console.log("🔍 Iniciando carga de eventos...");
-
-    fetch("./login/registrar/eventos.php")
-        .then(res => {
-            console.log("📡 Estado HTTP:", res.status);
-            return res.text(); // PRIMERO obtener como TEXTO
-        })
-        .then(texto => {
-
-            console.log("📦 Respuesta cruda del servidor:");
-            console.log(texto);
-
-            // Intentar convertir a JSON
-            try {
-                let data = JSON.parse(texto);
-                console.log("✅ JSON parseado correctamente:", data);
-
-                mostrarEventos(data);
-
-            } catch (error) {
-                console.error("❌ ERROR: No se pudo convertir a JSON");
-                console.error(error);
-            }
-
-        })
-        .catch(err => {
-            console.error("❌ ERROR FETCH:", err);
-        });
-
-});
-
-function mostrarEventos(data) {
-    console.log("🎨 Dibujando eventos...");
-
-    let contenedor = document.getElementById("contenedorEventos");
-    contenedor.innerHTML = "";
-
-    data.forEach(evento => {
-        console.log("Evento detectado:", evento);
-
-        let div = document.createElement("div");
-        let claseCarrera = evento.id_carrera ? `carrera_${evento.id_carrera}` : "sin_carrera";
-
-        div.className = `col-sm-6 col-lg-4 all ${claseCarrera}`;
-
-        div.innerHTML = `
-            <div class="box" >
-                <div>
-                    <div class="img-box">
-                        <img src="${evento.imagen}" alt="">
-                    </div>
-                    <div class="detail-box" style="background-color: #6f0909;">
-                        <h5>${evento.nombre}</h5>
-                        <p>${evento.descripcion}</p>
-                        <div class="options">
-                        <h6>Fecha de duracion</h6>
-                            <h6>${evento.fecha}</h6>
-                        </div>
-                        <button  class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal" 
-                        data-redirect="buscar_eventos.php" >
-                        Inscribirse
-                    </button>
-                </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        contenedor.appendChild(div);
-    });
-
-    console.log("🎉 Eventos dibujados:", data.length);
-}
-</script>
-<script>
-function filtrarEventos(filtro) {
-    console.log("📌 Filtro seleccionado:", filtro);
-
-    let eventos = document.querySelectorAll("#contenedorEventos .all");
-
-    eventos.forEach(e => {
-
-        // "Todos"
-        if (filtro === ".all") {
-            e.style.display = "block";
-            return;
-        }
-
-        // "Sin carrera"
-        if (filtro === "sin_carrera" || filtro === ".sin_carrera") {
-            if (e.classList.contains("sin_carrera")) {
-                e.style.display = "block";
-            } else {
-                e.style.display = "none";
-            }
-            return;
-        }
-
-        // Cualquier carrera
-        if (e.classList.contains(filtro.replace(".", ""))) {
-            e.style.display = "block";
-        } else {
-            e.style.display = "none";
-        }
-    });
-}
-</script>
-
-<style>
-#filtrosCarreras li {
-    display: inline-block;
-    cursor: pointer;
-    background-color: #f0f0f0; /* color normal */
-    color: #000; /* letra normal */
-    transition: all 0.3s;
-}
-
-#filtrosCarreras li.active {
-    background-color: #6f0909; /* fondo cuando está activo */
-    color: white; /* letras blancas cuando activo */
-}
-</style>
-
-
-    </div>
-</section>
-<!-- 🔵 Sección de comentarios -->
-<section class="comment_section layout_padding">
-  <div class="container" id="comentarios">
-    <div class="heading_container">
-      <h2>Comentarios recientes</h2>
-    </div>
-
-    <div id="listaComentarios">
-      <p>Cargando comentarios...</p>
-    </div>
-
-    <button class="btn btn-warning" onclick="location.href='contacto.php?from=add'" style="background-color: #6f0909; color: white;" >
-  Añadir comentario
-</button>
-
-  </div>
-</section>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-    fetch("./home/obtener_comentarios.php")
-        .then(r => r.json())
-        .then(comments => {
-
-            const cont = document.getElementById("listaComentarios");
-
-            if (comments.length === 0) {
-                cont.innerHTML = "<p>No hay comentarios aún.</p>";
-                return;
-            }
-
-            let html = "";
-
-            comments.forEach(c => {
-                html += `
-                <div class="comment_item" 
-                     style="border:1px solid #eee; padding:15px; border-radius:10px; margin-bottom:15px;">
-                  
-                  <p><strong>${c.nombre}</strong> <span style="color:#999;">(${c.fecha})</span></p>
-                  <p>${c.comentario}</p>
-                </div>
-                `;
-            });
-
-            cont.innerHTML = html;
-        });
-
-});
-</script>
-
-
-
-  <!-- end seccion de comentarios section -->
-
-  <!-- about section -->
-
-  
   <!-- end about section -->
 
-  
-  <!-- end book section -->
+ <!-- book section -->
+<section class="book_section layout_padding">
+  <div class="container">
+    <div class="heading_container">
+      <h2>Comentanos</h2>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form_container">
+          <form id="formComentario">
+            
+            <!-- Nombre -->
+            <div>
+              <input type="text" class="form-control" name="nombre" id="campoNombre" placeholder="Tu Nombre" required />
+            </div>
+
+            <!-- Teléfono -->
+            <div>
+              <input type="text" class="form-control" name="telefono" id="telefono"
+                     placeholder="Teléfono (09XXXXXXXX)" maxlength="10" required />
+            </div>
+
+            <!-- Correo -->
+            <div>
+              <input type="email" class="form-control" name="correo" id="correo"
+                     placeholder="correo@uta.edu.ec" required />
+            </div>
+
+            <!-- Comentario -->
+            <div>
+              <textarea class="form-control" name="comentario" rows="4"
+                        placeholder="Escribe tu comentario..." required></textarea>
+            </div>
+
+            <!-- Fecha actual bloqueada -->
+            <div>
+              <input type="date" class="form-control" name="fecha" id="fechaActual" readonly />
+            </div>
+
+            <div class="btn_box">
+              <button type="submit" style="background-color: #6f0909;">Enviar comentario</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+     <div class="col-md-6">
+    <div class="map_container">
+      
+
+        <?php 
+        $contacto = include "./home/contactanos.php";
+
+        if (!empty($contacto["maps"])) {
+            echo $contacto["maps"];   // Esto imprime el iframe tal cual viene de la BD
+        } else {
+            echo "<p>No hay un mapa configurado.</p>";
+        }
+        ?>
+
+    </div>
+</div>
+
+    </div>
+  </div>
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    // Detectar si viene desde el botón "Añadir comentario"
+    const urlParams = new URLSearchParams(window.location.search);
+    const from = urlParams.get('from');
+
+    // Si viene desde ?from=add => enfocar automáticamente
+    if (from === "add") {
+        const campo = document.getElementById("campoNombre");
+        if (campo) campo.focus();
+    }
+
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    // --- Establecer fecha actual ---
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById("fechaActual").value = hoy;
+
+    // --- Validación del teléfono ---
+    const tel = document.getElementById("telefono");
+    tel.addEventListener("input", (e) => {
+        e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    });
+
+    // --- Envío con fetch ---
+    document.getElementById("formComentario").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        let datos = new FormData(this);
+
+        fetch("./home/guardar_comentario.php", {   // ✔ Mantengo tu ruta original
+            method: "POST",
+            body: datos
+        })
+        .then(r => r.json())
+        .then(res => {
+            alert(res.msg);
+            if (res.status === "success") {
+                this.reset();
+                document.getElementById("fechaActual").value = hoy;
+                window.location.href = "index.php#comentarios";
+            }
+        });
+    });
+
+});
+</script>
+
+
+<!-- end book section -->
+
 
   <!-- client section -->
+<?php
+$devs = include __DIR__ . "/home/desarrolladores.php";
+
+?>
+ <section class="client_section layout_padding-bottom">
+  <div class="container">
+    <div class="heading_container heading_center psudo_white_primary mb_45">
+      <h2 style="color:#6f0909;">Desarrolladores</h2>
+    </div>
+
+    <div class="carousel-wrap row">
+      <div class="owl-carousel client_owl-carousel">
+
+        <?php foreach ($devs as $dev): ?>
+        <div class="item">
+          <div class="box" >
+            <div class="detail-box" style="background-color: #6f0909;">
+             
+
+              <h6>
+                <?= $dev["nombre"] . " " . $dev["apellido"] ?>
+              </h6>
+               <p>
+                <?= $dev["descripcion"] ?>
+              </p>
+
+              <p>
+                
+              </p>
+   <a href="<?= $dev['github_url'] ?>" target="_blank">
+    <i class="fa fa-github" aria-hidden="true" style="color:black;"></i>
+</a>
+
+<a href="<?= $dev['whatsapp_url'] ?>" target="_blank">
+    <i class="fa fa-whatsapp" aria-hidden="true" style="color:green;"></i>
+</a>
+
+<a href="<?= $dev['correo_url'] ?>" target="_blank">
+    <i class="fa fa-envelope" aria-hidden="true"></i>
+</a>
 
 
+
+
+            </div>
+
+            <div class="img-box" >
+              <img src="<?= $dev["ruta_completa"] ?>" alt="" class="box-img" >
+            </div>
+      
+
+          </div>
+        </div>
+        <?php endforeach; ?>
+
+      </div>
+    </div>
+
+  </div>
+</section>
 
   <!-- end client section -->
 
@@ -644,7 +482,7 @@ if (!is_array($footerData)) {
 ?>
 
 
-  <footer class="footer_section" style="background-color: #6f0909;">
+  <footer class="footer_section" style="background-color: #6f0909;>
     <div class="container">
       <div class="row">
         <div class="col-md-4 footer-col">
@@ -704,7 +542,12 @@ if (!is_array($footerData)) {
       </p>  
       </div>
     </div>
+
+
+    
   </footer> 
+
+
   <!-- footer section -->
 
   <!-- jQery -->
@@ -867,12 +710,6 @@ if (!is_array($footerData)) {
     </div>
   </div>
 </div>
-<script>
-
-  
-</script>
-
-
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1041,29 +878,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 formNewPass.reset();
             });
         });
-
-// --- Capturar redirección personalizada desde botones que abren el login ---
-const loginModalEl = document.getElementById('loginModal');
-if (loginModalEl) {
-    loginModalEl.addEventListener('show.bs.modal', function(event) {
-        const button = event.relatedTarget; // botón que abrió el modal
-        const redirectPage = button?.getAttribute('data-redirect') || '';
-        let form = loginModalEl.querySelector('form');
-        if (form) {
-            let redirectInput = form.querySelector('input[name="redirect_to"]');
-            if (!redirectInput) {
-                redirectInput = document.createElement('input');
-                redirectInput.type = 'hidden';
-                redirectInput.name = 'redirect_to';
-                form.appendChild(redirectInput);
-            }
-            redirectInput.value = redirectPage;
-            console.log("🔹 Redirect capturado:", redirectPage); // para depuración
-        }
-    });
-}
-
-
     }
 });
 </script>

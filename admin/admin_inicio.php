@@ -322,7 +322,7 @@ for ($i = 5; $i >= 0; $i--) {
         <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
         <a href="#"><i class="fas fa-chart-bar me-2"></i> Estadísticas</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-        <a href="#"><i class="fas fa-cog me-2"></i> Configuraciones</a>
+        <a href="admin_configuraciones.php"><i class="fas fa-cog me-2"></i> Configuraciones</a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
     </div>
 

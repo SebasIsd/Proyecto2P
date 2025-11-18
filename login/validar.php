@@ -32,6 +32,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['rol_id'] = $fila['ID_ROL_USU'];
             $_SESSION['rol_nombre'] = $fila['NOM_ROL'];
 
+            $redirect_to = isset($_POST['redirect_to']) && !empty($_POST['redirect_to']) 
+               ? $_POST['redirect_to'] 
+               : null;
+
+if ($redirect_to) {
+    header("Location: ../usuarios/" . $redirect_to);
+    exit();
+}
+
             $rol = strtolower($fila['NOM_ROL']);
             if ($rol === 'administrador') {
                 header("Location: ../admin/admin_inicio.php");
