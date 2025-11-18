@@ -325,7 +325,7 @@ if ($eventId) {
 </head>
 <body>
   <!-- Sidebar -->
-  <div class="sidebar">
+    <div class="sidebar">
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
@@ -336,7 +336,7 @@ if ($eventId) {
         <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
         <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-        <a href="#"><i class="fas fa-cog me-2"></i> Configuraciones</a>
+        <a href="admin_configuraciones.php"><i class="fas fa-cog me-2"></i> Configuraciones</a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
     </div>
 
