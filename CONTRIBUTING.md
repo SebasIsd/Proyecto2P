@@ -13,7 +13,7 @@ Tu ayuda es fundamental para mejorar y mantener este e-commerce 💻
 2. **Clona tu Fork** 💾  
    ```bash
    git clone https://github.com/[TU-USUARIO]/Proyecto2P.git
-   cd Proyecto1P
+   cd Proyecto2P
    ```
 
 3. **Crea una Nueva Rama** 🌿  
@@ -22,7 +22,7 @@ Tu ayuda es fundamental para mejorar y mantener este e-commerce 💻
    ```
 
 4. **Realiza tus Cambios** ✏️  
-   - Edita los archivos necesarios (HTML, CSS, JS, etc.).
+   - Edita los archivos necesarios (php, CSS, JS, etc.).
    - Prueba tus cambios abriendo los archivos en un navegador.
    - Si agregas dependencias, actualiza el `.gitignore` o crea una carpeta `/lib/` si aplica.
 
