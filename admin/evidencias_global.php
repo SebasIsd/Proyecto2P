@@ -321,6 +321,14 @@ if ($eventId) {
             .sidebar a:hover { padding-left: 16px; }
             .content { margin-left: 80px; padding: 20px; }
         }
+
+       /* Estilo para los campos deshabilitados */
+.disabled-input {
+  background-color: #f8f9fa;  /* Fondo gris claro */
+  pointer-events: none;  /* Evita que se pueda interactuar con el campo */
+  opacity: 0.7;  /* Opacidad para indicar que está deshabilitado */
+}
+
     </style>
 </head>
 <body>
@@ -390,6 +398,11 @@ if ($eventId) {
           <!-- no botón: se envía automático -->
         </form>
       </div>
+    </div>
+
+        <!-- Botón "Finalizar" fuera de la tabla -->
+    <div class="text-center mb-3">
+      <button type="button" class="btn btn-primary" id="finalizeBtn" onclick="finalizeEditing()" disabled>Finalizar edición</button>
     </div>
 
     <?php if (!$eventId): ?>
@@ -497,7 +510,6 @@ if ($eventId) {
 </button>
 
                     </form>
-                  </td>
                 </tr>
               <?php endwhile; ?>
             </tbody>
@@ -556,6 +568,25 @@ if ($eventId) {
     </div>
   </div>
 </div>
+
+<!-- Modal de confirmación para finalizar -->
+  <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmModalLabel">Confirmar acción</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          ¿Estás seguro de que deseas finalizar la edición de todas las notas numéricas?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" id="confirmFinalizeBtn" class="btn btn-primary">Finalizar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -682,8 +713,50 @@ if (confirmSaveBtn) {
   });
 }
 
+/// Habilitar/Deshabilitar el botón "Finalizar" cuando se elija "NUMÉRICO"
+const tipoSel = document.getElementById('tipoSel');
+const finalizeBtn = document.getElementById('finalizeBtn');
 
-    
+// Función para habilitar el botón "Finalizar"
+function toggleFinalizeBtn() {
+  if (tipoSel.value === 'NUMERICO') {
+    finalizeBtn.removeAttribute('disabled'); // Habilitar el botón
+  } else {
+    finalizeBtn.setAttribute('disabled', true); // Deshabilitar el botón
+  }
+}
+
+// Ejecutar la función al cargar la página y cuando cambie el tipo
+window.onload = toggleFinalizeBtn;
+tipoSel.addEventListener('change', toggleFinalizeBtn);
+
+// Función para finalizar la edición y bloquear todos los inputs
+function finalizeEditing() {
+  const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+  modal.show();
+
+  const confirmBtn = document.getElementById('confirmFinalizeBtn');
+  confirmBtn.onclick = function () {
+    // Deshabilitar todos los inputs, selects y textareas en la tabla
+    const inputs = document.querySelectorAll('input[name="valor_numerico"], input[name="valor_texto"], select[name="estado"], textarea[name="observacion"]');
+    inputs.forEach(input => {
+      input.setAttribute('disabled', true); // Deshabilitar todos los campos
+      input.classList.add('disabled-input'); // Agregar clase de estilo para indicar que está deshabilitado
+    });
+
+    // Deshabilitar el botón de "Finalizar"
+    finalizeBtn.setAttribute('disabled', true);
+
+    // Deshabilitar también el botón de "Guardar" en cada fila de la tabla
+    const saveButtons = document.querySelectorAll('.btn-uta');
+    saveButtons.forEach(button => {
+      button.setAttribute('disabled', true); // Deshabilitar botón de "Guardar"
+    });
+
+    modal.hide(); // Cerrar el modal
+  };
+}
+
   </script>
 </body>
 </html>
