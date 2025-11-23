@@ -334,34 +334,42 @@ for ($i = 5; $i >= 0; $i--) {
 
         <!-- Tarjetas de Estadísticas -->
         <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Total Eventos</div>
-                    <div class="card-body text-center">
-                        <h2><?= $totalEventos ?></h2>
-                        <p>Eventos creados en la plataforma.</p>
-                    </div>
-                </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-calendar-alt"></i> Total Eventos
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Usuarios Registrados</div>
-                    <div class="card-body text-center">
-                        <h2><?= $usuariosRegistrados ?></h2>
-                        <p>Usuarios activos en el sistema.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Inscripciones Pendientes</div>
-                    <div class="card-body text-center">
-                        <h2><?= $inscripcionesPendientes ?></h2>
-                        <p>Inscripciones por aprobar.</p>
-                    </div>
-                </div>
+            <div class="card-body text-center">
+                <h2><?= $totalEventos ?></h2>
+                <p>Eventos creados en la plataforma.</p>
             </div>
         </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-users"></i> Usuarios Registrados
+            </div>
+            <div class="card-body text-center">
+                <h2><?= $usuariosRegistrados ?></h2>
+                <p>Usuarios activos en el sistema.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-hourglass-half"></i> Inscripciones Pendientes
+            </div>
+            <div class="card-body text-center">
+                <h2><?= $inscripcionesPendientes ?></h2>
+                <p>Inscripciones por aprobar.</p>
+            </div>
+        </div>
+    </div>
+</div>
 
         <!-- Gráfico de Eventos por Mes -->
         <div class="row">
