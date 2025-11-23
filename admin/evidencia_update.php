@@ -93,7 +93,8 @@ $stmt->close();
 actualizarEstadoInscripcion($conn, $idIns);
 // 5. Redirigir de vuelta a la página anterior, conservando filtros si es posible
 $destino = $_SERVER['HTTP_REFERER'] ?? "evidencias_global.php?evento=$idEvento";
-header("Location: $destino");
+$sep = (strpos($destino, '?') !== false) ? '&' : '?';
+header("Location: {$destino}{$sep}success=1");
 exit();
 
 
