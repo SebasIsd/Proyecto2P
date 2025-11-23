@@ -533,6 +533,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
       </div>
     </div>
+      
+
+    <div class="accordion-item card mb-3">
+      <h2 class="accordion-header">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#p5" aria-expanded="true">
+          <i class="bi bi-image me-2"></i>5) Imagen del evento
+        </button>
+      </h2>
+      <div id="p5" class="accordion-collapse collapse show">
+        <div class="accordion-body">
+                    <input id="nuevoTipoImagen" type="file" class="form-control" accept="image/*">
+
+        </div>
+      </div>
+</div>
 
     <!-- Botón final -->
     <div class="card sticky-actions">
@@ -562,10 +577,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <label class="form-label">Nombre del tipo</label>
           <input id="nuevoTipoNombre" name="nombre_tipo" class="form-control">
         </div>
-        <div class="mb-3">
-          <label class="form-label">Imagen del tipo</label>
-          <input id="nuevoTipoImagen" type="file" class="form-control" accept="image/*">
-        </div>
+       
 
         <!-- Sección de requisitos dinámicos -->
         <div class="mb-3">
