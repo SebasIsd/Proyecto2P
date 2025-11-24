@@ -370,7 +370,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <p>Completa la información paso a paso</p>
     </div>
 
-   <form method="post" id="formEvento">
+   <form method="post" id="formEvento" enctype="multipart/form-data">
   <div class="accordion" id="eventWizard">
 
     <!-- Paso 1: Datos básicos -->
@@ -543,7 +543,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </h2>
       <div id="p5" class="accordion-collapse collapse show">
         <div class="accordion-body">
-                    <input id="nuevoTipoImagen" type="file" class="form-control" accept="image/*">
+                    <input id="imgEvento" name="IMG_EVE_CUR" type="file" class="form-control" accept="image/*">
+
 
         </div>
       </div>
@@ -705,12 +706,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnGuardarNuevoTipo) {
     btnGuardarNuevoTipo.addEventListener('click', async () => {
       const nombre = document.getElementById('nuevoTipoNombre').value.trim();
-      const img = document.getElementById('nuevoTipoImagen').files[0];
+      //const img = document.getElementById('nuevoTipoImagen').files[0];
       if (!nombre) return alert('Debes ingresar el nombre del tipo.');
 
       const formData = new FormData();
       formData.append('nombre_tipo', nombre);
-      if (img) formData.append('imagen_tipo', img);
+      //if (img) formData.append('imagen_tipo', img);
 
       // Requisitos
       const requisitos = [];
