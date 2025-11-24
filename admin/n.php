@@ -562,51 +562,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </form>
 
 
-  <!-- Modal Nuevo Tipo -->
-  <!-- Modal Nuevo Tipo -->
+ 
+<!-- Modal Nuevo Tipo -->
 <div class="modal fade" id="modalNuevoTipo" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content p-3">
+
+      <!-- Título -->
       <div class="modal-header border-0">
         <h5 class="modal-title text-uta">
           <i class="bi bi-plus-circle me-2"></i>Nuevo tipo de evento
         </h5>
         <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
+
       <div class="modal-body">
+
+        <!-- Nombre del tipo -->
         <div class="mb-3">
           <label class="form-label">Nombre del tipo</label>
           <input id="nuevoTipoNombre" name="nombre_tipo" class="form-control">
         </div>
-       
 
-        <!-- Sección de requisitos dinámicos -->
-        <div class="mb-3">
-          <label class="form-label">Requisitos del tipo</label>
-          <div id="contenedorRequisitos">
-            <!-- Plantilla de requisito -->
-            <div class="requisito-item mb-2 d-flex gap-2">
-              <input type="text" class="form-control req-nombre" placeholder="Nombre del requisito">
-              <select class="form-select req-tipo">
-                <option value="NUMERICO">Numérico</option>
-                <option value="TEXTO_CORTO">Texto corto</option>
-                <option value="DOCUMENTO">Documento</option>
-              </select>
-              <input type="number" class="form-control req-valor-min" placeholder="Valor mínimo" style="display:none;">
-              <button type="button" class="btn btn-danger btn-remove-requisito">Eliminar</button>
-            </div>
+        <!-- Requisitos existentes -->
+        <div class="mb-4">
+          <label class="form-label">Requisitos existentes</label>
+
+          <div id="listaRequisitosExistentes" class="border rounded p-2" style="max-height: 180px; overflow-y:auto;">
+            <!-- Aquí se insertan los requisitos con check -->
+            <!-- Ejemplo:
+              <div class="form-check">
+                <input class="form-check-input req-existente" type="checkbox" value="3">
+                <label class="form-check-label">Documento de identidad</label>
+              </div>
+            -->
           </div>
-          <button type="button" id="agregarRequisito" class="btn btn-sm btn-uta mt-2">Agregar requisito</button>
         </div>
+
+        <hr>
+
+        <!-- Requisitos nuevos -->
+        <label class="form-label">Crear requisitos nuevos</label>
+
+        <div id="contenedorRequisitos">
+          <div class="requisito-item mb-2 d-flex gap-2 align-items-center">
+            <input type="text" class="form-control req-nombre" placeholder="Nombre del requisito">
+            <select class="form-select req-tipo">
+              <option value="NUMERICO">Numérico</option>
+              <option value="TEXTO_CORTO">Texto corto</option>
+              <option value="DOCUMENTO">Documento</option>
+            </select>
+            <input type="number" class="form-control req-valor-min" placeholder="Valor mínimo" style="display:none;">
+            <button type="button" class="btn btn-danger btn-remove-requisito">X</button>
+          </div>
+        </div>
+
+        <button type="button" id="agregarRequisito" class="btn btn-sm btn-uta mt-2">
+          Agregar requisito
+        </button>
+
       </div>
 
+      <!-- Footer -->
       <div class="modal-footer border-0">
         <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button id="guardarNuevoTipo" class="btn btn-uta">Guardar</button>
       </div>
+
     </div>
   </div>
 </div>
+
 </main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -702,6 +728,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // === Cargar requisitos existentes al abrir el modal ===
+const modalNuevoTipo = document.getElementById('modalNuevoTipo');
+
+if (modalNuevoTipo) {
+  modalNuevoTipo.addEventListener('show.bs.modal', () => {
+    fetch('obtenerRequisitos.php')
+      .then(res => res.json())
+      .then(data => {
+        const lista = document.getElementById('listaRequisitosExistentes');
+        lista.innerHTML = '';
+
+        if (!Array.isArray(data) || data.length === 0) {
+          lista.innerHTML = '<p class="text-muted text-center">No existen requisitos registrados.</p>';
+          return;
+        }
+
+        data.forEach(req => {
+          lista.innerHTML += `
+            <div class="form-check">
+              <input class="form-check-input req-existente" type="checkbox" value="${req.ID_REQ}">
+              <label class="form-check-label">${req.NOM_REQ}</label>
+            </div>`;
+        });
+      })
+      .catch(err => console.error('Error cargando requisitos existentes:', err));
+  });
+}
+
   // === Guardar nuevo tipo de evento (modal) ===
   if (btnGuardarNuevoTipo) {
     btnGuardarNuevoTipo.addEventListener('click', async () => {
@@ -722,6 +776,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (nom) requisitos.push({ nombre: nom, tipo, valor_min: tipo === 'NUMERICO' ? valMin : null });
       });
       formData.append('requisitos', JSON.stringify(requisitos));
+// Obtener requisitos existentes marcados
+const reqExistentesMarcados = [];
+document.querySelectorAll('.req-existente:checked').forEach(cb => {
+  reqExistentesMarcados.push(cb.value);
+});
+
+formData.append('requisitos_existentes', JSON.stringify(reqExistentesMarcados));
 
       try {
         const res = await fetch('guardarTipoEvento.php', { method: 'POST', body: formData });

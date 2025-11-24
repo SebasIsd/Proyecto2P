@@ -17,8 +17,8 @@ try {
     $costo       = $_POST['COS_EVE_CUR'] ?? 0;
     $lugar       = $_POST['LUGAR'] ?? '';
     $detalle     = $_POST['UBICACION_DETALLE'] ?? '';
-    $capacidad   = $_POST['CAPACIDAD_MAXIMA'] ?? 0;
-    $cupos       = $_POST['CUPOS_DISPONIBLES'] ?? 0;
+    $capacidad = $_POST['CAPACIDAD_MAXIMA'] ?? 0;
+    $cupos     = $capacidad;
     $horas       = $_POST['HORAS_TOTALES'] ?? null;
     $idTipo      = $_POST['ID_TIPO_EVE'] ?? null;
     $responsable = trim($_POST['RESPONSABLE_CED'] ?? '');
@@ -103,7 +103,7 @@ try {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
     ");
     $stmt->bind_param(
-        "sssssssdssiiiis",
+        "ssssssssdssiiiis",
         $titulo, $descripcion,$imgEventoPath, $insDesde, $insHasta, $fechaInicio, $fechaFin, $modalidad, $costo,
         $lugar, $detalle, $capacidad, $cupos, $horas, $idTipo, $responsable
     );

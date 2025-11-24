@@ -19,7 +19,8 @@ $tiposOpts   = ['NUMERICO' => 'Numérico', 'TEXTO_CORTO' => 'Texto', 'DOCUMENTO'
 $estadosOpts = ['Pendiente','Aprobado','Rechazado'];
 
 /* Si no hay evento elegido, no consultamos */
-$rows = null; $total = 0; $page=1; $perPage=50;
+$rows = null; $total = 0; $page = 1; $perPage = 50;
+$notasFinalizadas = false; // <-- inicializar por defecto para evitar warnings
 
 if ($eventId) {
   $where = ["i.ID_EVE_CUR = ".(int)$eventId];
@@ -47,7 +48,6 @@ if ($eventId) {
   ";
 
   // CONSULTA INDEPENDIENTE PARA SABER SI YA FINALIZÓ
-  $notasFinalizadas = false;
   $flagRes = $conn->query("SELECT NOTAS_FINALIZADAS FROM EVENTOS_CURSOS WHERE ID_EVE_CUR = $eventId");
   if ($flagRes && $flagRes->num_rows > 0) {
       $notasFinalizadas = (int)$flagRes->fetch_assoc()['NOTAS_FINALIZADAS'] === 1;
@@ -61,8 +61,8 @@ if ($eventId) {
   $total = (int)$conn->query("SELECT COUNT(*) c FROM ($baseSql) t")->fetch_assoc()['c'];
   $rows  = $conn->query($baseSql . " ORDER BY NOMBRE, r.NOM_REQ LIMIT $perPage OFFSET $offset");
 }
-
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -398,15 +398,17 @@ if ($eventId) {
               <?php endforeach; ?>
             </select>
           </div>
-          <div class="col-md-2">
-            <label class="form-label">Buscar</label>
-         <input type="text"
-       class="form-control <?= $notasFinalizadas ? 'disabled-input' : '' ?>"
-       name="valor_texto"
-       value="<?= htmlspecialchars($r['VALOR_TEXTO'] ?? '') ?>"
-       placeholder="Texto corto"
-       <?= $notasFinalizadas ? 'disabled' : '' ?>>
+       <div class="col-md-2">
+  <label class="form-label">Buscar</label>
+  <input type="text"
+         class="form-control <?= $notasFinalizadas ? 'disabled-input' : '' ?>"
+         name="q"
+         id="buscarInp"
+         value="<?= htmlspecialchars($q) ?>"
+         placeholder="Buscar por cédula, nombre o requisito"
+         <?= $notasFinalizadas ? 'disabled' : '' ?>>
 </div>
+
           <!-- no botón: se envía automático -->
         </form>
       </div>
