@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once __DIR__ . '/../includes/conexion.php';
+// ⚠️ Nota: Asegúrate de tener el archivo fpdf.php en la ruta correcta: __DIR__ . '/../lib/fpdf186/fpdf.php'
+require_once __DIR__ . '/../lib/fpdf186/fpdf.php';
 
 
 if (!isset($_SESSION['correo'])) {
@@ -16,7 +18,12 @@ if ($idIns <= 0) {
 // Helper: conversión de texto UTF-8 → ISO-8859-1
 // ==================================================
 function pdf_text(string $txt): string {
-    return iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $txt);
+    // Si la cadena está vacía, devuelve una cadena vacía para evitar errores de iconv
+    if (empty($txt)) {
+        return '';
+    }
+    // Añadida la opción //IGNORE para evitar problemas con caracteres muy raros
+    return iconv('UTF-8', 'ISO-8859-1//TRANSLIT//IGNORE', $txt);
 }
 
 // ==================================================
@@ -61,12 +68,6 @@ $stmt->close();
 if (!$ins) {
     die('Inscripción no encontrada.');
 }
-
-// 👇 Si quieres restringir que solo el dueño (no admin) lo descargue:
-// $cedulaSesion = $_SESSION['cedula'] ?? null;
-// if ($cedulaSesion !== $ins['CED_USU'] && strtolower($_SESSION['rol_nombre'] ?? '') !== 'administrador') {
-//     die('No tiene permisos para este certificado.');
-// }
 
 // ==================================================
 // 2. Validar que el evento haya finalizado
@@ -139,37 +140,41 @@ if ($totalOblig > 0 && $totalOblig !== $totalAprob) {
 }
 
 // ==================================================
-// 6. Incluir FPDF
-// ==================================================
-require_once __DIR__ . '/../lib/fpdf186/fpdf.php';
-
-// ==================================================
-// 7. Clase PDF personalizada
+// 7. Clase PDF personalizada (sin Header automático)
 // ==================================================
 class PDFCert extends FPDF
 {
+    // Colores personalizados
+    public $colorUtaRed    = [163, 0, 0];   // Rojo UTA
+    public $colorUtaBlue   = [0, 51, 102];  // Azul Oscuro (acento profesional)
+    public $colorText      = [51, 51, 51];  // Gris oscuro para el cuerpo de texto
+    public $colorWhite     = [171, 143, 24]; // Blanco para contraste
+
+    // Desactivar el header automático
     function Header()
     {
-        // Logo (ajusta ruta y tamaño según tu proyecto)
-        $logoPath = __DIR__ . '/../images/logo_uta.jpg';
-        if (file_exists($logoPath)) {
-            $this->Image($logoPath, 15, 10, 30);
-        }
-
-        $this->SetFont('Arial', 'B', 16);
-        $this->Cell(0, 10, pdf_text('UNIVERSIDAD TÉCNICA DE AMBATO'), 0, 1, 'C');
-
-        $this->SetFont('Arial', '', 12);
-        $this->Cell(0, 8, pdf_text('Facultad de Ingeniería en Sistemas, Electrónica e Industrial'), 0, 1, 'C');
-        $this->Ln(10);
+        // Dejamos vacío para dibujar manualmente
     }
 
     function Footer()
     {
-        $this->SetY(-20);
-        $this->SetFont('Arial', 'I', 8);
-        $this->Cell(0, 5, pdf_text('Emitido automáticamente por el sistema de eventos.'), 0, 1, 'C');
-        $this->Cell(0, 5, pdf_text('Fecha de emisión: ') . date('Y-m-d'), 0, 0, 'C');
+        $pageWidth = $this->GetPageWidth();
+        $this->SetY(-25); // 25mm desde el final
+        $this->SetTextColor(150, 150, 150); // Gris claro
+
+        // ID de Validación (Simulado)
+        $idIns = isset($_GET['id_ins']) ? (int)$_GET['id_ins'] : 0;
+        $validationCode = str_pad($idIns, 6, "0", STR_PAD_LEFT) . "-" . date('Y');
+        $dateEmitted = date('d-m-Y');
+
+        // Fila 1: ID de Validación (Izquierda)
+        $this->SetFont('Arial', '', 10);
+        $this->Cell(0, 5, pdf_text('Código de Validación: ' ) . $validationCode, 0, 1, 'C');
+        
+        // Fila 1: Fecha de emisión (Derecha)
+        $this->SetFont('Arial', 'I', 9);
+        $this->Cell(0, 5 , pdf_text('Fecha de emisión: ') . $dateEmitted, 0, 1, 'C');
+
     }
 }
 
@@ -187,55 +192,151 @@ $nombreCompleto = strtoupper($nombreCompleto);
 $tituloEvento = $ins['TIT_EVE_CUR'];
 $tipoEvento   = $ins['NOM_TIPO_EVE'];
 
+// Formato de fecha
 $fechaIni = (new DateTime($ins['FEC_INI_EVE_CUR']))->format('d/m/Y');
 $fechaFin = (new DateTime($ins['FEC_FIN_EVE_CUR']))->format('d/m/Y');
 $horas    = (int)$ins['HORAS_TOTALES'];
 
 // ==================================================
-// 9. Crear PDF y contenido
+// 9. Crear PDF y contenido (Cuerpo del Certificado)
 // ==================================================
 $pdf = new PDFCert('L', 'mm', 'A4'); // Horizontal, A4
 $pdf->AddPage();
 
-// Título "CERTIFICADO"
-$pdf->SetFont('Arial', 'B', 28);
-$pdf->SetTextColor(163, 0, 0);
-$pdf->Cell(0, 20, pdf_text('CERTIFICADO'), 0, 1, 'C');
-$pdf->Ln(6);
+// --- PRIMERO: Dibujar la imagen de fondo ---
+$backgroundImage = __DIR__ . '/../images/fondo_certificado.jpg'; // Ajusta la ruta a tu imagen
+if (file_exists($backgroundImage)) {
+    $pageWidth = $pdf->GetPageWidth();
+    $pageHeight = $pdf->GetPageHeight();
+    
+    // Dibujar la imagen de fondo (cubre toda la página)
+    $pdf->Image($backgroundImage, 0, 0, $pageWidth, $pageHeight, '', '', '', false, 100);
+}
 
-// Texto descriptivo
+// --- SEGUNDO: Añadir las fuentes Amita y Charm ---
+// Asegúrate de que los archivos Amita-Bold.php y Charm-Regular.php están en lib/fpdf186/
+$pdf->AddFont('Amita','B','Amita-Bold.php');
+$pdf->AddFont('Charm','R','Charm-Regular.php');
+
+// --- TERCERO: Dibujar manualmente el encabezado (Logo + Texto Institucional) ---
+$pageWidth = $pdf->GetPageWidth();
+$logoPath = __DIR__ . '/../images/logoUTA.png';
+
+// 1. Logo
+$logoWidth = 40;
+if (file_exists($logoPath)) {
+    $pdf->Image($logoPath, 15, 15, $logoWidth); 
+}
+
+// 2. Títulos de la Institución (usamos blanco para contraste)
+$pdf->SetY(15);
+$pdf->SetX(15 + $logoWidth + 5); 
+$pdf->SetTextColor($pdf->colorWhite[0], $pdf->colorWhite[1], $pdf->colorWhite[2]); // Blanco para que se vea sobre cualquier fondo
+
+$pdf->SetFont('Amita','B',18); // Usamos Amita-Bold para el nombre de la universidad
+$pdf->Cell($pageWidth - (15 + $logoWidth + 5 + 15), 10, pdf_text('UNIVERSIDAD TÉCNICA DE AMBATO'), 0, 1, 'R'); 
+
+// 3. Título de la Facultad (usamos blanco también)
+$pdf->SetX(15 + $logoWidth + 5);
+$pdf->SetFont('Charm','R',12); // Usamos Charm-Regular para la facultad
+$pdf->Cell($pageWidth - (15 + $logoWidth + 5 + 15), 6, pdf_text('Facultad de Ingeniería en Sistemas, Electrónica e Industrial'), 0, 1, 'R');
+
+// 4. Línea divisoria (más corta y centrada bajo la facultad)
+$lineX1 = $pageWidth - 80; // Inicia a 80mm del borde derecho
+$lineX2 = $pageWidth - 15; // Termina a 15mm del borde derecho
+$pdf->SetLineWidth(0.5);
+$pdf->SetDrawColor($pdf->colorUtaRed[0], $pdf->colorUtaRed[1], $pdf->colorUtaRed[2]);
+$pdf->Line($lineX1, 32, $lineX2, 32);
+
+$pdf->Ln(10); // Salto de línea después del encabezado
+
+// --- CUARTO: Dibujar el contenido principal ---
+
+// Título "CERTIFICADO DE PARTICIPACIÓN"
+$pdf->SetY(50); // Mueve el contenido abajo para dejar espacio al encabezado
 $pdf->SetTextColor(0, 0, 0);
-$pdf->SetFont('Arial', '', 14);
-$pdf->MultiCell(0, 8, pdf_text(
-    "La Universidad Técnica de Ambato, a través de la Facultad de Ingeniería en Sistemas, Electrónica e Industrial,\n" .
-    "otorga el presente certificado a:"
+$pdf->SetFont('Amita','B',20); // Usamos Amita-Bold para el título
+$pdf->Cell(0, 10, pdf_text('CERTIFICADO DE PARTICIPACIÓN'), 0, 1, 'C');
+$pdf->Ln(5);
+
+// Texto de Concesión (Preámbulo)
+$pdf->SetTextColor(51, 51, 51); // Gris Oscuro
+$pdf->SetFont('Charm','R',14); // Usamos Charm-Regular para el texto
+// Ajuste de texto para mejor espaciado
+$pdf->MultiCell(0, 7, pdf_text(
+    "La Universidad Técnica de Ambato, a través de la Facultad de Ingeniería en Sistemas, Electrónica e Industrial," .
+    " otorga el presente reconocimiento por haber cumplido satisfactoriamente con los requisitos, a:"
 ), 0, 'C');
-$pdf->Ln(6);
+$pdf->Ln(8); // Aumentado el espacio antes del nombre
 
-// Nombre grande
-$pdf->SetFont('Arial', 'B', 22);
-$pdf->Cell(0, 12, pdf_text($nombreCompleto), 0, 1, 'C');
-$pdf->Ln(4);
+// Nombre del Participante (El más grande)
+$pdf->SetFont('Amita','B',32); // Usamos Amita-Bold para el nombre
+$pdf->SetTextColor($pdf->colorUtaRed[0], $pdf->colorUtaRed[1], $pdf->colorUtaRed[2]);
+// Se usa MultiCell para centrar el texto correctamente incluso si el nombre es largo
+$pdf->MultiCell(0, 16, pdf_text($nombreCompleto), 0, 'C');
+$pdf->Ln(10);
 
-// Texto del evento
-$pdf->SetFont('Arial', '', 14);
-$textoEvento = "Por su participación en el $tipoEvento denominado:\n\"$tituloEvento\",\n" .
-               "realizado del $fechaIni al $fechaFin, con una duración de $horas horas académicas.";
-$pdf->MultiCell(0, 8, pdf_text($textoEvento), 0, 'C');
-$pdf->Ln(15);
+// Texto de valiosa participación
+$pdf->SetTextColor(51, 51, 51); // Gris Oscuro
+$pdf->SetFont('Charm','R',14); // Usamos Charm-Regular
+$pdf->MultiCell(0, 7, pdf_text(
+    "Por su valiosa participación en el $tipoEvento"
+), 0, 'C');
+$pdf->Ln(2);
 
-// Firmas
-$pdf->SetFont('Arial', '', 12);
-$yFirmas = $pdf->GetY() + 15;
+// Título del evento (Destacado)
+$pdf->SetFont('Amita','B',18); // Usamos Amita-Bold para el título del evento
+$pdf->SetTextColor($pdf->colorUtaBlue[0], $pdf->colorUtaBlue[1], $pdf->colorUtaBlue[2]);
+$pdf->MultiCell(0, 9, pdf_text(
+    "\"$tituloEvento\""
+), 0, 'C');
+$pdf->Ln(5);
 
-$pdf->SetY($yFirmas);
-$pdf->Cell(90, 6, pdf_text('___________________________'), 0, 0, 'C');
-$pdf->Cell(90, 6, '', 0, 0, 'C');
-$pdf->Cell(90, 6, pdf_text('___________________________'), 0, 1, 'C');
+// Duración y Fechas
+$pdf->SetTextColor(51, 51, 51); // Gris Oscuro
+$pdf->SetFont('Charm','R',14); // Usamos Charm-Regular
+// Si la fecha inicial es igual a la final, se muestra solo una fecha.
+$rangoFechas = $fechaIni === $fechaFin 
+             ? "realizado el $fechaIni" 
+             : "realizado del $fechaIni al $fechaFin";
 
-$pdf->Cell(90, 6, pdf_text('Director de Carrera'), 0, 0, 'C');
-$pdf->Cell(90, 6, '', 0, 0, 'C');
-$pdf->Cell(90, 6, pdf_text('Responsable del Evento'), 0, 1, 'C');
+$textoDuracion = "Evento $rangoFechas, con una duración certificada de $horas horas académicas.";
+
+$pdf->MultiCell(0, 8, pdf_text($textoDuracion), 0, 'C');
+$pdf->Ln(20); // Más espacio antes de las firmas
+
+
+// Firmas (Mejor distribución con solo 2 columnas)
+$pdf->SetFont('Arial', 'B', 12);
+$yFirmas = $pdf->GetY() + 5; // Posición Y para las líneas de firma
+
+$wFirma = 80; // Ancho de la línea de firma
+$sepFirma = 50; // Separación entre firmas (aumentada de 20 a 50)
+$totalAncho = (2 * $wFirma) + $sepFirma;
+
+// Calcular el punto de inicio para centrar las dos firmas
+$xStart = ($pdf->GetPageWidth() - $totalAncho) / 2;
+
+// --- Firma 1: Director de Carrera ---
+$pdf->SetX($xStart);
+$pdf->SetLineWidth(0.3);
+$pdf->SetDrawColor(0, 0, 0); 
+$pdf->Cell($wFirma, 0, '', 'B', 0, 'C'); // Línea de firma (Borde inferior)
+$pdf->Cell($sepFirma, 0, '', 0, 0, 'C'); // Espacio de separación
+
+// --- Firma 2: Responsable del Evento ---
+$pdf->Cell($wFirma, 0, '', 'B', 1, 'C'); // Línea de firma y salto de línea
+
+$pdf->Ln(2); // Espacio entre línea y texto
+
+// Títulos de Firmantes
+$pdf->SetTextColor(51, 51, 51);
+$pdf->SetFont('Arial', '', 10);
+$pdf->SetX($xStart);
+$pdf->Cell($wFirma, 6, pdf_text('Director de Carrera'), 0, 0, 'C');
+$pdf->Cell($sepFirma, 6, '', 0, 0, 'C'); 
+$pdf->Cell($wFirma, 6, pdf_text('Responsable del Evento'), 0, 1, 'C');
+
 
 // ==================================================
 // 10. Guardar el PDF en el servidor

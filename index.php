@@ -146,7 +146,7 @@ if (!is_array($footerData)) {
           <?php foreach ($autoridades as $a):
             $id = (int)$a['id'];
             $modalId = "autoridadModal_$id";
-            $foto = htmlspecialchars($a['foto'] ?? 'images/placeholder.jpg');
+            $foto = htmlspecialchars($a['foto'] ?? 'images/placeholder_default.png');
             $titulo = htmlspecialchars(trim($a['titulo'] ?? ''));
             $nombre = htmlspecialchars(trim($a['nombre'] ?? ''));
             $cargo = htmlspecialchars(trim($a['cargo'] ?? 'Autoridad'));
@@ -158,26 +158,25 @@ if (!is_array($footerData)) {
             $horario = htmlspecialchars($a['horario'] ?? '');
             $email = htmlspecialchars($a['email'] ?? '');
             ?>
-            <div class="col-12">
-              <div class="card shadow-sm border-0">
-                <div class="row g-0">
-                  <div class="col-md-4 bg-light text-center p-3">
-                    <img src="<?= $foto ?>" alt="<?= $encabezado ?>" class="img-fluid rounded">
-                    <?php if ($email): ?>
-                      <div class="mt-2">
-                        <a href="mailto:<?= $email ?>" style="color:#6d1313; font-weight:600;">
-                          <?= $email ?>
-                        </a>
-                      </div>
-                    <?php endif; ?>
-                  </div>
-
-                  <div class="col-md-8 d-flex flex-column justify-content-center p-4">
-                    <div style="font-size:1rem; color:#6d1313; font-weight:700;"><?= $cargo ?></div>
-                    <h5 class="fw-bold"><?= $encabezado ?></h5>
-                    <button class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#<?= $modalId ?>">Más detalles</button>
-                  </div>
+            <div class="col-sm-6 col-md-4 col-lg-3"> 
+              
+              <div class="autoridad-card shadow-sm border-0"> 
+                <div class="cargo-autoridad" style="font-size:0.5cm; color:#6d1313; font-weight:700; text-align: center;"><?= $cargo ?></div>
+                <div class="img-box bg-light text-center">
+                  <img src="<?= $foto ?>" alt="<?= $encabezado ?>" class="img-fluid">
+                  
+                  <?php if ($email): ?>
+                    <a href="mailto:<?= $email ?>" class="small mt-1 d-block" style="color:#6d1313; font-weight:600;">
+                      <?= $email ?>
+                    </a>
+                  <?php endif; ?>
                 </div>
+                
+                <div class="detail-box text-center p-3">
+                  <!--<div class="cargo-autoridad" style="font-size:0.9rem; color:#6d1313; font-weight:700;"><?= $cargo ?></div>-->
+                  <h6 class="fw-bold nombre-autoridad"><?= $encabezado ?></h6> <button class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#<?= $modalId ?>">Más detalles</button>
+                </div>
+                
               </div>
             </div>
 
@@ -211,24 +210,41 @@ if (!is_array($footerData)) {
       </div>
     </div>
   </section>
-  <section class="about_section layout_padding" style="background-color: #6f0909;">
+<section class="about_section layout_padding">
     <div class="container">
-      <div class="row mt-4">
-        <div class="col-md-6">
-          <div class="box">
-            <h3><strong>Misión</strong></h3>
-            <p><?= nl2br(htmlspecialchars($misionVision["mision"], ENT_QUOTES, 'UTF-8')) ?></p>
-          </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="detail-box">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <h3 class="fw-bold" style="color: #fcf6f6ff;">Nuestra Misión</h3>
+                            
+                            <div class="text-collapse-container">
+                                <p class="collapsed-text">
+                                    <?= $misionVision['mision'] ?>
+                                </p>
+                                <hr>
+                                <button class="btn btn-secondary" data-target="#mision">Leer más...</button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                             <h3 class="fw-bold" style="color: #fcf6f6ff;">Nuestra Visión</h3>
+                            
+                            <div class="text-collapse-container">
+                                <p class="collapsed-text">
+                                    <?= $misionVision['vision'] ?>
+                                </p>
+                                <hr>
+                                <button class="btn btn-secondary" data-target="#vision">Leer más...</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-6">
-          <div class="box">
-            <h3><strong>Visión</strong></h3>
-            <p><?= nl2br(htmlspecialchars($misionVision["vision"], ENT_QUOTES, 'UTF-8')) ?></p>
-          </div>
-        </div>
-      </div>
     </div>
-  </section>
+</section>
   <section class="food_section layout_padding-bottom">
     <div class="container">
       <div class="heading_container heading_center">
@@ -250,17 +266,17 @@ if (!is_array($footerData)) {
         <h2>Comentarios recientes</h2>
       </div>
 
-      <div id="listaComentarios">
-        <p>Cargando comentarios...</p>
+      <div id="listaComentarios" class="mt-4" style="min-height: 150px; background-color: #f8f9fa; padding: 15px; border-radius: 8px;">
+        <p >Cargando comentarios...</p>
       </div>
 
-      <button class="btn btn-warning" onclick="location.href='contacto.php?from=add'" style="background-color: #6f0909; color: white;">
+      <button class="btn btn-secundary" onclick="location.href='contacto.php?from=add'" style="margin-top: 15px; background-color: #222831; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; cursor: pointer; transition: background-color 0.3s;">
         Añadir comentario
       </button>
 
     </div>
   </section>
-  <footer class="footer_section" style="background-color: #6f0909;">
+  <footer class="footer_section">
     <div class="container">
       <div class="row">
         <div class="col-md-4 footer-col">
@@ -355,7 +371,18 @@ if (!is_array($footerData)) {
           mostrarEventos(data);
         })
         .catch(err => console.error("Error al cargar eventos:", err));
-
+        
+        
+        const getInitials = (name) => {
+            if (!name) return 'A'; // Inicial por defecto si el nombre es nulo/vacío
+            const parts = name.split(' ').filter(p => p.length > 0);
+            
+            if (parts.length === 0) return name.charAt(0).toUpperCase();
+            if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+            
+            // Tomar la primera letra de las dos primeras palabras
+            return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+        };
       // 3. Carga de comentarios
       fetch("./home/obtener_comentarios.php")
         .then(r => r.json())
@@ -364,7 +391,7 @@ if (!is_array($footerData)) {
           if (!cont) return;
 
           if (comments.length === 0) {
-            cont.innerHTML = "<p>No hay comentarios aún.</p>";
+            cont.innerHTML = "<div class='comment-card'><p class='text-center text-muted'>No hay comentarios aún.</p></div>";
             return;
           }
 
@@ -374,12 +401,19 @@ if (!is_array($footerData)) {
             const nombre = c.nombre ? htmlspecialchars(c.nombre) : 'Anónimo';
             const fecha = c.fecha ? htmlspecialchars(c.fecha) : '';
             const comentario = c.comentario ? htmlspecialchars(c.comentario) : '';
-
+            const initials = getInitials(nombre);
             html += `
-              <div class="comment_item" 
-                   style="border:1px solid #eee; padding:15px; border-radius:10px; margin-bottom:15px;">
-                <p><strong>${nombre}</strong> <span style="color:#999;">(${fecha})</span></p>
-                <p>${comentario}</p>
+              <div class="comment-card">
+                  <div class="comment-avatar">${getInitials(nombre)}</div>
+                  <div class="comment-details">
+                      <p class="comment-header">
+                        <strong class="comment-name">${nombre} <br></strong>
+                        <span style="color:#999;">(${fecha})</span>
+                      </p>
+                <hr>
+                <strong>Comentario:</strong>
+                <p class="comment-body">${comentario}</p>
+                </div>
               </div>
             `;
           });
@@ -399,7 +433,15 @@ if (!is_array($footerData)) {
         // Sanitización para XSS antes de insertar en el DOM
         const nombre = htmlspecialchars(evento.nombre || '');
         const descripcion = htmlspecialchars(evento.descripcion || '');
-        const imagen = htmlspecialchars(evento.imagen || '');
+        let imagen = htmlspecialchars(evento.imagen || '');
+        if (imagen.startsWith('/')) {
+            imagen = imagen.substring(1); 
+        }
+        
+        // Si la imagen sigue siendo vacía, usa un placeholder (opcional)
+        if (!imagen) {
+            imagen = 'images/placeholder_default.png'; // Asegúrate de tener esta imagen
+        }
         const fecha = htmlspecialchars(evento.fecha || '');
 
         let div = document.createElement("div");
@@ -411,14 +453,14 @@ if (!is_array($footerData)) {
                     <div class="img-box">
                         <img src="${imagen}" alt="${nombre}">
                     </div>
-                    <div class="detail-box" style="background-color: #6f0909;">
+                    <div class="detail-box" style="background-color: #ffffff07;">
                         <h5>${nombre}</h5>
                         <p>${descripcion}</p>
                         <div class="options">
                         <h6>Fecha de duracion</h6>
                             <h6>${fecha}</h6>
                         </div>
-                        <button  class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal" 
+                        <button  class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#loginModal" 
                         data-redirect="buscar_eventos.php" >
                         Inscribirse
                     </button>
@@ -738,5 +780,28 @@ if (!is_array($footerData)) {
       }
     });
   </script>
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const readMoreButtons = document.querySelectorAll('.btn-secondary');
+
+    readMoreButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Encuentra el párrafo dentro del mismo contenedor
+            const container = this.closest('.text-collapse-container');
+            const textElement = container.querySelector('.collapsed-text');
+            
+            // Alternar la clase 'expanded'
+            textElement.classList.toggle('expanded');
+            
+            // Cambiar el texto del botón
+            if (textElement.classList.contains('expanded')) {
+                this.textContent = 'Mostrar menos...';
+            } else {
+                this.textContent = 'Leer más...';
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>

@@ -7,7 +7,8 @@ $sql = "
         e.TIT_EVE_CUR,
         e.DES_EVE_CUR,
         CONCAT(e.FEC_INI_EVE_CUR, ' - ', e.FEC_FIN_EVE_CUR) AS fecha,
-        ec.ID_CARRERA
+        ec.ID_CARRERA,
+        e.IMG_EVE_CUR
     FROM eventos_cursos e
     LEFT JOIN eventos_carreras ec 
         ON ec.ID_EVE_CUR = e.ID_EVE_CUR
@@ -25,7 +26,7 @@ while ($fila = $result->fetch_assoc()) {
         "fecha"      => $fila["fecha"],
         
         // 👇 Imagen por defecto (CAMBIA ESTO CUANDO TENGAS COLUMNA REAL)
-        "imagen"     => "./images/default_event.jpg",
+        "imagen"     => $fila["IMG_EVE_CUR"],
 
         // Carreras
         "id_carrera" => $fila["ID_CARRERA"] ?? 0
