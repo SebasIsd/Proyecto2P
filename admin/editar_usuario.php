@@ -409,7 +409,7 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <button class="btn-edit" data-bs-toggle="modal" data-bs-target="#editModal"
+                                        <button class="btn-edit" 
                                             onclick='cargarUsuario(<?= htmlspecialchars(json_encode($u), ENT_QUOTES, 'UTF-8') ?>)'>
                                             <i class="fas fa-edit"></i> Editar
                                         </button>
