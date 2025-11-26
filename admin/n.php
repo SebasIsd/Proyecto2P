@@ -158,9 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             transition: transform 0.2s;
         }
 
-        .card:hover {
-            transform: translateY(-3px);
-        }
+        
 
         .card-header-custom {
             background: var(--primary);
@@ -209,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .badge-danger {
             background: #f8d7da;
-            color: #721c24;
+            color: #a30000;
         }
 
        .btn-primary {
@@ -263,13 +261,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             .content { margin-left: 80px; padding: 20px; }
         }
 
-    body {
-      background: #f8f6f3;
-      font-family: 'Poppins', sans-serif;
-    }
-    .text-uta { color: #7b1113; }
+    .text-uta { color: #a30000; }
     .btn-uta {
-      background: linear-gradient(90deg, #7b1113, #a02727);
+      background: linear-gradient(90deg, #a30000, #a02727);
       color: #fff;
       border: none;
       border-radius: 10px;
@@ -353,7 +347,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
         <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
-        <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="gestionar_eventos.php" class="active"> <i class="fas fa-calendar-check me-2" ></i> Gestionar Eventos</a>
         <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
         <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
         <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
