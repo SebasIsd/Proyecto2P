@@ -189,6 +189,12 @@ if ($eventId) {
             font-size: 1.15rem;
         }
 
+         .card-header {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
+
         .table {
             margin: 0;
         }
@@ -360,7 +366,6 @@ if ($eventId) {
     <div class="card mb-3">
       <div class="card-body">
         <h3 class="mb-1">Evidencias por evento</h3>
-        <div class="text-muted">Selecciona un evento y busca por participante (cédula o nombre) o por requisito.</div>
       </div>
     </div>
 
@@ -405,7 +410,7 @@ if ($eventId) {
          name="q"
          id="buscarInp"
          value="<?= htmlspecialchars($q) ?>"
-         placeholder="Buscar por cédula, nombre o requisito"
+         placeholder="Buscar "
          <?= $notasFinalizadas ? 'disabled' : '' ?>>
 </div>
 

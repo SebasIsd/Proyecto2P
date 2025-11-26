@@ -187,6 +187,10 @@ $stmt->close();
       padding: 4px 10px;
       font-size: 0.8rem;
     }
+    .search-input {
+      max-width: 420px;
+      width: 100%;
+    }
     @media (max-width: 768px) {
       .sidebar { width: 80px; }
       .sidebar .logo img { width: 50px; }
@@ -216,29 +220,39 @@ $stmt->close();
   <!-- Contenido principal -->
   <div class="content">
     <div class="card mb-3">
-      <div class="card-body">
-        <h3 class="mb-1">Participantes aptos para certificado</h3>
-        <p class="text-muted mb-1">
-          Evento: <strong><?= htmlspecialchars($evento['TIT_EVE_CUR']) ?></strong>
-        </p>
-        <p class="text-muted mb-0">
-          Fechas:
-          <?= date('d/m/Y', strtotime($evento['FEC_INI_EVE_CUR'])) ?>
-          -
-          <?= date('d/m/Y', strtotime($evento['FEC_FIN_EVE_CUR'])) ?>
-          |
-          Tipo: <?= htmlspecialchars($evento['NOM_TIPO_EVE']) ?> |
-          Modalidad: <?= htmlspecialchars($evento['MOD_EVE_CUR']) ?>
-        </p>
+      <div class="card-body d-flex align-items-center justify-content-between gap-3 flex-wrap">
+        <div>
+          <h3 class="mb-1">Participantes aptos para certificado</h3>
+          <p class="text-muted mb-1">
+            Evento: <strong><?= htmlspecialchars($evento['TIT_EVE_CUR']) ?></strong>
+          </p>
+          <p class="text-muted mb-0">
+            Fechas:
+            <?= date('d/m/Y', strtotime($evento['FEC_INI_EVE_CUR'])) ?>
+            -
+            <?= date('d/m/Y', strtotime($evento['FEC_FIN_EVE_CUR'])) ?>
+            |
+            Tipo: <?= htmlspecialchars($evento['NOM_TIPO_EVE']) ?> |
+            Modalidad: <?= htmlspecialchars($evento['MOD_EVE_CUR']) ?>
+          </p>
+        </div>
+
+      
       </div>
     </div>
+
+     <!-- Input de búsqueda en tiempo real -->
+        <div style="min-width:260px; max-width:420px; width:100%;">
+          <input id="buscarParticipante" class="form-control search-input" type="search"
+                 placeholder="Buscar por cédula, nombre o estado..." aria-label="Buscar participantes">
+        </div></br>
 
     <div class="card">
       <div class="card-header">
         Participantes aptos (<?= $aptosRes->num_rows ?>)
       </div>
       <div class="card-body table-responsive">
-        <table class="table align-middle">
+        <table id="tablaParticipantes" class="table align-middle">
           <thead>
             <tr>
               <th>Cédula</th>
@@ -260,10 +274,10 @@ $stmt->close();
                 );
                 $yaTieneCert = !empty($r['CERT_GENERADO']) && !empty($r['RUTA_CERTIFICADO']);
               ?>
-                <tr>
-                  <td><?= htmlspecialchars($r['CED_USU']) ?></td>
-                  <td><?= htmlspecialchars($nombreCompleto) ?></td>
-                  <td>
+                <tr data-ins-id="<?= (int)$r['ID_INS'] ?>">
+                  <td class="cedula"><?= htmlspecialchars($r['CED_USU']) ?></td>
+                  <td class="nombre"><?= htmlspecialchars($nombreCompleto) ?></td>
+                  <td class="estado">
                     <span class="badge-soft">
                       <?= htmlspecialchars($r['ESTADO_INS']) ?>
                     </span>
@@ -278,6 +292,10 @@ $stmt->close();
                   </td>
                 </tr>
               <?php endwhile; ?>
+              <!-- fila de "no results" oculta por defecto -->
+              <tr id="noResults" style="display:none;">
+                <td colspan="4" class="text-center text-muted py-4">No se encontraron participantes.</td>
+              </tr>
             <?php endif; ?>
           </tbody>
         </table>
@@ -302,6 +320,7 @@ $stmt->close();
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // Manejo del modal de certificado
     const certModalEl = document.getElementById('certModal');
     const certFrame   = document.getElementById('certFrame');
 
@@ -312,16 +331,67 @@ $stmt->close();
         btn.addEventListener('click', () => {
           const idIns = btn.dataset.idIns;
           const url   = '../certificados/certificado.php?id_ins=' + encodeURIComponent(idIns);
-
           certFrame.src = url;
           certModal.show();
         });
       });
 
       certModalEl.addEventListener('hidden.bs.modal', () => {
+        // limpiar src para liberar recursos al cerrar
         certFrame.src = '';
       });
     }
+
+    // BÚSQUEDA EN TIEMPO REAL (sin botón) - debounce 200ms
+    (function() {
+      const input = document.getElementById('buscarParticipante');
+      const tabla = document.getElementById('tablaParticipantes');
+      if (!input || !tabla) return;
+      const tbody = tabla.querySelector('tbody');
+      const noResults = document.getElementById('noResults');
+
+      function debounce(fn, delay) {
+        let t;
+        return function(...args) {
+          clearTimeout(t);
+          t = setTimeout(() => fn.apply(this, args), delay);
+        };
+      }
+
+      function normalize(text) {
+        return (text || '').toString().trim().toLowerCase();
+      }
+
+      function filtrar(q) {
+        q = normalize(q);
+        // todas las filas reales (excluimos la fila noResults si existe)
+        const filas = Array.from(tbody.querySelectorAll('tr')).filter(tr => tr.id !== 'noResults');
+        let anyVisible = false;
+
+        filas.forEach(tr => {
+          const cedula = normalize(tr.querySelector('.cedula')?.textContent);
+          const nombre = normalize(tr.querySelector('.nombre')?.textContent);
+          const estado = normalize(tr.querySelector('.estado')?.textContent);
+          const combined = `${cedula} ${nombre} ${estado}`.replace(/\s+/g, ' ');
+
+          if (!q || combined.indexOf(q) !== -1) {
+            tr.style.display = '';
+            anyVisible = true;
+          } else {
+            tr.style.display = 'none';
+          }
+        });
+
+        if (!anyVisible) {
+          if (noResults) noResults.style.display = '';
+        } else {
+          if (noResults) noResults.style.display = 'none';
+        }
+      }
+
+      const debounced = debounce((e) => filtrar(e.target.value), 200);
+      input.addEventListener('input', debounced);
+    })();
   </script>
 </body>
 </html>

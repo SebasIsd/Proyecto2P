@@ -165,6 +165,12 @@ $evRes = $conn->query($sql);
       overflow: hidden;
     }
 
+     .card-header {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
+    
     .table thead {
       background: var(--primary);
       color: white;
@@ -245,15 +251,17 @@ $evRes = $conn->query($sql);
     <div class="card mb-3">
       <div class="card-body">
         <h3 class="mb-1">Eventos aptos para generación de certificados</h3>
-        <div class="text-muted">
-          Se muestran los eventos que ya finalizaron y el número de participantes que cumplen
-          con todos los requisitos (evidencias y pagos aprobados, en caso de eventos pagados).
-        </div>
       </div>
     </div>
+       <!-- Input de búsqueda en tiempo real -->
+        <div style="min-width:260px; max-width:420px; width:100%;">
+          <input id="buscarEvento" class="form-control search-input" type="search" placeholder="Buscar por título, tipo, fecha o modalidad..." aria-label="Buscar eventos">
+        </div></br>
 
     <div class="card">
-      <div class="card-header">Listado de eventos</div>
+      <div class="card-header">
+        Listado de eventos
+      </div>
       <div class="card-body table-responsive">
         <table class="table align-middle">
           <thead>
@@ -313,12 +321,71 @@ $evRes = $conn->query($sql);
                   </td>
                 </tr>
               <?php endwhile; ?>
+              <!-- fila de "no results" oculta por defecto -->
+              <tr id="noResults" style="display:none;">
+                <td colspan="8" class="text-center text-muted py-4">No se encontraron eventos.</td>
+              </tr>
             <?php endif; ?>
           </tbody>
         </table>
       </div>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // BÚSQUEDA EN TIEMPO REAL (sin botón) - debounce 200ms
+    (function() {
+      const input = document.getElementById('buscarEvento');
+      const tabla = document.getElementById('tablaCertEventos');
+      if (!input || !tabla) return;
+      const tbody = tabla.querySelector('tbody');
+      const noResults = document.getElementById('noResults');
+
+      function debounce(fn, delay) {
+        let t;
+        return function(...args) {
+          clearTimeout(t);
+          t = setTimeout(() => fn.apply(this, args), delay);
+        };
+      }
+
+      function normalize(text) {
+        return (text || '').toString().trim().toLowerCase();
+      }
+
+      function filtrar(q) {
+        q = normalize(q);
+        // todas las filas reales (excluimos la fila noResults si existe)
+        const filas = Array.from(tbody.querySelectorAll('tr')).filter(tr => tr.id !== 'noResults');
+        let anyVisible = false;
+
+        filas.forEach(tr => {
+          // columnas: 0=evento,1=tipo,2=fechas,3=modalidad,4=horas,5=inscritos,6=aptos,7=acciones
+          const title = normalize(tr.cells[0]?.textContent);
+          const tipo = normalize(tr.cells[1]?.textContent);
+          const fechas = normalize(tr.cells[2]?.textContent);
+          const modalidad = normalize(tr.cells[3]?.textContent);
+          const combined = `${title} ${tipo} ${fechas} ${modalidad}`.replace(/\s+/g, ' ');
+
+          if (!q || combined.indexOf(q) !== -1) {
+            tr.style.display = '';
+            anyVisible = true;
+          } else {
+            tr.style.display = 'none';
+          }
+        });
+
+        if (!anyVisible) {
+          if (noResults) noResults.style.display = '';
+        } else {
+          if (noResults) noResults.style.display = 'none';
+        }
+      }
+
+      const debounced = debounce((e) => filtrar(e.target.value), 200);
+      input.addEventListener('input', debounced);
+    })();
+  </script>
 </body>
 
 </html>
