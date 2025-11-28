@@ -1,51 +1,14 @@
+<!-- Actualización para admin_inicio.php: Dashboard para Administrador con estilos ajustados al tema rojo -->
 <?php
 session_start();
-require_once __DIR__ . '/../includes/conexion.php';
 
-// ---- Permisos básicos ----
-if (!isset($_SESSION['correo']) || !isset($_SESSION['cedula'])) {
+// Verificar que haya una sesión activa y que sea administrador
+if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'administrador') {
     header("Location: ../index.php");
     exit();
 }
 
-$cedula = $_SESSION['cedula'];
-
-// Comprobar que el usuario realmente aparece en PERSONAL_EVENTO como responsable/ponente
-$stmtCheck = $conn->prepare("
-    SELECT COUNT(*) AS cnt 
-    FROM PERSONAL_EVENTO 
-    WHERE CED_USU = ? AND (ES_RESPONSABLE = 1 OR UPPER(ROL_EVENTO) = 'PONENTE')
-");
-$stmtCheck->bind_param("s", $cedula);
-$stmtCheck->execute();
-$resCheck = $stmtCheck->get_result()->fetch_assoc();
-$stmtCheck->close();
-
-if ((int)$resCheck['cnt'] === 0) {
-    // No es staff: denegar
-    header("Location: ../index.php?error=sin_permiso");
-    exit();
-}
-
-// Obtener lista de eventos donde figura (detalles)
-$stmt = $conn->prepare("
-    SELECT e.ID_EVE_CUR, e.TIT_EVE_CUR, e.FEC_INI_EVE_CUR, e.FEC_FIN_EVE_CUR, e.LUGAR, p.ROL_EVENTO, p.ES_RESPONSABLE
-    FROM EVENTOS_CURSOS e
-    INNER JOIN PERSONAL_EVENTO p ON e.ID_EVE_CUR = p.ID_EVE_CUR
-    WHERE p.CED_USU = ?
-    ORDER BY e.FEC_INI_EVE_CUR DESC
-");
-$stmt->bind_param("s", $cedula);
-$stmt->execute();
-$result = $stmt->get_result();
-$eventos = $result->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-
-// Guardar en sesión (opcional) la lista de eventos como cache
-$ids = array_map(function($r){ return (int)$r['ID_EVE_CUR']; }, $eventos);
-$_SESSION['event_ids'] = json_encode($ids);
-$_SESSION['is_event_staff'] = true;
-
+require_once __DIR__ . '/../includes/conexion.php'; // Conexión a la BD
 
 // Obtener datos reales de la BD
 $stmt = $conn->prepare("SELECT COUNT(*) as total FROM EVENTOS_CURSOS");
@@ -353,14 +316,11 @@ for ($i = 5; $i >= 0; $i--) {
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="admin_inicio.php" class="active"><i class="fas fa-home me-2"></i> Inicio</a>
-        <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
-        <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
-        <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
-        <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
+        <a href="adminInicio.php" class="active"><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="gestionUsuarios.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="gestionUsuarios.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-        <a href="admin_configuraciones.php"><i class="fas fa-cog me-2"></i> Configuraciones</a>
+        <a href="configuraciones.php"><i class="fas fa-cog me-2"></i> Configuraciones</a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
     </div>
 
