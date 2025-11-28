@@ -1,20 +1,42 @@
 <?php
 session_start();
-if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'administrador') {
-  header("Location: ../index.php");
-  exit();
+require_once __DIR__ . '/../includes/conexion.php';
+require_once __DIR__ . '/../includes/check_event_permission.php'; // opcional pero recomendado
+
+// Verificar sesión y cédula (debe haberse guardado en login)
+if (!isset($_SESSION['correo']) || !isset($_SESSION['cedula'])) {
+    header("Location: ../index.php");
+    exit();
+}
+$cedula = $_SESSION['cedula'];
+
+// 1) Obtener lista de eventos donde la cédula figura como RESPONSABLE o PONENTE
+$stmtEv = $conn->prepare("
+    SELECT e.ID_EVE_CUR
+    FROM EVENTOS_CURSOS e
+    INNER JOIN PERSONAL_EVENTO p ON e.ID_EVE_CUR = p.ID_EVE_CUR
+    WHERE p.CED_USU = ? AND (p.ES_RESPONSABLE = 1 OR UPPER(p.ROL_EVENTO) = 'PONENTE')
+    ORDER BY e.FEC_INI_EVE_CUR DESC
+");
+$stmtEv->bind_param("s", $cedula);
+$stmtEv->execute();
+$resEvTmp = $stmtEv->get_result();
+
+$misEventos = [];
+while ($row = $resEvTmp->fetch_assoc()) {
+    $misEventos[] = (int)$row['ID_EVE_CUR'];
+}
+$stmtEv->close();
+
+// Si no pertenece a ningún evento, denegar acceso (o mostrar vacío)
+if (empty($misEventos)) {
+    // Puedes redirigir o mostrar sin resultados; aquí denegamos acceso
+    header("Location: ../index.php?error=sin_permiso");
+    exit();
 }
 
-require_once __DIR__ . '/../includes/conexion.php';
-
-/*
- * Eventos aptos para certificación:
- * - Evento ya finalizado (FEC_FIN_EVE_CUR <= CURDATE())
- * - Contar inscripciones
- * - Contar inscripciones que cumplen TODOS los requisitos obligatorios
- *   y (si es Pagado) tienen pago aprobado.
- */
-
+// 2) Construir la consulta original pero limitada a los IDs del responsable
+// Nota: tomamos tu SQL original y le añadimos "AND e.ID_EVE_CUR IN (...)"
 $sql = "
 SELECT
   e.ID_EVE_CUR,
@@ -62,6 +84,7 @@ FROM EVENTOS_CURSOS e
 JOIN TIPOS_EVENTO te ON te.ID_TIPO_EVE = e.ID_TIPO_EVE
 JOIN INSCRIPCIONES i ON i.ID_EVE_CUR = e.ID_EVE_CUR
 WHERE e.FEC_FIN_EVE_CUR <= CURDATE()
+  -- placeholder for event filtering will be injected here
 GROUP BY
   e.ID_EVE_CUR,
   e.TIT_EVE_CUR,
@@ -73,8 +96,34 @@ GROUP BY
 ORDER BY e.FEC_FIN_EVE_CUR DESC
 ";
 
-$evRes = $conn->query($sql);
+// 3) Inyectar cláusula IN(...) segura
+$placeholders = implode(',', array_fill(0, count($misEventos), '?'));
+$filterClause = " AND e.ID_EVE_CUR IN ($placeholders) ";
+$sql = str_replace('-- placeholder for event filtering will be injected here', $filterClause, $sql);
+
+// 4) Preparar statement y bind dinámico
+$stmt = $conn->prepare($sql);
+if (!$stmt) {
+    die("Error preparing statement: " . $conn->error);
+}
+
+// bind_param requires references and a types string
+$types = str_repeat('i', count($misEventos));
+$params = array_merge([$types], $misEventos);
+
+// build references array for call_user_func_array
+$refs = [];
+foreach ($params as $key => $value) {
+    $refs[$key] = &$params[$key];
+}
+
+// bind params and execute
+call_user_func_array([$stmt, 'bind_param'], $refs);
+$stmt->execute();
+$evRes = $stmt->get_result();
+$stmt->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -232,20 +281,18 @@ $evRes = $conn->query($sql);
 
 <body>
   <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="../images/favico.png" alt="Logo UTA">
+    <div class="sidebar">
+        <div class="logo">
+            <img src="../images/favico.png" alt="Logo UTA">
+        </div>
+        <a href="admin_inicio.php" class="active"><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
+        <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
+        <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
+        <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
+        <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
     </div>
-    <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
-    <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-    <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
-    <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
-    <a href="eventos_certificables.php" class="active"><i class="fa fa-certificate"></i> Generación de Certificados</a>
-    <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
-    <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-    <a href="admin_configuraciones.php"><i class="fas fa-cog me-2"></i> Configuraciones</a>
-    <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
-  </div>
 
   <div class="content">
     <div class="card mb-3">

@@ -1,18 +1,67 @@
 <?php
 session_start();
-if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'administrador') {
-  header("Location: ../index.php"); exit();
-}
 require_once __DIR__ . '/../includes/conexion.php';
+require_once __DIR__ . '/../includes/check_event_permission.php'; // contiene user_is_event_staff() y user_is_any_event_staff()
+
+// Verificamos sesión
+if (!isset($_SESSION['correo']) || !isset($_SESSION['cedula'])) {
+    header("Location: ../index.php");
+    exit();
+}
+
+$cedula = $_SESSION['cedula']; // debe establecerse en el login
+
+// Obtener la lista de eventos donde esta cédula figura como RESPONSABLE o PONENTE
+$stmtEv = $conn->prepare("
+    SELECT e.ID_EVE_CUR, e.TIT_EVE_CUR
+    FROM EVENTOS_CURSOS e
+    INNER JOIN PERSONAL_EVENTO p ON e.ID_EVE_CUR = p.ID_EVE_CUR
+    WHERE p.CED_USU = ? AND (p.ES_RESPONSABLE = 1 OR UPPER(p.ROL_EVENTO) = 'PONENTE')
+    ORDER BY e.FEC_INI_EVE_CUR DESC
+");
+$stmtEv->bind_param("s", $cedula);
+$stmtEv->execute();
+$evRes = $stmtEv->get_result(); // $evRes es un mysqli_result compatible con tu while
+$misEventos = [];
+while ($r = $evRes->fetch_assoc()) {
+    $misEventos[] = (int)$r['ID_EVE_CUR'];
+}
+$stmtEv->close();
+
+// Si no pertenece a ningún evento, denegar acceso
+if (empty($misEventos)) {
+    header("Location: ../index.php?error=sin_permiso");
+    exit();
+}
 
 /* ====== Filtros ====== */
+// Nota: ahora el combo de eventos mostrará SOLO los eventos que representa el user
 $eventId = isset($_GET['evento']) && $_GET['evento'] !== '' ? (int)$_GET['evento'] : null;
 $tipo    = isset($_GET['tipo'])   && $_GET['tipo']   !== '' ? $_GET['tipo']   : null; // NUMERICO/TEXTO_CORTO/DOCUMENTO
 $estado  = isset($_GET['estado']) && $_GET['estado'] !== '' ? $_GET['estado'] : null; // Pendiente/Aprobado/Rechazado
 $q       = trim($_GET['q'] ?? ''); // búsqueda por nombre, cédula o requisito
 
-/* Combo de eventos (obligatorio) */
-$evRes = $conn->query("SELECT ID_EVE_CUR, TIT_EVE_CUR FROM EVENTOS_CURSOS ORDER BY FEC_INI_EVE_CUR DESC");
+// Si el usuario escogió un evento, validar que realmente le pertenece
+if ($eventId !== null && !in_array($eventId, $misEventos, true)) {
+    // Alternativa: podrías redirigir al primer evento, o mostrar mensaje. Aquí denegamos.
+    header("Location: evidencias_global.php?error=no_permiso_evento");
+    exit();
+}
+
+// Combo de eventos (solo los suyos)
+$evRes = null;
+if (!empty($misEventos)) {
+    // Obtener resultados con una consulta IN(...) usando placeholders
+    $placeholders = implode(',', array_fill(0, count($misEventos), '?'));
+    $types = str_repeat('i', count($misEventos));
+    $sql = "SELECT ID_EVE_CUR, TIT_EVE_CUR FROM EVENTOS_CURSOS WHERE ID_EVE_CUR IN ($placeholders) ORDER BY FEC_INI_EVE_CUR DESC";
+    $stmt = $conn->prepare($sql);
+    // bind dinámico
+    $stmt->bind_param($types, ...$misEventos);
+    $stmt->execute();
+    $evRes = $stmt->get_result();
+    $stmt->close();
+}
 
 /* Estados y tipos para combos */
 $tiposOpts   = ['NUMERICO' => 'Numérico', 'TEXTO_CORTO' => 'Texto', 'DOCUMENTO' => 'Documento'];
@@ -347,18 +396,16 @@ if ($eventId) {
 </head>
 <body>
   <!-- Sidebar -->
-    <div class="sidebar">
+     <div class="sidebar">
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="admin_inicio.php" class="active"><i class="fas fa-home me-2"></i> Inicio</a>
         <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-        <a href="evidencias_global.php" class="active"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
+        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
         <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
         <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
-        <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-        <a href="admin_configuraciones.php"><i class="fas fa-cog me-2"></i> Configuraciones</a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
     </div>
 

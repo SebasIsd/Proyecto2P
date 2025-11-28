@@ -1,18 +1,66 @@
 <?php
 session_start();
-if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'administrador') {
-  header("Location: ../index.php");
-  exit();
-}
 require_once __DIR__ . '/../includes/conexion.php';
+require_once __DIR__ . '/../includes/check_event_permission.php'; // opcional pero recomendado
+
+// Verificar sesión y cédula (establecida en login)
+if (!isset($_SESSION['correo']) || !isset($_SESSION['cedula'])) {
+    header("Location: ../index.php");
+    exit();
+}
+$cedula = $_SESSION['cedula'];
+
+// Obtener lista de eventos donde la cédula figura como RESPONSABLE o PONENTE
+$stmtEv = $conn->prepare("
+    SELECT e.ID_EVE_CUR, e.TIT_EVE_CUR
+    FROM EVENTOS_CURSOS e
+    INNER JOIN PERSONAL_EVENTO p ON e.ID_EVE_CUR = p.ID_EVE_CUR
+    WHERE p.CED_USU = ? AND (p.ES_RESPONSABLE = 1 OR UPPER(p.ROL_EVENTO) = 'PONENTE')
+    ORDER BY e.FEC_INI_EVE_CUR DESC
+");
+$stmtEv->bind_param("s", $cedula);
+$stmtEv->execute();
+$evResTmp = $stmtEv->get_result();
+
+$misEventos = [];
+while ($r = $evResTmp->fetch_assoc()) {
+    $misEventos[] = (int)$r['ID_EVE_CUR'];
+}
+$stmtEv->close();
+
+// Si no pertenece a ningún evento, denegar acceso
+if (empty($misEventos)) {
+    header("Location: ../index.php?error=sin_permiso");
+    exit();
+}
 
 /* ====== Filtros ====== */
+// NOTA: ahora el combo de eventos mostrará solo los eventos que representa el usuario
 $eventId = isset($_GET['evento']) && $_GET['evento'] !== '' ? (int)$_GET['evento'] : null;
 $estado  = isset($_GET['estado']) && $_GET['estado'] !== '' ? $_GET['estado'] : null; // Pendiente/Aprobado/Rechazado
 $q       = trim($_GET['q'] ?? ''); // búsqueda por nombre o cédula
 
-/* Combo de eventos */
-$evRes = $conn->query("SELECT ID_EVE_CUR, TIT_EVE_CUR FROM EVENTOS_CURSOS ORDER BY FEC_INI_EVE_CUR DESC");
+// Si el usuario escogió un evento, validar que realmente le pertenece
+if ($eventId !== null && !in_array($eventId, $misEventos, true)) {
+    header("Location: validar_pagos.php?error=no_permiso_evento");
+    exit();
+}
+
+/* Combo de eventos (sólo los suyos) */
+$evRes = null;
+if (!empty($misEventos)) {
+    // preparar consulta IN(...) dinámica
+    $placeholders = implode(',', array_fill(0, count($misEventos), '?'));
+    $types = str_repeat('i', count($misEventos));
+    $sql = "SELECT ID_EVE_CUR, TIT_EVE_CUR FROM EVENTOS_CURSOS WHERE ID_EVE_CUR IN ($placeholders) ORDER BY FEC_INI_EVE_CUR DESC";
+    $stmt = $conn->prepare($sql);
+    // bind dinámico de enteros
+    $stmt->bind_param($types, ...$misEventos);
+    $stmt->execute();
+    $evRes = $stmt->get_result();
+    $stmt->close();
+}
+
 $estadosOpts = ['Pendiente', 'Aprobado', 'Rechazado'];
 
 $rows = null;
@@ -20,41 +68,6 @@ $total = 0;
 $page = 1;
 $perPage = 50;
 
-if ($eventId) {
-  $where = ["i.ID_EVE_CUR = " . (int)$eventId];
-
-  if ($estado) {
-    $where[] = "p.ESTADO_VALIDACION = '" . $conn->real_escape_string($estado) . "'";
-  }
-
-  if ($q !== '') {
-    $qLike = "%" . $conn->real_escape_string($q) . "%";
-    $where[] = "(u.CED_USU LIKE '$qLike' OR CONCAT(u.APE_PRI_USU,' ',u.NOM_PRI_USU) LIKE '$qLike')";
-  }
-
-  $sqlWhere = "WHERE " . implode(" AND ", $where);
-
-  $baseSql = "
-    SELECT
-      p.ID_PAG, p.ID_INS, p.FEC_PAG, p.MON_PAG, p.MET_PAG,
-      p.URL_COMPROBANTE, p.ESTADO_VALIDACION, p.REVISADO_POR, p.REVISADO_EN,
-      i.CED_USU, i.ID_EVE_CUR,
-      u.NOM_PRI_USU, u.APE_PRI_USU,
-      e.TIT_EVE_CUR
-    FROM PAGOS p
-    JOIN INSCRIPCIONES i ON i.ID_INS = p.ID_INS
-    JOIN USUARIOS u      ON u.CED_USU = i.CED_USU
-    JOIN EVENTOS_CURSOS e ON e.ID_EVE_CUR = i.ID_EVE_CUR
-    $sqlWhere
-  ";
-
-  $perPage = 50;
-  $page   = max(1, (int)($_GET['page'] ?? 1));
-  $offset = ($page - 1) * $perPage;
-
-  $total = (int)$conn->query("SELECT COUNT(*) c FROM ($baseSql) t")->fetch_assoc()['c'];
-  $rows  = $conn->query($baseSql . " ORDER BY p.FEC_PAG DESC LIMIT $perPage OFFSET $offset");
-}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -226,20 +239,18 @@ if ($eventId) {
 
 <body>
   <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="../images/favico.png" alt="Logo UTA">
+    <div class="sidebar">
+        <div class="logo">
+            <img src="../images/favico.png" alt="Logo UTA">
+        </div>
+        <a href="admin_inicio.php" class="active"><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
+        <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
+        <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
+        <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
+        <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
     </div>
-    <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
-    <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-    <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
-    <a href="verificar_pagos.php" class="active"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
-    <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
-    <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
-    <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-    <a href="admin_configuraciones.php"><i class="fas fa-cog me-2"></i> Configuraciones</a>
-    <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
-  </div>
 
   <div class="content">
     <div class="card mb-3">
