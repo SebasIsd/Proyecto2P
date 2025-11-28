@@ -147,6 +147,12 @@ if ($eventId) {
       overflow: hidden;
     }
 
+     .card-header {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
+    
     .table thead {
       background: var(--primary);
       color: white;
@@ -239,9 +245,6 @@ if ($eventId) {
     <div class="card mb-3">
       <div class="card-body">
         <h3 class="mb-1">Verificación de pagos</h3>
-        <div class="text-muted">
-          Selecciona un evento y revisa los comprobantes de pago para aprobar o rechazar.
-        </div>
       </div>
     </div>
 

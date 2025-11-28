@@ -520,19 +520,21 @@ a:focus {
   display: flex;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
-          justify-content: center;
+          justify-content: center;  
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
-  height: 215px;
+  height: 215px; /* Altura fija para el contenedor */
   border-radius: 0 0 0 45px;
   margin: -1px;
-  padding: 25px;
+  overflow: hidden; /* ✅ AGREGADO: Oculta cualquier parte de la imagen que se desborde */
+  /* padding: 25px; <--- Esta línea fue ELIMINADA */
 }
 
 .food_section .box .img-box img {
-  max-width: 100%;
-  max-height: 145px;
+  width: 100%;  /* ✅ CAMBIADO: Ocupa todo el ancho del contenedor */
+  height: 100%; /* ✅ CAMBIADO: Ocupa toda la altura del contenedor (215px) */
+  object-fit: cover; /* ✅ AGREGADO: Escala y recorta para cubrir completamente, manteniendo el aspecto */
   -webkit-transition: all .2s;
   transition: all .2s;
 }
@@ -642,24 +644,36 @@ a:focus {
   z-index: 2;
 }
 
-.about_section .detail-box p {
-  margin-top: 15px;
+.about_section .detail-box {
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #c140400b; /* Fondo gris claro para limpiar */
 }
 
-.about_section .detail-box a {
-  display: inline-block;
-  padding: 10px 45px;
-  background-color: #ffbe33;
-  color: #ffffff;
-  border-radius: 45px;
-  -webkit-transition: all 0.3s;
-  transition: all 0.3s;
-  border: none;
-  margin-top: 15px;
+.about_section .detail-box h3 {
+    font-family: 'Open Sans', sans-serif; /* Usamos fuente de texto para los títulos */
+    font-size: 1.7rem;
+    border-bottom: 2px solid #ffbe33; /* Línea de color para destacar */
+    padding-bottom: 5px;
+    margin-bottom: 15px;
 }
-
-.about_section .detail-box a:hover {
-  background-color: #e69c00;
+.text-collapse-container {
+    position: relative;
+    padding-bottom: 30px; /* Espacio para el botón y el degradado */
+}
+.collapsed-text {
+    /* Define la altura máxima visible (aprox. 5-6 líneas) */
+    max-height: 120px; 
+    overflow: hidden; /* Oculta el texto que se desborda */
+    transition: max-height 0.4s ease-in-out;
+    margin-bottom: 0 !important;
+    text-align: justify;
+    line-height: 1.7;
+}
+.collapsed-text.expanded {
+    max-height: 2000px; /* <--- Altura muy grande para mostrar todo */
+    -webkit-mask-image: none !important; /* Quita el degradado al expandir */
+    mask-image: none !important;
 }
 
 .book_section {
@@ -683,6 +697,7 @@ a:focus {
   outline: none;
   -webkit-box-shadow: none;
           box-shadow: none;
+  
 }
 
 .book_section .form_container .form-control::-webkit-input-placeholder {
@@ -710,17 +725,12 @@ a:focus {
   border: none;
   text-transform: uppercase;
   display: inline-block;
-  padding: 10px 55px;
-  background-color: #ffbe33;
+  padding: 10px 15px;
+  background-color: #ffbe331b;
   color: #ffffff;
-  border-radius: 45px;
+  border-radius: 10px;  
   -webkit-transition: all 0.3s;
   transition: all 0.3s;
-  border: none;
-}
-
-.book_section .form_container button:hover {
-  background-color: #e69c00;
 }
 
 .book_section .map_container {
@@ -753,7 +763,6 @@ a:focus {
 }
 
 .client_section .box .img-box {
-  position: relative;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -764,14 +773,19 @@ a:focus {
       -ms-flex-align: center;
           align-items: center;
   width: 115px;
-  position: relative;
-  margin-top: 30px;
+  /* position: relative; (Ya estaba) */
+  /* margin-top: 30px; ❌ ELIMINADA ESTA LÍNEA */
+  margin: 0 auto; /* ✅ AGREGADO: Centra la caja del avatar */
 }
 
 .client_section .box .img-box img {
   border-radius: 100%;
-  border: 5px solid #ffbe33;
+  border: 5px solid #232323;
   position: relative;
+  width: 115px;
+  height: 115px;
+  object-fit: cover;
+  
 }
 
 .client_section .box .img-box::before {
@@ -785,25 +799,38 @@ a:focus {
   -webkit-transform: rotate(45deg) translateX(-50%);
           transform: rotate(45deg) translateX(-50%);
 }
-
+/* --- CSS LIMPIO Y SIN CONFLICTOS --- */
 .client_section .box .detail-box {
-  background-color: #222831;
-  color: #ffffff;
-  padding: 25px 25px 15px 25px;
-  border-radius: 5px;
+    background-color: #f8f9fa; /* Fondo gris claro (más suave que #cfdae6) */
+    padding: 25px;
+    border-radius: 10px; /* Borde completo, se ve más moderno */
+    
+    /* Si lo quieres como la estructura antigua, déjale la esquina de abajo */
+    /* border-radius: 0 0 10px 10px; */ 
+
+    text-align: center;
+    overflow: hidden;
+    
+    /* Eliminamos el doble margin-top. Este es el espacio entre el avatar y el texto */
+    margin-top: 15px; 
+
+    /* Ajustamos el tamaño de fuente para que sea legible y no gigante */
+    font-size: 1rem; 
+    line-height: 1.6; /* Mejora la legibilidad */
 }
 
 .client_section .box .detail-box h6 {
-  font-weight: 600;
-  font-size: 18px;
-  margin: 15px 0 5px 0;
+    font-size: 1.25rem; /* El nombre sí puede ser más grande */
+    font-weight: 700;
 }
 
 .client_section .box .detail-box p {
   margin-bottom: 0;
   font-size: 15px;
   margin-bottom: 10px;
+  
 }
+
 
 .client_section .owl-carousel .owl-nav {
   display: -webkit-box;
@@ -1005,3 +1032,150 @@ a:focus {
   color: inherit;
 }
 /*# sourceMappingURL=style.css.map */
+
+/* --- AUTORIDADES: ESTILO DE TARJETA VERTICAL COMPACTA --- */
+.autoridad-card {
+  margin-bottom: 20px; 
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  -webkit-transition: box-shadow 0.3s;
+  transition: box-shadow 0.3s;
+  height: 100%; /* Asegura que todas las tarjetas de la fila tengan la misma altura */
+}
+
+.autoridad-card:hover {
+  -webkit-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.autoridad-card .img-box {
+  height: 200px; /* Altura más compacta para la foto */
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.autoridad-card .img-box img {
+  width: 90%; /* La imagen no toca los bordes para el efecto */
+  max-height: 180px;
+  object-fit: contain; /* Para que la imagen se vea completa */
+  padding: 10px;
+}
+
+.autoridad-card .detail-box {
+  padding: 10px 15px; 
+  text-align: center;
+  background-color: #ffffff; /* Fondo blanco */
+}
+
+.autoridad-card .detail-box .cargo-autoridad {
+  font-size: 0.85rem; 
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.autoridad-card .detail-box .nombre-autoridad {
+  font-size: 1.1rem; 
+  margin-top: 2px;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.autoridad-card .detail-box .btn {
+  margin-bottom: 5px;
+}
+/* ============================================== */
+/* --- ESTILOS PROFESIONALES PARA COMENTARIOS --- */
+/* ============================================== */
+
+/* Contenedor principal del comentario (la tarjeta) */
+.comment-card {
+    display: flex;
+    align-items: flex-start; /* Alinea el avatar y el texto en la parte superior */
+    padding: 20px;
+    border: 1px solid #e0e0e0; /* Borde más suave */
+    border-radius: 8px;
+    margin-bottom: 20px; 
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Sombra ligera para profundidad */
+    transition: box-shadow 0.3s;
+}
+
+.comment-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Círculo de Avatar con Iniciales */
+.comment-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%; /* ✅ PROPIEDAD CLAVE: Crea el círculo */
+    background-color: #ffbe33; /* Color de tu tema */
+    color: #222831; /* Texto oscuro para alto contraste */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-right: 15px; /* Espacio entre el avatar y el texto */
+    flex-shrink: 0; /* Evita que el círculo se encoja */
+}
+
+/* Contenedor de Texto */
+.comment-details {
+    flex-grow: 1; /* Ocupa el espacio restante en la tarjeta */
+}
+
+/* Cabecera (Nombre y Fecha) */
+.comment-header {
+    margin-bottom: 3px;
+    line-height: 1.2;
+}
+
+.comment-name {
+    font-size: 1.1rem;
+    color: #222831; 
+    font-weight: 700;
+}
+
+.comment-date {
+    color: #999;
+    font-size: 0.85rem;
+    margin-left: 5px;
+}
+
+/* Cuerpo del Comentario */
+.comment-body {
+    margin-bottom: 0;
+    color: #444;
+    line-height: 1.6; /* Mejora la lectura del comentario */
+}
+
+/* Ajuste de navegación del carrusel para que sea visible */
+.client-carousel.owl-theme .owl-nav {
+    margin-top: 30px;
+    text-align: center;
+    position: relative;
+}
+
+.client-carousel.owl-theme .owl-nav [class*='owl-'] {
+    color: #FFF;
+    font-size: 14px;
+    margin: 5px;
+    padding: 4px 7px;
+    background: #ffbe33; /* Color de tu tema */
+    display: inline-block;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+/* Opcional: Asegurar que todas las tarjetas de comentarios tengan la misma altura */
+.client-carousel .item {
+    height: auto; 
+}
+.client-carousel .comment-card {
+    height: 100%; /* Asegura que la tarjeta ocupe el 100% del item */
+}

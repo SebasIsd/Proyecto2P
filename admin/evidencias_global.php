@@ -19,7 +19,8 @@ $tiposOpts   = ['NUMERICO' => 'Numérico', 'TEXTO_CORTO' => 'Texto', 'DOCUMENTO'
 $estadosOpts = ['Pendiente','Aprobado','Rechazado'];
 
 /* Si no hay evento elegido, no consultamos */
-$rows = null; $total = 0; $page=1; $perPage=50;
+$rows = null; $total = 0; $page = 1; $perPage = 50;
+$notasFinalizadas = false; // <-- inicializar por defecto para evitar warnings
 
 if ($eventId) {
   $where = ["i.ID_EVE_CUR = ".(int)$eventId];
@@ -33,7 +34,7 @@ if ($eventId) {
 
   $baseSql = "
     SELECT 
-      i.ID_INS, i.ID_EVE_CUR, e.TIT_EVE_CUR,
+      i.ID_INS, i.ID_EVE_CUR, e.TIT_EVE_CUR, e.NOTAS_FINALIZADAS,
       u.CED_USU, CONCAT(u.APE_PRI_USU,' ',u.NOM_PRI_USU) AS NOMBRE,
       r.ID_REQ, r.NOM_REQ, r.TIPO, r.VALOR_MINIMO,
       ev.VALOR_NUMERICO, ev.VALOR_TEXTO, ev.URL_ARCHIVO, ev.NOMBRE_ARCHIVO, ev.TIPO_MIME,
@@ -46,7 +47,13 @@ if ($eventId) {
     $sqlWhere
   ";
 
-  /* Paginación */
+  // CONSULTA INDEPENDIENTE PARA SABER SI YA FINALIZÓ
+  $flagRes = $conn->query("SELECT NOTAS_FINALIZADAS FROM EVENTOS_CURSOS WHERE ID_EVE_CUR = $eventId");
+  if ($flagRes && $flagRes->num_rows > 0) {
+      $notasFinalizadas = (int)$flagRes->fetch_assoc()['NOTAS_FINALIZADAS'] === 1;
+  }
+
+  // Paginación
   $perPage = 50;
   $page = max(1, (int)($_GET['page'] ?? 1));
   $offset = ($page - 1) * $perPage;
@@ -55,6 +62,7 @@ if ($eventId) {
   $rows  = $conn->query($baseSql . " ORDER BY NOMBRE, r.NOM_REQ LIMIT $perPage OFFSET $offset");
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -180,6 +188,12 @@ if ($eventId) {
             font-weight: 600;
             font-size: 1.15rem;
         }
+
+         .card-header {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
 
         .table {
             margin: 0;
@@ -321,6 +335,14 @@ if ($eventId) {
             .sidebar a:hover { padding-left: 16px; }
             .content { margin-left: 80px; padding: 20px; }
         }
+
+       /* Estilo para los campos deshabilitados */
+.disabled-input {
+  background-color: #f8f9fa;  /* Fondo gris claro */
+  pointer-events: none;  /* Evita que se pueda interactuar con el campo */
+  opacity: 0.7;  /* Opacidad para indicar que está deshabilitado */
+}
+
     </style>
 </head>
 <body>
@@ -344,7 +366,6 @@ if ($eventId) {
     <div class="card mb-3">
       <div class="card-body">
         <h3 class="mb-1">Evidencias por evento</h3>
-        <div class="text-muted">Selecciona un evento y busca por participante (cédula o nombre) o por requisito.</div>
       </div>
     </div>
 
@@ -382,15 +403,35 @@ if ($eventId) {
               <?php endforeach; ?>
             </select>
           </div>
-          <div class="col-md-2">
-            <label class="form-label">Buscar</label>
-            <input type="text" name="q" id="buscarInp" value="<?= htmlspecialchars($q) ?>" class="form-control"
-                   placeholder="Cédula, nombre o requisito" <?= !$eventId ? 'disabled' : '' ?>>
-          </div>
+       <div class="col-md-2">
+  <label class="form-label">Buscar</label>
+  <input type="text"
+         class="form-control <?= $notasFinalizadas ? 'disabled-input' : '' ?>"
+         name="q"
+         id="buscarInp"
+         value="<?= htmlspecialchars($q) ?>"
+         placeholder="Buscar "
+         <?= $notasFinalizadas ? 'disabled' : '' ?>>
+</div>
+
           <!-- no botón: se envía automático -->
         </form>
       </div>
     </div>
+
+        <!-- Botón "Finalizar" fuera de la tabla -->
+   <?php if ($eventId && $tipo === 'NUMERICO' && !$notasFinalizadas): ?>
+  <div class="text-center mb-3">
+    <button type="button" class="btn btn-primary" id="finalizeBtn" data-bs-toggle="modal" data-bs-target="#finalizeModal">
+      Finalizar edición
+    </button>
+  </div>
+<?php elseif ($notasFinalizadas): ?>
+  <div class="alert alert-info text-center mb-3">
+    Las notas numéricas ya fueron finalizadas. Solo vista lectura.
+  </div>
+<?php endif; ?>
+
 
     <?php if (!$eventId): ?>
       <div class="alert alert-warning">
@@ -453,10 +494,13 @@ if ($eventId) {
                       <input type="hidden" name="tipo" value="<?= $r['TIPO'] ?>">
 
                       <?php if ($r['TIPO']==='NUMERICO'): ?>
-                        <input type="number" step="0.01" class="form-control"
-                               name="valor_numerico"
-                               value="<?= $r['VALOR_NUMERICO'] !== null ? (float)$r['VALOR_NUMERICO'] : '' ?>"
-                               placeholder="Ingrese nota">
+                        <input type="number" step="0.01"
+       class="form-control <?= $notasFinalizadas ? 'disabled-input' : '' ?>"
+       name="valor_numerico"
+       value="<?= $r['VALOR_NUMERICO'] !== null ? (float)$r['VALOR_NUMERICO'] : '' ?>"
+       placeholder="Ingrese nota"
+       <?= $notasFinalizadas ? 'disabled' : '' ?>>
+
                       <?php elseif ($r['TIPO']==='TEXTO_CORTO'): ?>
                         <input type="text" class="form-control"
                                name="valor_texto"
@@ -481,23 +525,30 @@ if ($eventId) {
 </td>
 
                   <td style="min-width:150px">
-                    <select name="estado" class="form-select">
+                    <select name="estado" class="form-select <?= $notasFinalizadas ? 'disabled-input' : '' ?>"
+        <?= $notasFinalizadas ? 'disabled' : '' ?>>
+
                       <?php foreach ($estadosOpts as $opt): ?>
                         <option <?= $r['ESTADO_VALIDACION']===$opt?'selected':'' ?>><?= $opt ?></option>
                       <?php endforeach; ?>
                     </select>
                   </td>
                   <td style="min-width:220px">
-                    <textarea name="observacion" class="form-control" rows="1"
-                              placeholder="Observación..."><?= htmlspecialchars($r['OBSERVACION'] ?? '') ?></textarea>
-                  </td>
+                 <textarea name="observacion" class="form-control <?= $notasFinalizadas ? 'disabled-input' : '' ?>"
+          rows="1"
+          placeholder="Observación..."
+          <?= $notasFinalizadas ? 'disabled' : '' ?>><?= htmlspecialchars($r['OBSERVACION'] ?? '') ?></textarea>
+
+        </td>
                   <td class="text-center">
-                      <button type="button" class="btn btn-uta btn-sm" data-bs-toggle="modal" data-bs-target="#confirmModal">
+                      <button type="submit" class="btn btn-uta btn-sm"
+        <?= $notasFinalizadas ? 'disabled' : '' ?>>
   <i class="fa fa-save"></i> Guardar
 </button>
 
+
+
                     </form>
-                  </td>
                 </tr>
               <?php endwhile; ?>
             </tbody>
@@ -538,21 +589,38 @@ if ($eventId) {
   </div>
 </div>
 
-<!-- Modal de confirmación -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+
+
+<div class="modal fade" id="finalizeModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
-    <div class="modal-content">
+    <form method="POST" action="finalizar_notas.php" class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="confirmModalLabel">Confirmar acción</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <h5 class="modal-title">Finalizar notas</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        ¿Estás seguro de que deseas guardar los cambios realizados en esta evidencia?
+        ¿Seguro que deseas finalizar todas las notas numéricas?  
+        Después de esto solo se podrá visualizar.
       </div>
       <div class="modal-footer">
+        <input type="hidden" name="id_evento" value="<?= (int)$eventId ?>">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" id="confirmSaveBtn" class="btn btn-primary">Guardar</button>
+        <button type="submit" class="btn btn-primary">Sí, finalizar</button>
       </div>
+    </form>
+  </div>
+</div>
+
+
+
+  <!-- Toast de guardado -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:2000">
+  <div id="saveToast" class="toast align-items-center text-bg-success border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body">
+        Evidencia guardada correctamente.
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
     </div>
   </div>
 </div>
@@ -667,23 +735,44 @@ if (docModalEl && docFrame && docTitleEl && window.bootstrap) {
 // Verifica que el botón de "Guardar" en el modal está bien referenciado
 const confirmSaveBtn = document.getElementById('confirmSaveBtn');
 
-// Verifica que el modal y el formulario estén presentes
-if (confirmSaveBtn) {
-  confirmSaveBtn.addEventListener('click', function () {
-    // Cerrar el modal
-    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-    modal.hide();
 
-    // Encontrar el formulario y enviarlo
-    const form = document.querySelector('.form-evidencia');
-    if (form) {
-      form.submit();
-    }
-  });
+/// Habilitar/Deshabilitar el botón "Finalizar" cuando se elija "NUMÉRICO"
+const tipoSel = document.getElementById('tipoSel');
+const finalizeBtn = document.getElementById('finalizeBtn');
+
+// Función para habilitar el botón "Finalizar"
+function toggleFinalizeBtn() {
+  if (tipoSel.value === 'NUMERICO') {
+    finalizeBtn.removeAttribute('disabled'); // Habilitar el botón
+  } else {
+    finalizeBtn.setAttribute('disabled', true); // Deshabilitar el botón
+  }
+}
+
+// Ejecutar la función al cargar la página y cuando cambie el tipo
+window.onload = toggleFinalizeBtn;
+tipoSel.addEventListener('change', toggleFinalizeBtn);
+
+// Función para finalizar la edición y bloquear todos los inputs
+
+
+
+// ===== Toast cuando se guardó =====
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('success') === '1') {
+  const toastEl = document.getElementById('saveToast');
+  if (toastEl) {
+    const toast = new bootstrap.Toast(toastEl, { delay: 2200 });
+    toast.show();
+  }
+  // limpiar el success de la URL sin recargar
+  urlParams.delete('success');
+  const newUrl = window.location.pathname + '?' + urlParams.toString();
+  window.history.replaceState({}, '', newUrl);
 }
 
 
-    
+
   </script>
 </body>
 </html>

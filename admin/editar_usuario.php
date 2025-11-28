@@ -32,6 +32,7 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* (mantén tus estilos existentes — no los cambié excepto lo que necesites) */
         :root {
             --primary: #a30000;
             --primary-hover: #d51313;
@@ -113,10 +114,17 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
 
         .page-header {
             background: white;
-            padding: 25px 30px;
+            padding: 15px 20px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: space-between;
+        }
+
+        .page-header-left {
             display: flex;
             align-items: center;
             gap: 15px;
@@ -129,9 +137,14 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
 
         .page-header h1 {
             margin: 0;
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: 600;
             color: var(--dark);
+        }
+
+        .search-input {
+            max-width: 420px;
+            width: 100%;
         }
 
         .card {
@@ -142,9 +155,7 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
             transition: transform 0.2s;
         }
 
-        .card:hover {
-            transform: translateY(-3px);
-        }
+     
 
         .card-header-custom {
             background: var(--primary);
@@ -166,12 +177,12 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
         .table thead th {
             border: none;
             font-weight: 600;
-            padding: 16px;
+            padding: 12px;
             font-size: 0.95rem;
         }
 
         .table tbody td {
-            padding: 16px;
+            padding: 12px;
             vertical-align: middle;
             border-color: #eee;
         }
@@ -314,6 +325,15 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
                 margin-left: 80px;
                 padding: 20px;
             }
+
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-input {
+                max-width: 150%;
+            }
         }
     </style>
 </head>
@@ -339,9 +359,16 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
     <!-- Contenido -->
     <div class="content">
         <div class="page-header">
-            <i class="fas fa-users"></i>
-            <h1>Gestionar Usuarios</h1>
+            <div class="page-header-left">
+                <i class="fas fa-users"></i>
+                <h1>Gestionar Usuarios</h1>
+            </div>
         </div>
+
+            <!-- INPUT DE BÚSQUEDA (busca mientras escribes) -->
+            <div>
+                <input id="buscarUsuario" class="form-control search-input" type="search" placeholder="Buscar" aria-label="Buscar usuarios">
+            </div></br>
 
         <div class="card">
             <div class="card-header-custom">
@@ -349,7 +376,7 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table id="tablaUsuarios" class="table table-hover mb-0">
                         <thead>
                             <tr>
                                 <th></th>
@@ -382,8 +409,8 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <button class="btn-edit" data-bs-toggle="modal" data-bs-target="#editModal"
-                                            onclick="cargarUsuario(<?= htmlspecialchars(json_encode($u)) ?>)">
+                                        <button class="btn-edit" 
+                                            onclick='cargarUsuario(<?= htmlspecialchars(json_encode($u), ENT_QUOTES, 'UTF-8') ?>)'>
                                             <i class="fas fa-edit"></i> Editar
                                         </button>
                                     </td>
@@ -463,7 +490,7 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Nueva Contraseña</label>
-                                    <input type="password" class="form-control" name="clave" minlength="6">
+                                    <input type="password" class="form-control" name="clave" id="clave" minlength="6">
                                     <small class="text-muted">Dejar en blanco para no cambiar</small>
                                 </div>
                                 <div class="col-md-6 d-flex align-items-end">
@@ -487,6 +514,7 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // ---------- CARGAR USUARIO EN EL MODAL ----------
         function cargarUsuario(usuario) {
             document.getElementById('cedula').value = usuario.CED_USU;
             document.getElementById('nom_pri').value = usuario.NOM_PRI_USU;
@@ -501,27 +529,78 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
             document.getElementById('carrera_id').value = usuario.ID_CARRERA_USU || '';
             document.getElementById('activo').checked = usuario.ACTIVO == 1;
 
-            document.getElementById('clave').value = '';
+            // limpiar campo contraseña
+            var claveInput = document.getElementById('clave');
+            if (claveInput) claveInput.value = '';
 
-            var myModal = new bootstrap.Modal(document.getElementById('modalEditarUsuario'));
+            // Mostrar modal (usar el id real del modal)
+            var myModal = new bootstrap.Modal(document.getElementById('editModal'));
             myModal.show();
         }
 
+        // ---------- BÚSQUEDA EN TIEMPO REAL (sin botón) ----------
+        (function() {
+            const inputBuscar = document.getElementById('buscarUsuario');
+            const tabla = document.getElementById('tablaUsuarios');
+            const tbody = tabla.querySelector('tbody');
 
-        // Lógica para enviar el formulario por AJAX y recargar la página
+            // debounce simple
+            function debounce(fn, delay) {
+                let t;
+                return function(...args) {
+                    clearTimeout(t);
+                    t = setTimeout(() => fn.apply(this, args), delay);
+                };
+            }
+
+            function filtrar(value) {
+                const q = value.trim().toLowerCase();
+                const filas = tbody.querySelectorAll('tr');
+
+                if (!q) {
+                    // mostrar todas
+                    filas.forEach(tr => tr.style.display = '');
+                    return;
+                }
+
+                filas.forEach(tr => {
+                    // concatenar columnas relevantes: nombre + cedula + correo + rol
+                    const nombre = (tr.cells[1]?.textContent || '').toLowerCase();
+                    const correo = (tr.cells[2]?.textContent || '').toLowerCase();
+                    const rol = (tr.cells[3]?.textContent || '').toLowerCase();
+                    // incluye cédula que aparece en la segunda celda como texto pequeño
+                    const combinado = `${nombre} ${correo} ${rol}`.replace(/\s+/g, ' ');
+                    if (combinado.indexOf(q) !== -1) {
+                        tr.style.display = '';
+                    } else {
+                        tr.style.display = 'none';
+                    }
+                });
+            }
+
+            const debouncedFiltrar = debounce(function(e) {
+                filtrar(e.target.value);
+            }, 200);
+
+            if (inputBuscar) {
+                inputBuscar.addEventListener('input', debouncedFiltrar);
+            }
+        })();
+
+        // ---------- ENVÍO AJAX DEL FORMULARIO (mantengo tu lógica) ----------
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('formEditarUsuario');
 
             if (form) {
                 form.addEventListener('submit', function(e) {
-                    // 🔑 SOLUCIÓN: DETENER LA REDIRECCIÓN PREDETERMINADA DEL FORMULARIO
+                    // detener la redirección predeterminada
                     e.preventDefault();
 
                     const formData = new FormData(this);
 
-                    // Asegurar que 'activo' se envía como 1 o 0
+                    // asegurar que 'activo' se envía como 1 o 0
                     const activoCheckbox = document.getElementById('activo');
-                    if (activoCheckbox.checked) {
+                    if (activoCheckbox && activoCheckbox.checked) {
                         formData.set('activo', 1);
                     } else {
                         formData.set('activo', 0);
@@ -532,31 +611,26 @@ $carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA O
                             body: formData
                         })
                         .then(response => {
-                            // Verifica que la respuesta sea un OK HTTP (200-299)
                             if (!response.ok) {
                                 throw new Error('Respuesta de red fallida con estado: ' + response.status);
                             }
                             return response.json();
                         })
                         .then(data => {
-                            // Manejar la respuesta JSON
                             if (data.success) {
-                                alert("✅ Éxito: " + data.message + " Recargando página...");
-                                // 🔑 RECARGAR LA PÁGINA TRAS EL ÉXITO
+                                alert("Éxito: " + data.message);
+                                // recargar la página para ver cambios
                                 window.location.reload();
-
                             } else {
-                                alert("❌ Error: " + data.message);
+                                alert("Error: " + data.message);
                             }
                         })
                         .catch(error => {
-                            // Manejar errores de conexión o parsing de JSON
                             console.error('Error en la petición AJAX:', error);
                             alert("Hubo un error de conexión con el servidor o en el procesamiento. Revisa la consola.");
                         });
                 });
             } else {
-                // Esto ayuda a depurar si el ID del formulario está mal
                 console.error('Error: No se encontró el elemento con ID "formEditarUsuario".');
             }
         });

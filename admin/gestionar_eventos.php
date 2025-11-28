@@ -17,11 +17,6 @@ $eventos = $conn->query("
     ORDER BY e.FEC_INI_EVE_CUR DESC
 ")->fetch_all(MYSQLI_ASSOC);
 
-// Cargar catálogos para modal de edición (si necesitas editar)
-//$tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER BY NOM_TIPO_EVE")->fetch_all(MYSQLI_ASSOC);
-//$requisitos = $conn->query("SELECT ID_REQ, NOM_REQ FROM REQUISITOS ORDER BY NOM_REQ")->fetch_all(MYSQLI_ASSOC);
-//$carreras = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA ORDER BY NOMBRE_CARRERA")->fetch_all(MYSQLI_ASSOC);
-// Cargar lista de eventos (ya lo tienes)
 // Favoritos globales marcados por el admin
 $favs = $conn->query("SELECT ID_EVE_CUR FROM EVENTOS_FAVORITOS")->fetch_all(MYSQLI_ASSOC);
 $favSet = [];
@@ -144,6 +139,11 @@ foreach ($favs as $f) {
       color: var(--dark);
     }
 
+    .search-input {
+      max-width: 420px;
+      width: 100%;
+    }
+
     .card {
       background: white;
       border-radius: var(--radius);
@@ -152,9 +152,6 @@ foreach ($favs as $f) {
       transition: transform 0.2s;
     }
 
-    .card:hover {
-      transform: translateY(-3px);
-    }
 
     .card-header-custom {
       background: var(--primary);
@@ -384,16 +381,23 @@ foreach ($favs as $f) {
     </div>
 
   <!-- Contenido -->
-  <div class="content">
+   <div class="content">
     <div class="page-header">
-      <i class="fas fa-calendar-check"></i>
-      <h1>Gestionar Eventos</h1>
+         <div style="display:flex; align-items:center; gap:12px;">
+        <i class="fas fa-calendar-check"></i>
+        <h1>Gestionar Eventos</h1>
+      </div>
       <a href="n.php" class="btn-primary">
         <i class="fas fa-plus"></i> Nuevo Evento
       </a>
     </div>
 
-    <!-- ✅ Alertas dentro de .content -->
+     <div style="display:flex; gap:10px; align-items:center;">
+        <input id="buscarEvento" class="form-control search-input" type="search" placeholder="Buscar por título, fecha o tipo..." aria-label="Buscar eventos">
+      </div> </br>
+   
+
+    <!--  Alertas dentro de .content -->
     <?php if (isset($_GET['ok'])): ?>
       <div class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="fas fa-check-circle me-2"></i>
@@ -414,7 +418,7 @@ foreach ($favs as $f) {
       </div>
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-hover mb-0">
+          <table id="tablaEventos" class="table table-hover mb-0">
             <thead>
               <tr>
                 <th>Fav</th>
@@ -430,7 +434,7 @@ foreach ($favs as $f) {
                 <tr>
                   <td colspan="6" class="text-center py-4 text-muted">No hay eventos registrados aún.</td>
                 </tr>
-                <?php else: foreach ($eventos as $e):
+              <?php else: foreach ($eventos as $e):
                   $id = (int)$e['ID_EVE_CUR'];
                   $isFav = isset($favSet[$id]);
                 ?>
@@ -441,7 +445,6 @@ foreach ($favs as $f) {
                         aria-label="Marcar favorito"
                         data-id="<?= $id ?>"
                         data-fav="<?= $isFav ? '1' : '0' ?>">
-                        <!-- fas = lleno, far = contorno -->
                         <i class="fa<?= $isFav ? 's' : 'r' ?> fa-heart fav-icon<?= $isFav ? ' text-danger' : '' ?>"></i>
                       </button>
                     </td>
@@ -467,7 +470,12 @@ foreach ($favs as $f) {
                     </td>
                   </tr>
               <?php endforeach;
-              endif; ?>
+              // fila para "no hay resultados" (oculta por defecto)
+              ?>
+              <tr id="noResults" style="display:none;">
+                <td colspan="6" class="text-center py-4 text-muted">No se encontraron eventos.</td>
+              </tr>
+              <?php endif; ?>
             </tbody>
           </table>
         </div>
@@ -556,6 +564,54 @@ foreach ($favs as $f) {
         btn.disabled = false;
       }
     });
+
+    // ---------- BÚSQUEDA EN TIEMPO REAL (sin botón) ----------
+    (function() {
+      const input = document.getElementById('buscarEvento');
+      const tabla = document.getElementById('tablaEventos');
+      if (!input || !tabla) return;
+      const tbody = tabla.querySelector('tbody');
+      const noResults = document.getElementById('noResults');
+
+      function debounce(fn, delay) {
+        let t;
+        return function(...args) {
+          clearTimeout(t);
+          t = setTimeout(() => fn.apply(this, args), delay);
+        };
+      }
+
+      function filtrar(q) {
+        q = q.trim().toLowerCase();
+        const filas = Array.from(tbody.querySelectorAll('tr')).filter(tr => tr.id !== 'noResults');
+        let anyVisible = false;
+
+        filas.forEach(tr => {
+          // columnas: 0=fav,1=title,2=date,3=type,4=status,5=actions
+          const title = (tr.cells[1]?.textContent || '').toLowerCase();
+          const date = (tr.cells[2]?.textContent || '').toLowerCase();
+          const type = (tr.cells[3]?.textContent || '').toLowerCase();
+          const status = (tr.cells[4]?.textContent || '').toLowerCase();
+          const combined = `${title} ${date} ${type} ${status}`.replace(/\s+/g, ' ');
+
+          if (!q || combined.indexOf(q) !== -1) {
+            tr.style.display = '';
+            anyVisible = true;
+          } else {
+            tr.style.display = 'none';
+          }
+        });
+
+        if (!anyVisible) {
+          if (noResults) noResults.style.display = '';
+        } else {
+          if (noResults) noResults.style.display = 'none';
+        }
+      }
+
+      const debounced = debounce((e) => filtrar(e.target.value), 200);
+      input.addEventListener('input', debounced);
+    })();
   </script>
 
 </body>

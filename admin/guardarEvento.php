@@ -17,8 +17,8 @@ try {
     $costo       = $_POST['COS_EVE_CUR'] ?? 0;
     $lugar       = $_POST['LUGAR'] ?? '';
     $detalle     = $_POST['UBICACION_DETALLE'] ?? '';
-    $capacidad   = $_POST['CAPACIDAD_MAXIMA'] ?? 0;
-    $cupos       = $_POST['CUPOS_DISPONIBLES'] ?? 0;
+    $capacidad = $_POST['CAPACIDAD_MAXIMA'] ?? 0;
+    $cupos     = $capacidad;
     $horas       = $_POST['HORAS_TOTALES'] ?? null;
     $idTipo      = $_POST['ID_TIPO_EVE'] ?? null;
     $responsable = trim($_POST['RESPONSABLE_CED'] ?? '');
@@ -47,6 +47,38 @@ try {
         throw new Exception("La fecha de fin del evento no puede ser antes de la fecha de inicio");
     }
 
+     // === Subir imagen del evento ===
+    $imgEventoPath = null;
+    if (!empty($_FILES['IMG_EVE_CUR']['name'])) {
+
+        $uploadDir = __DIR__ . '/../images/eventos/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+
+        $file = $_FILES['IMG_EVE_CUR'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $allowed = ['jpg','jpeg','png','gif','webp'];
+
+        if (!in_array($ext, $allowed)) {
+            throw new Exception("Formato de imagen no permitido.");
+        }
+
+        $filename = preg_replace("/[^a-zA-Z0-9_\-\.]/", "_", basename($file['name']));
+        $target = $uploadDir . $filename;
+        $counter = 1;
+
+        while (file_exists($target)) {
+            $filename = pathinfo($file['name'], PATHINFO_FILENAME) . "_$counter.$ext";
+            $target = $uploadDir . $filename;
+            $counter++;
+        }
+
+        if (!move_uploaded_file($file['tmp_name'], $target)) {
+            throw new Exception("Error al subir la imagen del evento.");
+        }
+
+        $imgEventoPath = 'images/eventos/' . $filename;
+    }
+
     // === Validar responsable ===
     if ($responsable !== null) {
         $stmtChk = $conn->prepare("SELECT CED_USU FROM USUARIOS WHERE CED_USU = ?");
@@ -65,14 +97,14 @@ try {
     // === Insertar evento principal ===
     $stmt = $conn->prepare("
         INSERT INTO EVENTOS_CURSOS
-        (TIT_EVE_CUR, DES_EVE_CUR, INSCRIPCION_DESDE, INSCRIPCION_HASTA, FEC_INI_EVE_CUR, FEC_FIN_EVE_CUR, MOD_EVE_CUR,
+        (TIT_EVE_CUR, DES_EVE_CUR,IMG_EVE_CUR, INSCRIPCION_DESDE, INSCRIPCION_HASTA, FEC_INI_EVE_CUR, FEC_FIN_EVE_CUR, MOD_EVE_CUR,
          COS_EVE_CUR, LUGAR, UBICACION_DETALLE, CAPACIDAD_MAXIMA, CUPOS_DISPONIBLES,
          HORAS_TOTALES, ID_TIPO_EVE, RESPONSABLE_CED)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
     ");
     $stmt->bind_param(
-        "ssssssssssiiiis",
-        $titulo, $descripcion, $insDesde, $insHasta, $fechaInicio, $fechaFin, $modalidad, $costo,
+        "ssssssssdssiiiis",
+        $titulo, $descripcion,$imgEventoPath, $insDesde, $insHasta, $fechaInicio, $fechaFin, $modalidad, $costo,
         $lugar, $detalle, $capacidad, $cupos, $horas, $idTipo, $responsable
     );
     $stmt->execute();
@@ -120,7 +152,8 @@ try {
     echo json_encode([
         "success" => true,
         "message" => "Evento guardado correctamente",
-        "id_evento" => $id_evento
+        "id_evento" => $id_evento,
+        "img" => $imgEventoPath
     ]);
 
 } catch (Exception $e) {
