@@ -547,6 +547,266 @@ for ($i = 5; $i >= 0; $i--) {
 
 
                     <!-- mision fin -->
+<?php $autoridades = include "./../home/autoridad.php"; ?>
+<button class="btn btn-success mb-3" 
+        data-bs-toggle="modal" 
+        data-bs-target="#modalAddAutoridad">
+    + Agregar Autoridad
+</button>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Foto</th>
+            <th>Título</th>
+            <th>Nombre</th>
+            <th>Cargo</th>
+            <th>Contacto</th>
+            <th>Descripción</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($autoridades as $a): ?>
+        <tr>
+            <td><img src="../<?= $a['foto'] ?>" width="55" class="rounded"></td>
+
+            <td><?= $a['titulo'] ?></td>
+            <td><strong><?= $a['nombre'] ?></strong></td>
+            <td><?= $a['cargo'] ?></td>
+
+            <td>
+                <a href="mailto:<?= $a['email'] ?>"><i class="fa fa-envelope"></i></a><br>
+                <small><?= $a['telefono'] ?> Ext.<?= $a['telefono_ext'] ?></small>
+            </td>
+
+            <td><?= $a['resumen'] ?></td>
+
+            <td>
+                <button class="btn-edit"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEditAutoridad"
+                    onclick='cargarAutoridad(<?= json_encode($a) ?>)'>
+                    Editar
+                </button>
+
+                <button class="btn btn-danger btn-sm"
+                    onclick="eliminarAutoridad(<?= $a['id'] ?>)">
+                    Eliminar
+                </button>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+<script>
+
+    function cargarAutoridad(a) {
+    document.getElementById("edit_id").value = a.id;
+    document.getElementById("edit_titulo").value = a.titulo;
+    document.getElementById("edit_nombre").value = a.nombre;
+    document.getElementById("edit_cargo").value = a.cargo;
+    document.getElementById("edit_resumen").value = a.resumen;
+    document.getElementById("edit_direccion").value = a.direccion;
+    document.getElementById("edit_telefono").value = a.telefono;
+    document.getElementById("edit_ext").value = a.telefono_ext;
+    document.getElementById("edit_horario").value = a.horario;
+    document.getElementById("edit_email").value = a.email;
+    document.getElementById("edit_orden").value = a.orden;
+}
+
+function eliminarAutoridad(id) {
+    if (!confirm("¿Eliminar esta autoridad?")) return;
+
+    let datos = new FormData();
+    datos.append("id", id);
+
+    fetch("./../home/autoridades_eliminar.php", {
+        method: "POST",
+        body: datos
+    })
+    .then(r => r.json())
+    .then(res => {
+        alert(res.msg);
+        if (res.status === "success") location.reload();
+    });
+}
+
+</script>
+
+
+<!-- MODAL: AGREGAR AUTORIDAD -->
+<div class="modal fade" id="modalAddAutoridad" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar Autoridad</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+    <form id="formAddAutoridad" enctype="multipart/form-data">
+
+
+        <div class="modal-body row g-3">
+
+          <div class="col-md-3">
+            <label>Título</label>
+            <input type="text" name="titulo" class="form-control" required>
+          </div>
+
+          <div class="col-md-4">
+            <label>Nombre completo</label>
+            <input type="text" name="nombre" class="form-control" required>
+          </div>
+
+          <div class="col-md-5">
+            <label>Cargo</label>
+            <input type="text" name="cargo" class="form-control" required>
+          </div>
+
+          <div class="col-md-12">
+            <label>Descripción / Resumen</label>
+            <textarea name="resumen" class="form-control" rows="3"></textarea>
+          </div>
+
+          <div class="col-md-6">
+            <label>Dirección</label>
+            <input type="text" name="direccion" class="form-control">
+          </div>
+
+          <div class="col-md-3">
+            <label>Teléfono</label>
+            <input type="text" name="telefono" class="form-control">
+          </div>
+
+          <div class="col-md-3">
+            <label>Extensión</label>
+            <input type="text" name="ext" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label>Horario</label>
+            <input type="text" name="horario" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label>Email</label>
+            <input type="email" name="email" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label>Orden</label>
+            <input type="number" name="orden" class="form-control" value="1">
+          </div>
+
+          <div class="col-md-6">
+            <label>Foto (JPG/PNG)</label>
+            <input type="file" name="foto" class="form-control" accept="image/*" required>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-primary" type="submit">Guardar</button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: EDITAR AUTORIDAD -->
+<div class="modal fade" id="modalEditAutoridad" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Editar Autoridad</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+ <form id="formEditAutoridad" enctype="multipart/form-data">
+
+
+        <input type="hidden" name="id" id="edit_id">
+
+        <div class="modal-body row g-3">
+
+          <div class="col-md-3">
+            <label>Título</label>
+            <input type="text" name="titulo" id="edit_titulo" class="form-control" required>
+          </div>
+
+          <div class="col-md-4">
+            <label>Nombre completo</label>
+            <input type="text" name="nombre" id="edit_nombre" class="form-control" required>
+          </div>
+
+          <div class="col-md-5">
+            <label>Cargo</label>
+            <input type="text" name="cargo" id="edit_cargo" class="form-control" required>
+          </div>
+
+          <div class="col-md-12">
+            <label>Descripción / Resumen</label>
+            <textarea name="resumen" id="edit_resumen" class="form-control" rows="3"></textarea>
+          </div>
+
+          <div class="col-md-6">
+            <label>Dirección</label>
+            <input type="text" name="direccion" id="edit_direccion" class="form-control">
+          </div>
+
+          <div class="col-md-3">
+            <label>Teléfono</label>
+            <input type="text" name="telefono" id="edit_telefono" class="form-control">
+          </div>
+
+          <div class="col-md-3">
+            <label>Extensión</label>
+            <input type="text" name="ext" id="edit_ext" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label>Horario</label>
+            <input type="text" name="horario" id="edit_horario" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label>Email</label>
+            <input type="email" name="email" id="edit_email" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label>Orden</label>
+            <input type="number" name="orden" id="edit_orden" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label>Cambiar Foto (opcional)</label>
+            <input type="file" name="foto" class="form-control" accept="image/*">
+            <small class="text-muted">Si no seleccionas una imagen, se mantiene la actual.</small>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-primary" type="submit">Guardar Cambios</button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+ 
+
+</div>
+
 
 
 
@@ -556,6 +816,56 @@ for ($i = 5; $i >= 0; $i--) {
 
 
             </div>
+<script>
+/* ---------- AGREGAR AUTORIDAD ---------- */
+document.getElementById("formAddAutoridad").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    let datos = new FormData(this);
+
+    fetch("./../home/autoridades_agregar.php", {
+        method: "POST",
+        body: datos
+    })
+    .then(r => r.json())
+    .then(res => {
+        alert(res.msg);
+
+        if (res.status === "success") {
+            let modal = bootstrap.Modal.getInstance(
+                document.getElementById("modalAddAutoridad")
+            );
+            modal.hide();
+            location.reload();
+        }
+    });
+});
+
+
+/* ---------- EDITAR AUTORIDAD ---------- */
+document.getElementById("formEditAutoridad").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    let datos = new FormData(this);
+
+    fetch("./../home/autoridades_editar.php", {
+        method: "POST",
+        body: datos
+    })
+    .then(r => r.json())
+    .then(res => {
+        alert(res.msg);
+
+        if (res.status === "success") {
+            let modal = bootstrap.Modal.getInstance(
+                document.getElementById("modalEditAutoridad")
+            );
+            modal.hide();
+            location.reload();
+        }
+    });
+});
+</script>
 
 
             <!-- CONTACTANOS -->
