@@ -548,13 +548,18 @@ for ($i = 5; $i >= 0; $i--) {
 
                     <!-- mision fin -->
 <?php $autoridades = include "./../home/autoridad.php"; ?>
-<button class="btn btn-success mb-3" 
+<br>
+<br>
+<br>
+                        <button class="btn-edit mb-3"
         data-bs-toggle="modal" 
         data-bs-target="#modalAddAutoridad">
     + Agregar Autoridad
 </button>
-
-<table class="table table-hover">
+<div class="card-header-custom">
+                                <i class="fas fa-users-cog me-2"></i> Autoridades
+                            </div>
+<table class="table table-hover mb-0">
     <thead>
         <tr>
             <th>Foto</th>
