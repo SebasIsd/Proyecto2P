@@ -344,7 +344,7 @@ for ($i = 5; $i >= 0; $i--) {
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
         <a href="adminInicio.php" ><i class="fas fa-home me-2"></i> Inicio</a>
-        <a href="gestionUsuarios.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="crearevento.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
         <a href="gestionUsuarios.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
         <a href="configuraciones.php" class="active"><i class="fas fa-cog me-2"></i> Configuraciones</a>
