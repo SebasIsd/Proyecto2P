@@ -132,7 +132,15 @@ ORDER BY e.ID_EVE_CUR DESC
         <div class="card-body">
             <h5 class="mb-3"><i class="bi bi-list-ul me-2"></i>Eventos Registrados</h5>
 
-            <table class="table table-striped table-bordered table-sm align-middle">
+<div class="row mb-3">
+    <div class="col-md-6">
+        <input type="search" id="buscarEventos" class="form-control"
+               placeholder="Buscar por título o responsable...">
+    </div>
+</div>
+
+<table id="tablaEventos" class="table table-striped table-bordered table-sm align-middle">
+
                 <thead class="table-secondary">
                     <tr>
                         <th>ID</th>
@@ -170,84 +178,12 @@ ORDER BY e.ID_EVE_CUR DESC
 </div> <!-- FIN CONTENT -->
 
 
-<!-- 📌 MODAL BUSCAR RESPONSABLE -->
-<div class="modal fade" id="modalBuscar">
-<div class="modal-dialog modal-lg modal-dialog-scrollable">
-<div class="modal-content">
 
-    <div class="modal-header">
-        <h5 class="modal-title">Buscar Responsable</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-    </div>
-
-    <div class="modal-body">
-        <input type="search" id="termBuscar" class="form-control mb-3" placeholder="Buscar por cédula, nombre o apellido">
-        
-        <table class="table table-hover table-sm">
-            <thead class="table-secondary">
-                <tr>
-                    <th>Cédula</th>
-                    <th>Nombre</th>
-                    <th>Correo</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody id="tblResultados">
-                <tr><td colspan="4" class="text-center text-muted">Escriba para buscar...</td></tr>
-            </tbody>
-        </table>
-    </div>
-
-</div>
-</div>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-// 🔍 Buscador AJAX
-let timer=null;
-$("#termBuscar").on("input",function(){
-    const q = this.value.trim();
-    clearTimeout(timer);
-    if(q.length < 2){
-        $("#tblResultados").html('<tr><td colspan="4" class="text-muted text-center">Escriba 2 letras...</td></tr>');
-        return;
-    }
-    timer = setTimeout(()=>buscar(q),300);
-});
 
-function buscar(q){
-    $("#tblResultados").html('<tr><td colspan="4" class="text-center">Buscando...</td></tr>');
-    $.getJSON("buscarResponsable.php",{term:q},function(data){
-        if(!data.length){
-            $("#tblResultados").html('<tr><td colspan="4" class="text-danger text-center">Sin resultados</td></tr>');
-            return;
-        }
-        $("#tblResultados").html(
-            data.map(u => `
-                <tr>
-                    <td>${u.cedula}</td>
-                    <td>${u.nombreCompleto}</td>
-                    <td>${u.correo}</td>
-                    <td>
-                        <button class="btn btn-success btn-sm"
-                                onclick="sel('${u.cedula}','${u.nombreCompleto}')">
-                            Elegir
-                        </button>
-                    </td>
-                </tr>
-            `).join("")
-        );
-    });
-}
-
-function sel(cedula,nombre){
-    $("#RESPONSABLE_CED").val(cedula);
-    $("#responsable_display").val(cedula+" - "+nombre);
-    $("#responsableNombre").text(nombre);
-    bootstrap.Modal.getInstance(document.getElementById("modalBuscar")).hide();
-}
 
 // Validar que haya responsable
 $("#formEvento").on("submit",function(e){
@@ -256,7 +192,18 @@ $("#formEvento").on("submit",function(e){
         e.preventDefault();
     }
 });
+
+// 🔍 BUSCADOR EN LISTA DE EVENTOS
+$("#buscarEventos").on("input", function () {
+    const filtro = $(this).val().toLowerCase();
+    $("#tablaEventos tbody tr").each(function () {
+        const texto = $(this).text().toLowerCase();
+        $(this).toggle(texto.includes(filtro));
+    });
+});
+
 </script>
+<?php include "modalBuscarResponsable.php"; ?>
 
 </body>
 </html>
