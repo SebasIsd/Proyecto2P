@@ -1,5 +1,5 @@
 <?php
-// crear_evento.php  (archivo completo listo para pegar)
+// crear_evento.php - Versión mejorada con requisitos por evento
 session_start();
 require_once __DIR__ . '/../includes/conexion.php';
 
@@ -18,9 +18,6 @@ function slugify($text) {
   $text = strtolower($text);
   return $text ?: 'evento';
 }
-function genCodigoEvento($prefix='EVE'){
-  return $prefix . '-' . date('Ymd') . '-' . substr(uniqid('', true), -6);
-}
 
 /* Cargar datos para el formulario (catálogos) */
 $tipos = [];
@@ -31,15 +28,16 @@ $carreras = [];
 $resCar = $conn->query("SELECT ID_CARRERA, NOMBRE_CARRERA FROM TIPOS_CARRERA ORDER BY NOMBRE_CARRERA");
 while ($row = $resCar->fetch_assoc()) $carreras[] = $row;
 
+// Cargar TODOS los requisitos activos disponibles
 $requisitos = [];
-$resReq = $conn->query("SELECT ID_REQ, NOM_REQ, TIPO FROM REQUISITOS WHERE ACTIVO=1 ORDER BY NOM_REQ");
+$resReq = $conn->query("SELECT ID_REQ, NOM_REQ, TIPO, DES_REQ FROM REQUISITOS WHERE ACTIVO=1 ORDER BY NOM_REQ");
 while ($row = $resReq->fetch_assoc()) $requisitos[] = $row;
 
 /* Modo edición / añadir información */
 $idEvento = isset($_GET['evento']) ? (int)$_GET['evento'] : 0;
 $isEditMode = $idEvento > 0;
 
-// variables por defecto (vacías en modo crear)
+// variables por defecto
 $evento = [
   'TIT_EVE_CUR' => '',
   'DES_EVE_CUR' => '',
@@ -59,11 +57,12 @@ $evento = [
   'RESPONSABLE_CED' => null
 ];
 
-$selectedReqs = [];
+$selectedReqsInscripcion = [];
+$selectedReqsAprobacion = [];
 $selectedCarr = [];
 
 if ($isEditMode) {
-    // Verificar permiso: que la cédula sea responsable o ponente del evento
+    // Verificar permiso
     $permStmt = $conn->prepare("
       SELECT 1 FROM PERSONAL_EVENTO
       WHERE ID_EVE_CUR = ? AND CED_USU = ? AND (ES_RESPONSABLE = 1 OR UPPER(ROL_EVENTO) = 'PONENTE') LIMIT 1
@@ -72,7 +71,6 @@ if ($isEditMode) {
     $permStmt->execute();
     $permStmt->store_result();
     if ($permStmt->num_rows === 0) {
-        // No tiene permiso para modificar/añadir info
         $permStmt->close();
         header("Location: ../index.php?error=no_permiso_evento");
         exit();
@@ -92,13 +90,21 @@ if ($isEditMode) {
     }
     $stmt->close();
 
-    // Cargar requisitos asociados al evento
-    $rstmt = $conn->prepare("SELECT ID_REQ FROM EVENTOS_REQUISITOS WHERE ID_EVE_CUR = ?");
+    // Cargar requisitos de inscripción asociados al evento
+    $rstmt = $conn->prepare("SELECT ID_REQ FROM EVENTOS_REQUISITOS WHERE ID_EVE_CUR = ? AND TIPO_REQUISITO = 'INSCRIPCION'");
     $rstmt->bind_param("i", $idEvento);
     $rstmt->execute();
     $rr = $rstmt->get_result();
-    while ($row = $rr->fetch_assoc()) $selectedReqs[] = (int)$row['ID_REQ'];
+    while ($row = $rr->fetch_assoc()) $selectedReqsInscripcion[] = (int)$row['ID_REQ'];
     $rstmt->close();
+
+    // Cargar requisitos de aprobación asociados al evento
+    $rstmt2 = $conn->prepare("SELECT ID_REQ FROM EVENTOS_REQUISITOS WHERE ID_EVE_CUR = ? AND TIPO_REQUISITO = 'APROBACION'");
+    $rstmt2->bind_param("i", $idEvento);
+    $rstmt2->execute();
+    $rr2 = $rstmt2->get_result();
+    while ($row = $rr2->fetch_assoc()) $selectedReqsAprobacion[] = (int)$row['ID_REQ'];
+    $rstmt2->close();
 
     // Cargar carreras asociadas
     $cstmt = $conn->prepare("SELECT ID_CARRERA FROM EVENTOS_CARRERAS WHERE ID_EVE_CUR = ?");
@@ -108,14 +114,12 @@ if ($isEditMode) {
     while ($row = $cr->fetch_assoc()) $selectedCarr[] = (int)$row['ID_CARRERA'];
     $cstmt->close();
 }
-
-// Nota: NO ejecutamos guardar aquí — asumimos que tienes tu endpoint guardarEvento.php
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title><?= $isEditMode ? 'Añadir información · ' . htmlspecialchars($evento['TIT_EVE_CUR']) : 'Crear nuevo evento' ?></title>
+<title><?= $isEditMode ? 'Editar evento · ' . htmlspecialchars($evento['TIT_EVE_CUR']) : 'Crear nuevo evento' ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -151,6 +155,7 @@ if ($isEditMode) {
       padding: 25px 0;
       box-shadow: 5px 0 20px rgba(0, 0, 0, 0.15);
       z-index: 1000;
+      overflow-y: auto;
     }
 
     .sidebar .logo {
@@ -164,11 +169,6 @@ if ($isEditMode) {
       border-radius: 50%;
       border: 5px solid rgba(255, 255, 255, 0.25);
       transition: all 0.3s;
-    }
-
-    .sidebar .logo img:hover {
-      transform: scale(1.08);
-      border-color: white;
     }
 
     .sidebar a {
@@ -201,183 +201,42 @@ if ($isEditMode) {
       padding: 40px;
     }
 
-    .page-header {
+    .brand-header {
       background: white;
       padding: 25px 30px;
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       margin-bottom: 30px;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      justify-content: space-between;
     }
 
-    .page-header i {
+    .brand-header h2 {
+      margin: 0 0 10px 0;
       font-size: 1.8rem;
-      color: var(--primary);
-    }
-
-    .page-header h1 {
-      margin: 0;
-      font-size: 1.6rem;
       font-weight: 600;
       color: var(--dark);
     }
 
     .card {
       background: white;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      transition: transform 0.2s;
+      border: none;
+      margin-bottom: 20px;
     }
 
-    .card:hover {
-      transform: translateY(-3px);
-    }
-
-    .card-header-custom {
+    .accordion-button {
       background: var(--primary);
       color: white;
-      padding: 18px 28px;
       font-weight: 600;
-      font-size: 1.15rem;
+      font-size: 1.1rem;
     }
 
-    .table {
-      margin: 0;
-    }
-
-    .table thead {
-      background: var(--primary);
-      color: white;
-    }
-
-    .table thead th {
-      border: none;
-      font-weight: 600;
-      padding: 16px;
-      font-size: 0.95rem;
-    }
-
-    .table tbody td {
-      padding: 16px;
-      vertical-align: middle;
-      border-color: #eee;
-    }
-
-    .table tbody tr:hover {
-      background: var(--primary-light);
-    }
-
-    .badge {
-      font-size: 0.8rem;
-      padding: 6px 12px;
-      border-radius: 20px;
-    }
-
-    .badge-success {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .badge-danger {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: white !important;
-      border: none;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      padding: 12px 26px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      box-shadow: 0 4px 12px rgba(163, 0, 0, 0.25);
-      transition: all 0.3s ease;
-      text-decoration: none;
-    }
-
-    .btn-primary i {
-      font-size: 1rem;
-      background: white;
-      color: var(--primary);
-      border-radius: 50%;
-      padding: 4px;
-      width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-    }
-
-    .btn-primary:hover {
+    .accordion-button:not(.collapsed) {
       background: var(--primary-hover);
-      box-shadow: 0 6px 18px rgba(163, 0, 0, 0.35);
-      transform: translateY(-2px);
-    }
-
-    .btn-primary:hover i {
-      background: white;
-      color: var(--primary-hover);
-    }
-
-
-    .btn-edit {
-      background: transparent;
-      color: var(--primary);
-      border: 1px solid var(--primary);
-      padding: 6px 12px;
-      border-radius: 10px;
-      transition: all 0.3s;
-    }
-
-    .btn-edit:hover {
-      background: var(--primary);
       color: white;
     }
 
-    .btn-delete {
-      background: transparent;
-      color: #dc3545;
-      border: 1px solid #dc3545;
-      padding: 6px 12px;
-      border-radius: 10px;
-      transition: all 0.3s;
-    }
-
-    .btn-delete:hover {
-      background: #dc3545;
-      color: white;
-    }
-
-    /* Modal */
-    .modal-content {
-      border-radius: var(--radius);
-      border: none;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    }
-
-    .modal-header {
-      background: var(--primary);
-      color: white;
-      border-radius: var(--radius) var(--radius) 0 0;
-      padding: 18px 25px;
-    }
-
-    .modal-header .btn-close {
-      filter: brightness(0) invert(1);
-    }
-
-    .modal-body {
-      padding: 30px;
+    .accordion-button:focus {
+      box-shadow: none;
+      border-color: var(--primary);
     }
 
     .form-control,
@@ -401,19 +260,112 @@ if ($isEditMode) {
       margin-bottom: 8px;
     }
 
-    .btn-save-modal {
+    .btn-uta {
       background: var(--primary);
       color: white;
       border: none;
-      padding: 12px 28px;
-      border-radius: 12px;
+      border-radius: 40px;
       font-weight: 600;
+      font-size: 0.95rem;
+      padding: 12px 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(163, 0, 0, 0.25);
+      transition: all 0.3s ease;
+    }
+
+    .btn-uta:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 6px 18px rgba(163, 0, 0, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .req-chip {
+      display: inline-flex;
+      align-items: center;
+      background: var(--gray-light);
+      border: 2px solid #dee2e6;
+      border-radius: 20px;
+      padding: 8px 16px;
+      margin: 5px;
+      cursor: pointer;
       transition: all 0.3s;
     }
 
-    .btn-save-modal:hover {
-      background: var(--primary-hover);
-      transform: translateY(-2px);
+    .req-chip:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .req-chip input[type="checkbox"] {
+      margin-right: 8px;
+    }
+
+    .req-chip input[type="checkbox"]:checked + span {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .requisitos-section {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+
+    .requisitos-section h6 {
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .requisitos-section h6 i {
+      font-size: 1.2rem;
+    }
+
+    .badge-tipo-req {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    .badge-inscripcion {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .badge-aprobacion {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    .sticky-actions {
+      position: sticky;
+      bottom: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      z-index: 100;
+    }
+
+    .img-preview {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .muted {
+      font-size: 0.85rem;
+      color: var(--gray);
+      margin-top: 5px;
     }
 
     @media (max-width: 768px) {
@@ -434,10 +386,6 @@ if ($isEditMode) {
         justify-content: center;
       }
 
-      .sidebar a:hover {
-        padding-left: 16px;
-      }
-
       .content {
         margin-left: 80px;
         padding: 20px;
@@ -450,15 +398,15 @@ if ($isEditMode) {
 <!-- Sidebar -->
 <div class="sidebar">
   <div class="logo"><img src="../images/favico.png" alt="Logo UTA"></div>
-  <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
-  <a href="gestionar_eventos.php" class="active"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-  <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
-  <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
-  <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
-  <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
-  <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-  <a href="#"><i class="fas fa-cog me-2"></i> Configuraciones</a>
-  <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
+  <a href="admin_inicio.php"><i class="fas fa-home"></i> <span>Inicio</span></a>
+  <a href="gestionar_eventos.php" class="active"><i class="fas fa-calendar-check"></i> <span>Gestionar Eventos</span></a>
+  <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> <span>Gestionar Evidencias</span></a>
+  <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> <span>Gestionar Pagos</span></a>
+  <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> <span>Certificados</span></a>
+  <a href="editar_usuario.php"><i class="fas fa-users"></i> <span>Gestionar Usuarios</span></a>
+  <a href="perfil.php"><i class="fas fa-user"></i> <span>Perfil</span></a>
+  <a href="#"><i class="fas fa-cog"></i> <span>Configuraciones</span></a>
+  <a href="../Login/logout.php"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a>
 </div>
 
 <main class="content">
@@ -466,21 +414,19 @@ if ($isEditMode) {
     <div class="brand-header">
       <h2>
         <i class="bi bi-calendar2-plus me-2"></i>
-        <?= $isEditMode ? 'Añadir información: ' . htmlspecialchars($evento['TIT_EVE_CUR']) : 'Crear nuevo evento o curso' ?>
+        <?= $isEditMode ? 'Editar evento: ' . htmlspecialchars($evento['TIT_EVE_CUR']) : 'Crear nuevo evento o curso' ?>
       </h2>
-      <p class="text-muted"><?= $isEditMode ? 'Edita información adicional del evento seleccionado (título no editable).' : 'Completa la información paso a paso' ?></p>
+      <p class="text-muted"><?= $isEditMode ? 'Modifica la información del evento seleccionado.' : 'Completa la información paso a paso para crear un nuevo evento' ?></p>
     </div>
 
     <form method="post" id="formEvento" enctype="multipart/form-data">
-      <!-- IMPORTANT: incluimos un hidden con id_evento para que guardarEvento.php pueda manejar edición -->
       <?php if ($isEditMode): ?>
         <input type="hidden" name="ID_EVE_CUR" value="<?= (int)$idEvento ?>">
       <?php endif; ?>
 
       <div class="accordion" id="eventWizard">
-
-        <!-- Paso 1: Datos básicos -->
-        <div class="accordion-item card mb-3">
+      <!-- Paso 1: Datos básicos -->
+        <div class="accordion-item card">
           <h2 class="accordion-header">
             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#p1" aria-expanded="true">
               <i class="bi bi-info-circle me-2"></i>1) Datos básicos
@@ -489,31 +435,30 @@ if ($isEditMode) {
           <div id="p1" class="accordion-collapse collapse show">
             <div class="accordion-body">
               <div class="row g-3">
-                <div class="col-md-8">
-                  <label class="form-label">Título *</label>
-                  <input id="tituloEvento" name="TIT_EVE_CUR" class="form-control" required
-                         value="<?= htmlspecialchars($evento['TIT_EVE_CUR']) ?>"
-                         <?= $isEditMode ? 'readonly' : '' ?>>
+
+<div class="col-md-8">
+  <label class="form-label">Título</label>
+  <input id="tituloEvento" name="TIT_EVE_CUR" class="form-control" required
+         value="<?= htmlspecialchars($evento['TIT_EVE_CUR']) ?>"
+         readonly>
+  <div class="muted">Nombre descriptivo del evento o curso</div>
+
+
                 </div>
                 <div class="col-md-4">
                   <label class="form-label">Tipo de evento *</label>
-                  <div class="input-group">
-                    <select id="tipoEvento" name="ID_TIPO_EVE" class="form-select" required>
-                      <option value="">-- Selecciona --</option>
-                      <?php foreach($tipos as $t): ?>
-                        <option value="<?= (int)$t['ID_TIPO_EVE'] ?>" <?= ((int)$evento['ID_TIPO_EVE'] === (int)$t['ID_TIPO_EVE']) ? 'selected' : '' ?>>
-                          <?= htmlspecialchars($t['NOM_TIPO_EVE']) ?>
-                        </option>
-                      <?php endforeach; ?>
-                    </select>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalNuevoTipo">
-                      <i class="bi bi-plus-lg"></i>
-                    </button>
-                  </div>
+                  <select id="tipoEvento" name="ID_TIPO_EVE" class="form-select" required>
+                    <option value="">-- Selecciona --</option>
+                    <?php foreach($tipos as $t): ?>
+                      <option value="<?= (int)$t['ID_TIPO_EVE'] ?>" <?= ((int)$evento['ID_TIPO_EVE'] === (int)$t['ID_TIPO_EVE']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($t['NOM_TIPO_EVE']) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
                 </div>
                 <div class="col-12">
                   <label class="form-label">Descripción</label>
-                  <textarea id="descripcionEvento" name="DES_EVE_CUR" rows="3" class="form-control" placeholder="Breve descripción del evento"><?= htmlspecialchars($evento['DES_EVE_CUR']) ?></textarea>
+                  <textarea id="descripcionEvento" name="DES_EVE_CUR" rows="4" class="form-control" placeholder="Describe el evento, sus objetivos y contenido..."><?= htmlspecialchars($evento['DES_EVE_CUR'] ?? '') ?></textarea>
                 </div>
               </div>
             </div>
@@ -521,39 +466,39 @@ if ($isEditMode) {
         </div>
 
         <!-- Paso 2: Fechas, lugar y modalidad -->
-        <div class="accordion-item card mb-3">
+        <div class="accordion-item card">
           <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#p2" aria-expanded="true">
-              <i class="bi bi-geo-alt me-2"></i>2) Fechas, lugar y modalidad
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p2">
+              <i class="bi bi-calendar3 me-2"></i>2) Fechas, lugar y modalidad
             </button>
           </h2>
           <div id="p2" class="accordion-collapse collapse show">
             <div class="accordion-body">
-              <div class="mb-3">
-                <label class="form-label">Inscripción desde</label>
-                <input id="insDesde" type="date" name="INSCRIPCION_DESDE" class="form-control" value="<?= htmlspecialchars($evento['INSCRIPCION_DESDE']) ?>">
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Inscripción hasta</label>
-                <input id="insHasta" type="date" name="INSCRIPCION_HASTA" class="form-control" value="<?= htmlspecialchars($evento['INSCRIPCION_HASTA']) ?>">
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Inicio *</label>
-                <input id="fecInicio" type="date" name="FEC_INI_EVE_CUR" class="form-control" value="<?= htmlspecialchars($evento['FEC_INI_EVE_CUR']) ?>" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Fin *</label>
-                <input id="fecFin" type="date" name="FEC_FIN_EVE_CUR" class="form-control" value="<?= htmlspecialchars($evento['FEC_FIN_EVE_CUR']) ?>" required>
-              </div>
-
               <div class="row g-3">
                 <div class="col-md-6">
-                  <label class="form-label">Lugar</label>
-                  <input id="lugar" name="LUGAR" class="form-control" placeholder="Auditorio FISEI" value="<?= htmlspecialchars($evento['LUGAR']) ?>">
+                  <label class="form-label">Inscripción desde</label>
+                  <input id="insDesde" type="date" name="INSCRIPCION_DESDE" class="form-control" value="<?= htmlspecialchars($evento['INSCRIPCION_DESDE'] ?? '') ?>">
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label">Ubicación/detalle</label>
-                  <input id="detalleLugar" name="UBICACION_DETALLE" class="form-control" placeholder="Bloque B, 2do piso" value="<?= htmlspecialchars($evento['UBICACION_DETALLE']) ?>">
+                  <label class="form-label">Inscripción hasta</label>
+                  <input id="insHasta" type="date" name="INSCRIPCION_HASTA" class="form-control" value="<?= htmlspecialchars($evento['INSCRIPCION_HASTA'] ?? '') ?>">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Fecha inicio del evento *</label>
+                  <input id="fecInicio" type="date" name="FEC_INI_EVE_CUR" class="form-control" value="<?= htmlspecialchars($evento['FEC_INI_EVE_CUR'] ?? '') ?>" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Fecha fin del evento *</label>
+                  <input id="fecFin" type="date" name="FEC_FIN_EVE_CUR" class="form-control" value="<?= htmlspecialchars($evento['FEC_FIN_EVE_CUR'] ?? '') ?>" required>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Lugar</label>
+                  <input id="lugar" name="LUGAR" class="form-control" placeholder="Ej: Auditorio FISEI" value="<?= htmlspecialchars($evento['LUGAR'] ?? '') ?>">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Ubicación detallada</label>
+                  <input id="detalleLugar" name="UBICACION_DETALLE" class="form-control" placeholder="Ej: Bloque B, 2do piso" value="<?= htmlspecialchars($evento['UBICACION_DETALLE'] ?? '') ?>">
                 </div>
 
                 <div class="col-md-3">
@@ -565,98 +510,135 @@ if ($isEditMode) {
                 </div>
                 <div class="col-md-3">
                   <label class="form-label">Costo ($)</label>
-                  <input id="costo" type="number" step="0.01" name="COS_EVE_CUR" class="form-control" value="<?= htmlspecialchars($evento['COS_EVE_CUR']) ?>" <?= $evento['MOD_EVE_CUR'] === 'Gratis' ? 'disabled' : '' ?>>
+                  <input id="costo" type="number" step="0.01" name="COS_EVE_CUR" class="form-control" value="<?= htmlspecialchars($evento['COS_EVE_CUR'] ?? '0') ?>" <?= ($evento['MOD_EVE_CUR'] ?? 'Gratis') === 'Gratis' ? 'disabled' : '' ?>>
                 </div>
 
                 <div class="col-md-3">
                   <label class="form-label">Capacidad máxima</label>
                   <input id="capacidad" type="number" name="CAPACIDAD_MAXIMA" class="form-control" value="<?= (int)$evento['CAPACIDAD_MAXIMA'] ?>" min="0">
-                  <div class="muted">Inicializa cupos disponibles.</div>
+                  <div class="muted">Total de cupos disponibles</div>
                 </div>
                 <div class="col-md-3">
                   <label class="form-label">Horas totales</label>
                   <input id="horas" type="number" name="HORAS_TOTALES" class="form-control" min="0" value="<?= (int)$evento['HORAS_TOTALES'] ?>">
                 </div>
-
-                <!-- Eliminamos campo 'Responsable' en UI, si necesitas mantenerlo envíalo como hidden -->
-                <?php if (!empty($evento['RESPONSABLE_CED'])): ?>
-                  <input type="hidden" name="RESPONSABLE_CED" value="<?= htmlspecialchars($evento['RESPONSABLE_CED']) ?>">
-                <?php endif; ?>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Paso 3: Requisitos -->
-        <div class="accordion-item card mb-3">
+        <!-- Paso 3: Requisitos del evento -->
+        <div class="accordion-item card">
           <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#p3" aria-expanded="true">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p3">
               <i class="bi bi-list-check me-2"></i>3) Requisitos del evento
             </button>
           </h2>
           <div id="p3" class="accordion-collapse collapse show">
             <div class="accordion-body">
-              <div id="tablaRequisitosContainer">
-                <p class="muted mb-2">Selecciona los requisitos obligatorios para el evento.</p>
-                <div class="table-responsive">
-                  <table class="table table-hover align-middle" id="tablaRequisitos">
-                    <thead>
-                      <tr><th>Sel</th><th>Requisito</th></tr>
-                    </thead>
-                    <tbody>
-                      <?php foreach($requisitos as $r): $checked = in_array((int)$r['ID_REQ'], $selectedReqs); ?>
-                        <tr>
-                          <td><input class="reqCheck" type="checkbox" name="REQ_ID[]" value="<?= (int)$r['ID_REQ'] ?>" <?= $checked ? 'checked' : '' ?>></td>
-                          <td><?= htmlspecialchars($r['NOM_REQ']) ?></td>
-                        </tr>
-                      <?php endforeach; ?>
-                    </tbody>
-                  </table>
+              
+              <!-- Requisitos de Inscripción -->
+              <div class="requisitos-section">
+                <h6>
+                  <i class="bi bi-person-check-fill"></i>
+                  Requisitos de Inscripción
+                  <span class="badge badge-inscripcion badge-tipo-req">INSCRIPCIÓN</span>
+                </h6>
+                <p class="text-muted small mb-3">
+                  Los usuarios deben cumplir estos requisitos para poder inscribirse al evento.
+                </p>
+                <div class="d-flex flex-wrap">
+                  <?php foreach($requisitos as $r): 
+                    $checked = in_array((int)$r['ID_REQ'], $selectedReqsInscripcion); 
+                  ?>
+                    <label class="req-chip">
+                      <input type="checkbox" name="REQ_INSCRIPCION[]" value="<?= (int)$r['ID_REQ'] ?>" <?= $checked ? 'checked' : '' ?>>
+                      <span><?= htmlspecialchars($r['NOM_REQ']) ?></span>
+                      <?php if (!empty($r['DES_REQ'])): ?>
+                        <i class="bi bi-info-circle text-muted ms-1" title="<?= htmlspecialchars($r['DES_REQ']) ?>"></i>
+                      <?php endif; ?>
+                    </label>
+                  <?php endforeach; ?>
                 </div>
+                <?php if (empty($requisitos)): ?>
+                  <p class="text-muted text-center">No hay requisitos disponibles. Contacta al administrador para crear requisitos.</p>
+                <?php endif; ?>
+              </div>
+
+              <!-- Requisitos de Aprobación -->
+              <div class="requisitos-section">
+                <h6>
+                  <i class="bi bi-award-fill"></i>
+                  Requisitos de Aprobación
+                  <span class="badge badge-aprobacion badge-tipo-req">APROBACIÓN</span>
+                </h6>
+                <p class="text-muted small mb-3">
+                  Los usuarios deben cumplir estos requisitos para aprobar el evento y obtener su certificado.
+                </p>
+                <div class="d-flex flex-wrap">
+                  <?php foreach($requisitos as $r): 
+                    $checked = in_array((int)$r['ID_REQ'], $selectedReqsAprobacion); 
+                  ?>
+                    <label class="req-chip">
+                      <input type="checkbox" name="REQ_APROBACION[]" value="<?= (int)$r['ID_REQ'] ?>" <?= $checked ? 'checked' : '' ?>>
+                      <span><?= htmlspecialchars($r['NOM_REQ']) ?></span>
+                      <?php if (!empty($r['DES_REQ'])): ?>
+                        <i class="bi bi-info-circle text-muted ms-1" title="<?= htmlspecialchars($r['DES_REQ']) ?>"></i>
+                      <?php endif; ?>
+                    </label>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+
+              <div class="alert alert-info mt-3">
+                <i class="bi bi-lightbulb me-2"></i>
+                <strong>Nota:</strong> Los requisitos de inscripción se validan al momento de inscribirse. Los requisitos de aprobación se validan al finalizar el evento para emitir certificados.
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Paso 4: Carreras -->
-        <div class="accordion-item card mb-3">
+        <!-- Paso 4: Carreras destinatarias -->
+        <div class="accordion-item card">
           <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#p4" aria-expanded="true">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p4">
               <i class="bi bi-mortarboard me-2"></i>4) Carreras destinatarias
             </button>
           </h2>
           <div id="p4" class="accordion-collapse collapse show">
             <div class="accordion-body">
+              <p class="text-muted mb-3">Selecciona las carreras que pueden participar en este evento. Si no seleccionas ninguna, el evento estará abierto para todas las carreras.</p>
               <div class="row">
                 <?php foreach($carreras as $c): $checkedC = in_array((int)$c['ID_CARRERA'], $selectedCarr); ?>
                   <div class="col-md-4 mb-2">
-                    <label class="req-chip">
-                      <input class="carCheck" type="checkbox" name="CARRERAS[]" value="<?= (int)$c['ID_CARRERA'] ?>" <?= $checkedC ? 'checked' : '' ?>>
-                      <?= htmlspecialchars($c['NOMBRE_CARRERA']) ?>
+                    <label class="req-chip w-100">
+                      <input type="checkbox" name="CARRERAS[]" value="<?= (int)$c['ID_CARRERA'] ?>" <?= $checkedC ? 'checked' : '' ?>>
+                      <span><?= htmlspecialchars($c['NOMBRE_CARRERA']) ?></span>
                     </label>
                   </div>
                 <?php endforeach; ?>
               </div>
-              <div class="muted mt-2">Si no seleccionas ninguna, el evento se considera abierto al público.</div>
             </div>
           </div>
         </div>
 
         <!-- Paso 5: Imagen del evento -->
-        <div class="accordion-item card mb-3">
+        <div class="accordion-item card">
           <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#p5" aria-expanded="true">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p5">
               <i class="bi bi-image me-2"></i>5) Imagen del evento
             </button>
           </h2>
           <div id="p5" class="accordion-collapse collapse show">
-            <div class="accordion-body d-flex gap-3 align-items-start flex-wrap">
-              <div>
-                <input id="imgEvento" name="IMG_EVE_CUR" type="file" class="form-control" accept="image/*">
-                <small class="text-muted">Formato: jpg, png, webp. Si subes una nueva imagen reemplazará la existente.</small>
-              </div>
+            <div class="accordion-body">
+              <div class="row g-3">
+                <div class="col-md-8">
+                  <label class="form-label">Seleccionar imagen</label>
+                  <input id="imgEvento" name="IMG_EVE_CUR" type="file" class="form-control" accept="image/*">
+                  <small class="text-muted">Formatos: jpg, png, webp. Tamaño máximo: 5MB</small>
+                </div>
 
-              <?php if (!empty($evento['IMG_EVE_CUR'])): ?>
+                 <?php if (!empty($evento['IMG_EVE_CUR'])): ?>
                 <?php
                   // Mostrar imagen actual (ruta en DB puede ser 'images/eventos/...' o similar)
                   $imgPath = file_exists(__DIR__ . '/../' . $evento['IMG_EVE_CUR']) ? '../' . $evento['IMG_EVE_CUR'] : (filter_var($evento['IMG_EVE_CUR'], FILTER_VALIDATE_URL) ? $evento['IMG_EVE_CUR'] : null);
@@ -688,38 +670,6 @@ if ($isEditMode) {
 </main>
 
 <!-- Modal Nuevo Tipo (igual que antes) -->
-<div class="modal fade" id="modalNuevoTipo" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content p-3">
-      <div class="modal-header border-0">
-        <h5 class="modal-title text-uta"><i class="bi bi-plus-circle me-2"></i>Nuevo tipo de evento</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3"><label class="form-label">Nombre del tipo</label><input id="nuevoTipoNombre" class="form-control"></div>
-        <div class="mb-4">
-          <label class="form-label">Requisitos existentes</label>
-          <div id="listaRequisitosExistentes" class="border rounded p-2" style="max-height: 180px; overflow-y:auto;"></div>
-        </div>
-        <hr>
-        <label class="form-label">Crear requisitos nuevos</label>
-        <div id="contenedorRequisitos">
-          <div class="requisito-item mb-2 d-flex gap-2 align-items-center">
-            <input type="text" class="form-control req-nombre" placeholder="Nombre del requisito">
-            <select class="form-select req-tipo"><option value="NUMERICO">Numérico</option><option value="TEXTO_CORTO">Texto corto</option><option value="DOCUMENTO">Documento</option></select>
-            <input type="number" class="form-control req-valor-min" placeholder="Valor mínimo" style="display:none;">
-            <button type="button" class="btn btn-danger btn-remove-requisito">X</button>
-          </div>
-        </div>
-        <button type="button" id="agregarRequisito" class="btn btn-sm btn-uta mt-2">Agregar requisito</button>
-      </div>
-      <div class="modal-footer border-0">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button id="guardarNuevoTipo" class="btn btn-uta">Guardar</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -875,4 +825,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>
+</html> 
