@@ -123,8 +123,7 @@ body { font-family:'Segoe UI'; background:linear-gradient(135deg,#f5f5f5 0%,#e0e
           <td><?= (int)$ev['CUPOS_DISPONIBLES'] ?> / <?= (int)$ev['CAPACIDAD_MAXIMA'] ?></td>
 
           <td class="text-end">
-            <a href="editar_evento.php?id=<?= (int)$ev['ID_EVE_CUR'] ?>" class="btn btn-sm btn-warning">Editar</a>
-            <a href="gestionar_eventos.php?evento=<?= (int)$ev['ID_EVE_CUR'] ?>" class="btn btn-sm btn-uta">Agregar</a>
+            <a href="editarEvento.php?id=<?= (int)$ev['ID_EVE_CUR'] ?>" class="btn btn-sm btn-warning">Editar</a>
           </td>
         </tr>
         <?php endforeach; ?>
