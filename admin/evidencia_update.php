@@ -1,14 +1,17 @@
 <?php
 session_start();
+require_once __DIR__ . '/../includes/conexion.php';
+require_once __DIR__ . '/../includes/check_event_permission.php'; // contiene user_is_event_staff() y user_is_any_event_staff()
+require_once __DIR__ . '/../includes/inscripciones_helper.php';
 
-// 1. Verificar sesión y rol
-if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'administrador') {
+// Verificamos sesión
+if (!isset($_SESSION['correo']) || !isset($_SESSION['cedula'])) {
     header("Location: ../index.php");
     exit();
 }
 
-require_once __DIR__ . '/../includes/conexion.php';
-require_once __DIR__ . '/../includes/inscripciones_helper.php';
+$cedula = $_SESSION['cedula']; // debe establecerse en el login
+
 
 // 2. Validar método
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
