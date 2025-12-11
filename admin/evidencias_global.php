@@ -69,7 +69,7 @@ $estadosOpts = ['Pendiente','Aprobado','Rechazado'];
 
 /* Si no hay evento elegido, no consultamos */
 $rows = null; $total = 0; $page = 1; $perPage = 50;
-$notasFinalizadas = false; // <-- inicializar por defecto para evitar warnings
+// <-- inicializar por defecto para evitar warnings
 
 if ($eventId) {
   $where = ["i.ID_EVE_CUR = ".(int)$eventId];
@@ -97,11 +97,6 @@ if ($eventId) {
     $sqlWhere
   ";
 
-  // CONSULTA INDEPENDIENTE PARA SABER SI YA FINALIZÓ
-  $flagRes = $conn->query("SELECT NOTAS_FINALIZADAS FROM EVENTOS_CURSOS WHERE ID_EVE_CUR = $eventId");
-  if ($flagRes && $flagRes->num_rows > 0) {
-      $notasFinalizadas = (int)$flagRes->fetch_assoc()['NOTAS_FINALIZADAS'] === 1;
-  }
 
   // Paginación
   $perPage = 50;
@@ -455,32 +450,18 @@ if ($eventId) {
        <div class="col-md-2">
   <label class="form-label">Buscar</label>
   <input type="text"
-         class="form-control <?= $notasFinalizadas ? 'disabled-input' : '' ?>"
+         class="form-control"
          name="q"
          id="buscarInp"
          value="<?= htmlspecialchars($q) ?>"
          placeholder="Buscar "
-         <?= $notasFinalizadas ? 'disabled' : '' ?>>
+         >
 </div>
 
           <!-- no botón: se envía automático -->
         </form>
       </div>
     </div>
-
-        <!-- Botón "Finalizar" fuera de la tabla -->
-   <?php if ($eventId && $tipo === 'NUMERICO' && !$notasFinalizadas): ?>
-  <div class="text-center mb-3">
-    <button type="button" class="btn btn-primary" id="finalizeBtn" data-bs-toggle="modal" data-bs-target="#finalizeModal">
-      Finalizar edición
-    </button>
-  </div>
-<?php elseif ($notasFinalizadas): ?>
-  <div class="alert alert-info text-center mb-3">
-    Las notas numéricas ya fueron finalizadas. Solo vista lectura.
-  </div>
-<?php endif; ?>
-
 
     <?php if (!$eventId): ?>
       <div class="alert alert-warning">
@@ -544,11 +525,10 @@ if ($eventId) {
 
                       <?php if ($r['TIPO']==='NUMERICO'): ?>
                         <input type="number" step="0.01"
-       class="form-control <?= $notasFinalizadas ? 'disabled-input' : '' ?>"
+       class="form-control "
        name="valor_numerico"
        value="<?= $r['VALOR_NUMERICO'] !== null ? (float)$r['VALOR_NUMERICO'] : '' ?>"
-       placeholder="Ingrese nota"
-       <?= $notasFinalizadas ? 'disabled' : '' ?>>
+       placeholder="Ingrese nota">
 
                       <?php elseif ($r['TIPO']==='TEXTO_CORTO'): ?>
     <button type="button"
@@ -574,9 +554,7 @@ if ($eventId) {
   <?php endif; ?>
 </td>
 
-                  <td style="min-width:150px">
-                    <select name="estado" class="form-select <?= $notasFinalizadas ? 'disabled-input' : '' ?>"
-        <?= $notasFinalizadas ? 'disabled' : '' ?>>
+                
 
                       <?php foreach ($estadosOpts as $opt): ?>
                         <option <?= $r['ESTADO_VALIDACION']===$opt?'selected':'' ?>><?= $opt ?></option>
@@ -584,15 +562,15 @@ if ($eventId) {
                     </select>
                   </td>
                   <td style="min-width:220px">
-                 <textarea name="observacion" class="form-control <?= $notasFinalizadas ? 'disabled-input' : '' ?>"
+                 <textarea name="observacion" class="form-control"
           rows="1"
           placeholder="Observación..."
-          <?= $notasFinalizadas ? 'disabled' : '' ?>><?= htmlspecialchars($r['OBSERVACION'] ?? '') ?></textarea>
+          ><?= htmlspecialchars($r['OBSERVACION'] ?? '') ?></textarea>
 
         </td>
                   <td class="text-center">
                       <button type="submit" class="btn btn-uta btn-sm"
-        <?= $notasFinalizadas ? 'disabled' : '' ?>>
+        >
   <i class="fa fa-save"></i> Guardar
 </button>
 
@@ -655,25 +633,7 @@ if ($eventId) {
 </div>
 
 
-<div class="modal fade" id="finalizeModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <form method="POST" action="finalizar_notas.php" class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Finalizar notas</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        ¿Seguro que deseas finalizar todas las notas numéricas?  
-        Después de esto solo se podrá visualizar.
-      </div>
-      <div class="modal-footer">
-        <input type="hidden" name="id_evento" value="<?= (int)$eventId ?>">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Sí, finalizar</button>
-      </div>
-    </form>
-  </div>
-</div>
+
 
 
 
@@ -800,25 +760,6 @@ if (docModalEl && docFrame && docTitleEl && window.bootstrap) {
 const confirmSaveBtn = document.getElementById('confirmSaveBtn');
 
 
-/// Habilitar/Deshabilitar el botón "Finalizar" cuando se elija "NUMÉRICO"
-const tipoSel = document.getElementById('tipoSel');
-const finalizeBtn = document.getElementById('finalizeBtn');
-
-// Función para habilitar el botón "Finalizar"
-function toggleFinalizeBtn() {
-  if (tipoSel.value === 'NUMERICO') {
-    finalizeBtn.removeAttribute('disabled'); // Habilitar el botón
-  } else {
-    finalizeBtn.setAttribute('disabled', true); // Deshabilitar el botón
-  }
-}
-
-// Ejecutar la función al cargar la página y cuando cambie el tipo
-window.onload = toggleFinalizeBtn;
-tipoSel.addEventListener('change', toggleFinalizeBtn);
-
-// Función para finalizar la edición y bloquear todos los inputs
-
 
 
 // ===== Toast cuando se guardó =====
@@ -835,6 +776,21 @@ if (urlParams.get('success') === '1') {
   window.history.replaceState({}, '', newUrl);
 }
 
+// ===== Modal "Ver texto" =====
+const textoModalEl = document.getElementById('textoModal');
+const textoContenido = document.getElementById('textoContenido');
+
+if (textoModalEl && textoContenido && window.bootstrap) {
+  const textoModal = new bootstrap.Modal(textoModalEl);
+
+  document.querySelectorAll('.btn-ver-texto').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const txt = btn.dataset.texto || '';
+      textoContenido.textContent = txt;
+      textoModal.show();
+    });
+  });
+}
 
 
 
