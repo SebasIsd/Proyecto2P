@@ -286,12 +286,16 @@ $stmt->close();
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
         <a href="admin_inicio.php" ><i class="fas fa-home me-2"></i> Inicio</a>
-        <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
+        <a href="miseventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Requisitos de Inscripción</a>
+        <a href="requisitosAprobacion.php"><i class="fa fa-clipboard-check"></i> Requisitos de Aprobación</a>
         <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
         <a href="eventos_certificables.php" class="active"><i class="fa fa-certificate"></i> Generación de Certificados</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
+                      <br> <br> <br><br><br>
+        <hr>
+          <a href="https://sdsnt2003.atlassian.net/servicedesk/customer/portal/102" target="_blank"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>Encontraste un fallo?</a>
     </div>
 
   <div class="content">

@@ -37,17 +37,89 @@ $stmt->close();
 <?php /* 🔥 Aquí NO se tocó nada */ ?>
 :root { --primary:#a30000; --primary-hover:#d51313; --primary-light:#ffebeb; --gray-light:#f8f9fa; --gray:#6c757d; --dark:#333; --shadow:0 8px 25px rgba(0,0,0,0.12); --radius:16px; }
 body { font-family:'Segoe UI'; background:linear-gradient(135deg,#f5f5f5 0%,#e0e0e0 100%); color:var(--dark); min-height:100vh; }
-.sidebar { position:fixed; top:0; left:0; width:260px; height:100vh; background:var(--primary); color:white; padding:25px 0; box-shadow:5px 0 20px rgba(0,0,0,0.15); z-index:1000; }
-.sidebar .logo { text-align:center; margin-bottom:40px; padding:0 25px; }
-.sidebar .logo img { width:130px; border-radius:50%; border:5px solid rgba(255,255,255,0.25); }
-.sidebar a { color:rgba(255,255,255,0.9); padding:16px 28px; display:flex; align-items:center; text-decoration:none; font-weight:500; transition:all .3s; border-left:4px solid transparent; }
-.sidebar a:hover, .sidebar a.active { background:var(--primary-hover); border-left-color:white; padding-left:32px; }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 260px;
+      height: 100vh;
+      background: var(--primary);
+      color: white;
+      padding: 25px 0;
+      box-shadow: 5px 0 20px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+    }
+
+    .sidebar .logo {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 0 25px;
+    }
+
+    .sidebar .logo img {
+      width: 130px;
+      border-radius: 50%;
+      border: 5px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .sidebar a {
+      color: rgba(255, 255, 255, 0.9);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s;
+      border-left: 4px solid transparent;
+    }
+
+    .sidebar a i {
+      width: 24px;
+      margin-right: 14px;
+      font-size: 1.15rem;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: var(--primary-hover);
+      color: white;
+      border-left-color: white;
+      padding-left: 32px;
+    }
 .content { margin-left:260px; padding:32px; }
 .card { border-radius:var(--radius); box-shadow:var(--shadow); border:none; overflow:hidden; }
 .card-header { background:var(--primary); color:white; font-weight:600; }
 .carousel-img { height:300px; object-fit:cover; width:100%; border-bottom:4px solid rgba(0,0,0,0.03);}
 .btn-uta { background:linear-gradient(90deg,#a30000,#a02727); color:#fff; border:none; border-radius:8px;}
 .btn-uta:hover { background:var(--primary-hover);}
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 80px;
+      }
+
+      .sidebar .logo img {
+        width: 50px;
+      }
+
+      .sidebar a span {
+        display: none;
+      }
+
+      .sidebar a {
+        padding: 16px;
+        justify-content: center;
+      }
+
+      .sidebar a:hover {
+        padding-left: 16px;
+      }
+
+      .content {
+        margin-left: 80px;
+        padding: 20px;
+      }
+    }
 </style>
 </head>
 <body>
@@ -64,6 +136,9 @@ body { font-family:'Segoe UI'; background:linear-gradient(135deg,#f5f5f5 0%,#e0e
         <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
+                                                      <br> <br> <br><br><br>
+        <hr>
+          <a href="https://sdsnt2003.atlassian.net/servicedesk/customer/portal/102" target="_blank"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>Encontraste un fallo?</a>
     </div>
 
 <div class="content">

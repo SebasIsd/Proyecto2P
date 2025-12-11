@@ -296,6 +296,9 @@ if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre'] ?? '') !==
     <a href="perfil.php"><i class="fas fa-user me-2"></i>Perfil</a>
     <a href="configuraciones.php"><i class="fas fa-cog me-2"></i>Configuraciones</a>
     <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a>
+                          <br> <br> <br><br><br><br><br><br><br><br><br>  <br> <br>
+        <hr>
+          <a href="https://sdsnt2003.atlassian.net/servicedesk/customer/portal/102" target="_blank"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>Encontraste un fallo?</a>
 </div>
 
 

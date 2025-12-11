@@ -664,7 +664,16 @@ body {
     padding-top: 15px;
     font-size: 14px;
 }
-
+.uta-footer-bottom a {
+    color: var(--blanco);
+    text-decoration: none;
+    padding-left: 10px;
+    margin: 0 5px;
+}
+.uta-footer-bottom i {
+    color: yellow;
+    padding: 0 5px;
+}
 /* ================================
    RESPONSIVIDAD
 ================================ */
@@ -2523,6 +2532,8 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
     <div class="uta-footer-bottom">
                  <?= htmlspecialchars($footerData["derechos"]) ?>
+                 <br>
+                <a href="https://sdsnt2003.atlassian.net/servicedesk/customer/portal/102" target="_blank"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>Encontraste un fallo?</a>
     </div>
 </footer>
 
