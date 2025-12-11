@@ -355,7 +355,8 @@ for ($i = 5; $i >= 0; $i--) {
         </div>
         <a href="admin_inicio.php" class="active"><i class="fas fa-home me-2"></i> Inicio</a>
         <a href="miseventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
+        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Requisitos de Inscripción</a>
+        <a href="requisitosAprobacion.php"><i class="fa fa-clipboard-check"></i> Requisitos de Aprobación</a>
         <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
         <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
@@ -364,7 +365,7 @@ for ($i = 5; $i >= 0; $i--) {
 
     <!-- Contenido Principal -->
     <div class="content">
-        <h1 class="mb-4">Dashboard Administrador</h1>
+        <h1 class="mb-4">Dashboard Responsable</h1>
         <p>Bienvenido, <?= ucfirst($_SESSION['rol_nombre']) ?> (<?= $_SESSION['correo'] ?>)</p>
 
         <!-- Tarjetas de Estadísticas -->

@@ -44,7 +44,7 @@ $q       = trim($_GET['q'] ?? ''); // búsqueda por nombre, cédula o requisito
 // Si el usuario escogió un evento, validar que realmente le pertenece
 if ($eventId !== null && !in_array($eventId, $misEventos, true)) {
     // Alternativa: podrías redirigir al primer evento, o mostrar mensaje. Aquí denegamos.
-    header("Location: evidencias_global.php?error=no_permiso_evento");
+    header("Location: requisitosAprobacion.php?error=no_permiso_evento");
     exit();
 }
 
@@ -73,7 +73,7 @@ $notasFinalizadas = false; // <-- inicializar por defecto para evitar warnings
 
 if ($eventId) {
   $where = ["i.ID_EVE_CUR = ".(int)$eventId];
-  $where[] = "r.TIPO_REQUISITO = 'INSCRIPCION'";
+  $where[] = "r.TIPO_REQUISITO = 'APROBACION'";
   if ($tipo)    $where[] = "r.TIPO = '".$conn->real_escape_string($tipo)."'";
   if ($estado)  $where[] = "ev.ESTADO_VALIDACION = '".$conn->real_escape_string($estado)."'";
   if ($q !== '') {
@@ -397,7 +397,7 @@ if ($eventId) {
 </head>
 <body>
   <!-- Sidebar -->
-     <div class="sidebar">
+    <div class="sidebar">
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>

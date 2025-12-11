@@ -52,16 +52,19 @@ body { font-family:'Segoe UI'; background:linear-gradient(135deg,#f5f5f5 0%,#e0e
 </head>
 <body>
 
-<div class="sidebar">
-    <div class="logo"><img src="../images/favico.png"></div>
-    <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
-    <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-    <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
-    <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
-    <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Certificados</a>
-    <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-    <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
-</div>
+   <div class="sidebar">
+        <div class="logo">
+            <img src="../images/favico.png" alt="Logo UTA">
+        </div>
+        <a href="admin_inicio.php" class="active"><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="miseventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Requisitos de Inscripción</a>
+        <a href="requisitosAprobacion.php"><i class="fa fa-clipboard-check"></i> Requisitos de Aprobación</a>
+        <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
+        <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
+        <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
+        <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
+    </div>
 
 <div class="content">
 <h3 class="mb-4">Mis eventos</h3>
