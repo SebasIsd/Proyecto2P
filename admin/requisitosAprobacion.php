@@ -401,10 +401,10 @@ if ($eventId) {
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="admin_inicio.php" class="active"><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="admin_inicio.php" ><i class="fas fa-home me-2"></i> Inicio</a>
         <a href="miseventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
         <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Requisitos de Inscripción</a>
-        <a href="requisitosAprobacion.php"><i class="fa fa-clipboard-check"></i> Requisitos de Aprobación</a>
+        <a href="requisitosAprobacion.php" class="active"><i class="fa fa-clipboard-check"></i> Requisitos de Aprobación</a>
         <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
         <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
@@ -536,7 +536,7 @@ if ($eventId) {
                     <?php endif; ?>
                   </td>
                   <td class="col-valor" style="min-width:180px">
-                    <form class="form-evidencia" action="evidencia_update.php" method="post">
+                    <form class="form-evidencia" action="evidencia_aprobacion_update.php" method="post">
                       <input type="hidden" name="id_evento" value="<?= (int)$r['ID_EVE_CUR'] ?>">
                       <input type="hidden" name="id_ins" value="<?= (int)$r['ID_INS'] ?>">
                       <input type="hidden" name="id_req" value="<?= (int)$r['ID_REQ'] ?>">

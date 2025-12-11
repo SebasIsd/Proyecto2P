@@ -375,8 +375,8 @@ $isEditMode = true; // <--- agregado para que tu botón no dé error
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="admin_inicio.php" class="active"><i class="fas fa-home me-2"></i> Inicio</a>
-        <a href="miseventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="admin_inicio.php" ><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="miseventos.php" class="active"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
         <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Requisitos de Inscripción</a>
         <a href="requisitosAprobacion.php"><i class="fa fa-clipboard-check"></i> Requisitos de Aprobación</a>
         <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
