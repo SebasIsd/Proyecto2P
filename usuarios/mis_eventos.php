@@ -671,10 +671,12 @@ $eventos = $conn->query("
             </div>
         </div>
         <?php if (empty($eventos)): ?>
-            <div class="text-center py-5">
-                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                <p class="text-muted">No estás inscrito en ningún evento.</p>
-            </div>
+            <div class="text-center py-5 bg-white rounded shadow">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No tienes eventos inscritos</h4>
+                    <p class="text-muted">Busca eventos disponibles y regístrate.</p>
+                    <a href="buscar_eventos.php" class="btn btn-primary">Buscar Eventos</a>
+                </div>
         <?php else: ?>
             <?php foreach ($eventos as $e): ?>
                 <?php 
@@ -760,22 +762,56 @@ $eventos = $conn->query("
                                                 ($r['TIPO'] == 'NUMERICO' ? 'calculator' : 'file-alt')) 
                                             ?>"></i>
                                             <?= htmlspecialchars($r['NOM_REQ']) ?>
-                                            <span class="requisito-type"><?= $r['TIPO'] ?></span>
+                                            <!--<span class="requisito-type"><?= $r['TIPO'] ?></span>-->
                                         </li>
                                     <?php endforeach; ?>
                                 </ul>
                             <?php endif; ?>
                         </div>
+                            <?php
+                            // Verificar si todos los requisitos están aprobados
+                            $req_aprobados = true;
+                            $evidencias = $conn->query("SELECT * FROM EVIDENCIAS WHERE ID_INS = {$e['ID_INS']}")->fetch_all(MYSQLI_ASSOC);
+                            foreach ($evidencias as $ev) {
+                                if ($ev['ESTADO_VALIDACION'] !== 'Aprobado') {
+                                    $req_aprobados = false;
+                                    break;
+                                }
+                            }
+
+                        // Si es pagado, requisitos aprobados, y pago pendiente
+                        if ($e['MOD_EVE_CUR'] == 'Pagado' && $req_aprobados && $e['EST_PAG_INS'] == 'Pendiente' && empty($e['COMPROBANTE_PAGO'])): ?>
+                            <div class="alert alert-success mt-3">
+                                <i class="fas fa-check"></i> Tus requisitos han sido aprobados. 
+                                Ahora sube el comprobante de pago para completar tu inscripción.
+                            </div>
+                            
+                            <form method="POST" enctype="multipart/form-data" action="procesar_pago.php">
+                                <input type="hidden" name="id_ins" value="<?= $e['ID_INS'] ?>">
+                                <div class="mb-3">
+                                    <label class="form-label text-danger">Comprobante de Pago * (OBLIGATORIO)</label>
+                                    <input type="file" class="form-control" name="comprobante_pago" required accept=".pdf,.jpg,.jpeg,.png">
+                                    <small class="text-muted">Máx. 5MB. Formatos: PDF, JPG, PNG</small>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-upload"></i> Subir Comprobante
+                                </button>
+                            </form>
+                        <?php elseif ($e['MOD_EVE_CUR'] == 'Pagado' && $e['EST_PAG_INS'] == 'Pendiente' && !empty($e['COMPROBANTE_PAGO'])): ?>
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-clock"></i> Tu comprobante de pago ha sido subido y está pendiente de revisión por el administrador.
+                            </div>
+                        <?php endif; ?>
 
                         <!-- Botón Ver Documentos -->
                         <?php if ($e['COMPROBANTE_PAGO'] || !empty($evidencias)): ?>
                             <div class="mt-3">
-                                <button class="btn-action btn-outline-custom" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#documentosModal"
-                                        onclick="cargarDocumentos(<?= $e['ID_EVE_CUR'] ?>, '<?= addslashes($e['TIT_EVE_CUR']) ?>', '<?= $e['COMPROBANTE_PAGO'] ?>', <?= htmlspecialchars(json_encode($evidencias), ENT_QUOTES, 'UTF-8') ?>)">
-                                    <i class="fas fa-folder-open"></i> Ver Documentos Subidos
-                                </button>
+                            <button class="btn-action btn-outline-custom" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#documentosModal"
+                                    onclick="cargarDocumentos(<?= $e['ID_EVE_CUR'] ?>, '<?= addslashes($e['TIT_EVE_CUR']) ?>', '<?= $e['COMPROBANTE_PAGO'] ?>', <?= htmlspecialchars(json_encode($evidencias), ENT_QUOTES, 'UTF-8') ?>)">
+                                <i class="fas fa-folder-open"></i> Ver Documentos Subidos
+                            </button>
                             </div>
                         <?php endif; ?>
 
@@ -889,7 +925,7 @@ $eventos = $conn->query("
             .catch(() => alert('Error de conexión'));
         }
 
-        function cargarDocumentos(id_evento, titulo, comprobante, evidencias) {
+function cargarDocumentos(id_evento, titulo, comprobante, evidencias) {
             console.log("Comprobante:", comprobante);
             console.log("Evidencias:", evidencias);
             

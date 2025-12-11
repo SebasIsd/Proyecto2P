@@ -78,7 +78,42 @@ try {
         $campo = 'req_' . $id_req;
         
         switch ($requisito['TIPO']) {
-            case 'DOCUMENTO':
+        case 'DOCUMENTO':
+            $campo = 'req_' . $id_req;
+
+            if (isset($_POST[$campo . '_from_perfil'])) {
+                // === USAR DOCUMENTO SUBIDO EN EL PERFIL ===
+                $stmt_doc = $conn->prepare("SELECT * FROM usuarios_documentos WHERE CED_USU = ? AND ID_REQ = ?");
+                $stmt_doc->bind_param("si", $cedula, $id_req);
+                $stmt_doc->execute();
+                $doc_perfil = $stmt_doc->get_result()->fetch_assoc();
+
+                if (!$doc_perfil) {
+                    throw new Exception("Documento de perfil no encontrado para el requisito: {$requisito['NOM_REQ']}");
+                }
+
+                // Copiar el archivo del perfil a la carpeta de evidencias
+                $uploadDir = '../uploads/requisitos/';
+                if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+                $ext = pathinfo($doc_perfil['NOMBRE_ARCHIVO'], PATHINFO_EXTENSION);
+                $nombre = time() . "_req_{$id_req}_" . $cedula . "." . $ext;
+                $ruta = $uploadDir . $nombre;
+
+                if (!copy($doc_perfil['URL_ARCHIVO'], $ruta)) {
+                    throw new Exception("Error al copiar el documento del perfil: {$requisito['NOM_REQ']}");
+                }
+
+                // Insertar evidencia copiada
+                $stmt = $conn->prepare("
+                    INSERT INTO EVIDENCIAS (ID_INS, ID_REQ, NOMBRE_ARCHIVO, URL_ARCHIVO, TIPO_MIME, TAMANIO_BYTES, ESTADO_VALIDACION, REGISTRADO_POR)
+                    VALUES (?, ?, ?, ?, ?, ?, 'Pendiente', ?)
+                ");
+                $stmt->bind_param("iississ", $id_ins, $id_req, $nombre, $ruta, $doc_perfil['TIPO_MIME'], $doc_perfil['TAMANIO_BYTES'], $cedula);
+                $stmt->execute();
+
+            } else {
+                // === SUBIDA MANUAL (código original cuando no está en perfil) ===
                 if (isset($_FILES[$campo]) && $_FILES[$campo]['error'] == 0) {
                     $file = $_FILES[$campo];
                     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -110,7 +145,8 @@ try {
                 } else {
                     throw new Exception("El requisito {$requisito['NOM_REQ']} es obligatorio");
                 }
-                break;
+            }
+            break;
 
             case 'TEXTO_CORTO':
             case 'TEXTO_LARGO':
@@ -141,34 +177,19 @@ try {
 
     // Manejar pago si es 'Pagado'
     if ($evento['MOD_EVE_CUR'] == 'Pagado') {
-        if (!isset($_FILES['comprobante_pago']) || $_FILES['comprobante_pago']['error'] != 0) {
-            throw new Exception("El comprobante de pago es obligatorio para eventos pagados");
-        }
-
-        $file = $_FILES['comprobante_pago'];
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'])) {
-            throw new Exception("Formato de comprobante no permitido");
-        }
-        if ($file['size'] > 5 * 1024 * 1024) {
-            throw new Exception("Comprobante demasiado grande");
-        }
-
-        $uploadDir = '../uploads/comprobantes/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-        $nombre = time() . "_pago_" . $cedula . ".$ext";
-        $ruta = $uploadDir . $nombre;
-
-        if (!move_uploaded_file($file['tmp_name'], $ruta)) {
-            throw new Exception("Error al subir comprobante");
-        }
-        
+        // Insertar pago PENDIENTE sin archivo (se subirá después)
         $stmt = $conn->prepare("
             INSERT INTO PAGOS (ID_INS, FEC_PAG, MON_PAG, MET_PAG, URL_COMPROBANTE, ESTADO_VALIDACION)
-            VALUES (?, NOW(), ?, 'Transferencia', ?, 'Pendiente')
+            VALUES (?, NOW(), ?, 'Transferencia', NULL, 'Pendiente')
         ");
-        $stmt->bind_param("ids", $id_ins, $evento['COS_EVE_CUR'], $nombre);
+        $stmt->bind_param("id", $id_ins, $evento['COS_EVE_CUR']);
         $stmt->execute();
+        
+        // Actualizar inscripción con pago pendiente
+        $conn->query("UPDATE INSCRIPCIONES SET EST_PAG_INS = 'Pendiente' WHERE ID_INS = $id_ins");
+    } else {
+        // Para gratis, no pago
+        $conn->query("UPDATE INSCRIPCIONES SET EST_PAG_INS = 'No Aplica' WHERE ID_INS = $id_ins");
     }
 
     $conn->commit();

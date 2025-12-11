@@ -357,7 +357,7 @@ $requisitos = $conn->query("
                     <h5>Requisitos para inscribirse:</h5>
                     <ul>
                         <?php foreach ($requisitos as $r): ?>
-                            <li><?= htmlspecialchars($r['NOM_REQ']) ?> (<?= $r['TIPO'] ?>)</li>
+                            <li><?= htmlspecialchars($r['NOM_REQ']) ?> <!--(<?= $r['TIPO'] ?>)--></li>
                         <?php endforeach; ?>
                     </ul>
                 <?php endif; ?>
