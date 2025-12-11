@@ -29,7 +29,7 @@ while ($fila = $result->fetch_assoc()) {
         "imagen"     => $fila["IMG_EVE_CUR"],
 
         // Carreras
-        "id_carrera" => $fila["ID_CARRERA"] ?? 0
+       "id_carrera" => empty($fila["ID_CARRERA"]) ? 0 : $fila["ID_CARRERA"]
     ];
 }
 

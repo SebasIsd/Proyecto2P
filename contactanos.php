@@ -6,6 +6,8 @@
 $sliderData = include __DIR__ . "/home/slider.php";
 $misionVision = include __DIR__ . '/home/mision_vision.php';
 $footerData = include __DIR__ . '/home/footer.php';
+$nosData = include __DIR__ . "/home/contactanos.php";
+
 
 // Validación segura de datos
 if (!is_array($sliderData)) {
@@ -63,646 +65,37 @@ if (!is_array($footerData)) {
         </div>
 
         <nav class="menu">
-            <a href="index.php">Inicio</a>
-         <a href="#eventosSection" class="scroll-link">Eventos</a>
+    <a href="index.php">Inicio</a>
+    <a href="#eventosSection" class="scroll-link" data-target="eventosSection">Eventos</a>
+    <a href="#comentariosSection" class="scroll-link" data-target="comentariosSection">Comentarios</a>
+    <a href="contactanos.php">Contactanos</a>
+</nav>
 
-               <a href="#comentariosSection" class="scroll-link">Comentarios</a>
-
-            <a href="contactanos.php">Contactanos</a>
-        </nav>
-   <script>
+<script>
 document.querySelectorAll('.scroll-link').forEach(link => {
     link.addEventListener('click', function(e) {
-        e.preventDefault();
+        
+        const targetId = this.dataset.target; // eventosSection o comentariosSection
 
-        const targetId = this.getAttribute("href").replace("#", "");
+        // SI NO estamos en index.php → redirigir al index con hash
+        if (!location.pathname.includes("index.php")) {
+            location.href = "index.php#" + targetId;
+            return;
+        }
+
+        // SI YA estamos en index.php → scroll suave
+        e.preventDefault();
         const target = document.getElementById(targetId);
 
         if (target) {
-            // Scroll suave
             target.scrollIntoView({
                 behavior: "smooth",
                 block: "start"
             });
-
-            // Quitar clase si ya existe
-            target.classList.remove("focus-section");
-
-            // Activar foco después del scroll
-            setTimeout(() => {
-                target.classList.add("focus-section");
-
-                // Quitar foco después de 1.5s
-                setTimeout(() => {
-                    target.classList.remove("focus-section");
-                }, 1500);
-            }, 400);
         }
     });
 });
 </script>
-<style>
-    /* ================================
-   VARIABLES GLOBALES PARA COLORES
-================================ */
-:root {
-    --rojo-oscuro: #490505ff; /* Rojo oscuro base */
-    --rojo-claro-hover: #DC143C; /* Rojo más claro solo para hovers en botones */
-    --blanco: #ffffff; /* Blanco puro */
-    --gris-claro: #f5f5f5; /* Fondo suave */
-    --gris-medio: #cccccc; /* Bordes y texto secundario */
-    --gris-oscuro: #333333; /* Texto principal */
-    --sombra: rgba(0, 0, 0, 0.1); /* Sombras suaves */
-}
-
-/* ================================
-   RESET Y BASE GENERAL
-================================ */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Poppins', sans-serif; /* Fuente moderna y legible */
-    line-height: 1.6;
-    color: var(--gris-oscuro);
-    background-color: var(--gris-claro);
-    overflow-x: hidden; /* Evitar scroll horizontal */
-}
-
-/* ================================
-   NAVBAR
-================================ */
-.navbar {
-    background-color: var(--rojo-oscuro);
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 1000;
-    box-shadow: 0 2px 10px var(--sombra);
-}
-
-.navbar .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.navbar .logo h2 {
-    color: var(--blanco);
-    font-size: 24px;
-    font-weight: 700;
-}
-
-.navbar .logo p {
-    color: var(--blanco);
-    font-size: 14px;
-    opacity: 0.9;
-}
-
-.navbar .menu {
-    display: flex;
-    gap: 20px;
-}
-
-.navbar .menu a {
-    color: var(--blanco);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.navbar .menu a:hover {
-    color: var(--gris-claro);
-}
-
-.navbar .order_online {
-    background-color: var(--blanco);
-    color: var(--rojo-oscuro);
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
-}
-
-.navbar .order_online:hover {
-    background-color: var(--gris-claro);
-}
-
-/* ================================
-   SLIDER PRINCIPAL
-================================ */
-.slider {
-    position: relative;
-    height: 420px;
-    overflow: hidden;
-    margin-top: 80px; /* Espacio para navbar fija */
-}
-
-.slider img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.45);
-}
-
-.slider-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--blanco);
-}
-
-.slider .detail-box {
-    text-align: center;
-    max-width: 600px;
-    padding: 20px;
-}
-
-.slider .detail-box h1 {
-    font-size: 42px;
-    font-weight: 800;
-    margin-bottom: 15px;
-    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
-}
-
-.slider .detail-box p {
-    font-size: 18px;
-    margin-bottom: 20px;
-    opacity: 0.9;
-}
-
-/* ================================
-   SECCIÓN DE EVENTOS (RECOMENDADOS Y FILTROS)
-================================ */
-#seccionRecomendados {
-    padding: 50px 20px;
-    background-color: var(--blanco);
-    margin-bottom: 40px;
-}
-
-.titulo-seccion {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.titulo-eventos {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--rojo-oscuro);
-    text-align: center;
-    flex: 1;
-}
-
-.btn-ver-todo {
-    background-color: var(--rojo-oscuro);
-    color: var(--blanco);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.btn-ver-todo:hover {
-    background-color: var(--rojo-claro-hover);
-}
-
-.slider-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.slider-favoritos {
-    display: flex;
-    gap: 25px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    padding: 10px;
-    width: 100%;
-    scrollbar-width: none;
-}
-
-.slider-favoritos::-webkit-scrollbar {
-    display: none;
-}
-
-.arrow {
-    background-color: var(--rojo-oscuro);
-    border: none;
-    color: var(--blanco);
-    font-size: 28px;
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.arrow:hover {
-    background-color: var(--rojo-claro-hover);
-}
-
-.tarjeta-evento {
-    min-width: 300px;
-    background-color: var(--blanco);
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 12px var(--sombra);
-    transition: transform 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.tarjeta-evento:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 18px var(--sombra);
-}
-
-.tarjeta-evento img {
-    width: 100%;
-    height: 170px;
-    object-fit: cover;
-    border-radius: 12px;
-}
-
-.tarjeta-evento .titulo-evento {
-    font-size: 19px;
-    font-weight: 700;
-    text-align: center;
-    color: var(--gris-oscuro);
-}
-
-.tarjeta-evento .descripcion-evento {
-    font-size: 14px;
-    text-align: center;
-    color: var(--gris-medio);
-}
-
-.tarjeta-evento .fecha-evento {
-    text-align: center;
-    font-size: 14px;
-    color: var(--gris-oscuro);
-}
-
-.btn-inscribirse {
-    background-color: var(--rojo-oscuro);
-    border-color: var(--rojo-oscuro);
-    color: var(--blanco);
-    font-weight: 600;
-    transition: all 0.3s ease;
-    padding: 10px 20px;
-    border-radius: 8px;
-}
-
-.btn-inscribirse:hover {
-    background-color: var(--rojo-claro-hover);
-    border-color: var(--rojo-claro-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px var(--sombra);
-}
-
-/* ================================
-   MENÚ DE FILTROS
-================================ */
-#menuFiltros {
-    padding: 50px 20px;
-    background-color: var(--gris-claro);
-}
-
-#menuFiltrosContainer {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.btnFiltro {
-    background-color: var(--rojo-oscuro);
-    border: none;
-    padding: 10px 18px;
-    color: var(--blanco);
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 15px;
-    transition: background-color 0.3s ease;
-}
-
-.btnFiltro:hover,
-.btnFiltro.activo {
-    background-color: var(--rojo-claro-hover);
-}
-
-#contenedorTarjetas {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 25px;
-    padding: 20px 0;
-}
-
-/* ================================
-   MISIÓN Y VISIÓN
-================================ */
-.mision-vision {
-    display: flex;
-    justify-content: space-around;
-    padding: 50px 20px;
-    background-color: var(--blanco);
-    gap: 40px;
-    margin-bottom: 40px;
-}
-
-.mv-box {
-    flex: 1;
-    padding: 30px;
-    background-color: var(--gris-claro);
-    border-radius: 15px;
-    box-shadow: 0 4px 12px var(--sombra);
-    text-align: center;
-}
-
-.mv-box h2 {
-    color: var(--rojo-oscuro);
-    font-size: 24px;
-    margin-bottom: 15px;
-}
-
-.mv-box p {
-    color: var(--gris-oscuro);
-    line-height: 1.6;
-}
-
-/* ================================
-   AUTORIDADES
-================================ */
-.autoridades {
-    padding: 50px 20px;
-    background-color: var(--gris-claro);
-    text-align: center;
-}
-
-.titulo-autoridades {
-    font-size: 32px;
-    font-weight: 800;
-    color: var(--rojo-oscuro);
-    margin-bottom: 30px;
-    position: relative;
-}
-
-.titulo-autoridades::after {
-    content: "";
-    display: block;
-    width: 90px;
-    height: 4px;
-    background-color: var(--rojo-oscuro);
-    margin: 12px auto 0;
-    border-radius: 2px;
-}
-
-.slider-autoridades {
-    display: flex;
-    gap: 25px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    padding: 15px;
-    scrollbar-width: none;
-}
-
-.slider-autoridades::-webkit-scrollbar {
-    display: none;
-}
-
-.autoridad-card {
-    min-width: 220px;
-    background-color: var(--blanco);
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 15px var(--sombra);
-    transition: transform 0.3s ease;
-    text-align: center;
-}
-
-.autoridad-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 25px var(--sombra);
-}
-
-.autoridad-card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 12px;
-    margin-bottom: 15px;
-}
-
-.autoridad-card h3 {
-    font-size: 18px;
-    color: var(--gris-oscuro);
-    margin-bottom: 10px;
-}
-
-.autoridad-card p {
-    font-size: 15px;
-    color: var(--gris-medio);
-    margin-bottom: 15px;
-}
-
-.btn-detalles {
-    background-color: var(--rojo-oscuro);
-    color: var(--blanco);
-    border: none;
-    padding: 10px 16px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease;
-}
-
-.btn-detalles:hover {
-    background-color: var(--rojo-claro-hover);
-}
-
-/* ================================
-   COMENTARIOS
-================================ */
-.comentarios-section {
-    padding: 50px 20px;
-    background-color: var(--blanco);
-    text-align: center;
-}
-
-.comentarios-section h2 {
-    font-size: 28px;
-    color: var(--rojo-oscuro);
-    margin-bottom: 30px;
-}
-
-.comentarios-lista {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 25px;
-    margin-bottom: 30px;
-}
-
-.comentario {
-    background-color: var(--gris-claro);
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 12px var(--sombra);
-    max-width: 300px;
-    text-align: left;
-}
-
-.comentario h3 {
-    color: var(--rojo-oscuro);
-    margin-bottom: 10px;
-}
-
-.comentario p {
-    color: var(--gris-oscuro);
-    margin-bottom: 10px;
-}
-
-.comentario small {
-    color: var(--gris-medio);
-}
-
-.comments-btn {
-    background-color: var(--rojo-oscuro);
-    color: var(--blanco);
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-}
-
-.comments-btn:hover {
-    background-color: var(--rojo-claro-hover);
-}
-
-/* ================================
-   FOOTER
-================================ */
-.uta-footer {
-    background-color: var(--rojo-oscuro);
-    color: var(--blanco);
-    padding: 40px 20px 20px;
-    text-align: center;
-}
-
-.uta-footer-container {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 30px;
-    margin-bottom: 20px;
-}
-
-.footer-col {
-    flex: 1;
-    min-width: 200px;
-}
-
-.footer-col h3 {
-    font-size: 18px;
-    margin-bottom: 15px;
-}
-
-.footer-col p,
-.footer-col li {
-    margin-bottom: 8px;
-}
-
-.social-icons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 15px;
-}
-
-.social-icons img {
-    width: 30px;
-    height: 30px;
-    transition: transform 0.3s ease;
-}
-
-.social-icons img:hover {
-    transform: scale(1.1);
-}
-
-.uta-footer-bottom {
-    border-top: 1px solid var(--gris-medio);
-    padding-top: 15px;
-    font-size: 14px;
-}
-
-/* ================================
-   RESPONSIVIDAD
-================================ */
-@media (max-width: 768px) {
-    .navbar .menu {
-        display: none; /* Podrías agregar un menú móvil */
-    }
-
-    .mision-vision {
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .slider-container {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .arrow {
-        width: 40px;
-        height: 40px;
-        font-size: 20px;
-    }
-
-    .tarjeta-evento {
-        min-width: 250px;
-    }
-
-    .autoridad-card {
-        min-width: 180px;
-    }
-
-    .comentarios-lista {
-        flex-direction: column;
-        align-items: center;
-    }
-}
-
-</style>
 
 <!-- Botón login en el navbar -->
 <a href="#" class="order_online" data-bs-toggle="modal" data-bs-target="#loginModal" style="color:black">login</a>
@@ -1045,100 +438,902 @@ if (loginModalEl) {
 
 
 
-    <!-- BIENVENIDA -->
-  <h3  id="eventosSection" class="titulo-eventos">Eventos</h3>
+    <!-- nosotros -->
+ <section class="nosotros-section">
+    <div class="nosotros-contenido">
+        
+        <!-- Imagen -->
+        <div class="nosotros-imagen">
+            <img src="images/nosotros/<?= htmlspecialchars($nosData["ruta"]) ?>" alt="Nosotros - UTA">
+        </div>
 
-<div id="seccionRecomendados">
+        <!-- Texto -->
+        <div class="nosotros-texto">
+            <h2>Sobre Nosotros</h2>
+          <p><?= nl2br(htmlspecialchars($nosData["des_noso"])) ?></p>
+            <a href="<?= htmlspecialchars($nosData["link_noso"]) ?>" class="btn-nosotros">Conocer más</a>
+        </div>
 
-   <div class="titulo-seccion">
-    <h3 class="titulo-eventos">⭐ Recomendados</h3>
-    <button onclick="fintodo()" class="btn-ver-todo">Ver todo</button>
-</div>
-    <div class="slider-container">
-        <button class="arrow left" onclick="moverSlider(-1)">❮</button>
-        <div class="slider-favoritos" id="sliderFavoritos"></div>
-        <button class="arrow right" onclick="moverSlider(1)">❯</button>
     </div>
-
-</div>
-
+</section>
 <style>
-/* Contenedor del título + botón */
+    /* ================================
+   VARIABLES GLOBALES PARA COLORES
+================================ */
+:root {
+    --rojo-oscuro:  #490505ff;; /* Rojo oscuro base */
+    --rojo-claro-hover: #DC143C; /* Rojo más claro solo para hovers en botones */
+    --blanco: #ffffff; /* Blanco puro */
+    --gris-claro: #f5f5f5; /* Fondo suave */
+    --gris-medio: #cccccc; /* Bordes y texto secundario */
+    --gris-oscuro: #333333; /* Texto principal */
+    --sombra: rgba(0, 0, 0, 0.1); /* Sombras suaves */
+}
+
+/* ================================
+   RESET Y BASE GENERAL
+================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif; /* Fuente moderna y legible */
+    line-height: 1.6;
+    color: var(--gris-oscuro);
+    background-color: var(--gris-claro);
+    overflow-x: hidden; /* Evitar scroll horizontal */
+}
+
+/* ================================
+   NAVBAR
+================================ */
+.navbar {
+    background-color: var(--rojo-oscuro);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 10px var(--sombra);
+}
+
+.navbar .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.navbar .logo h2 {
+    color: var(--blanco);
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.navbar .logo p {
+    color: var(--blanco);
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.navbar .menu {
+    display: flex;
+    gap: 20px;
+}
+
+.navbar .menu a {
+    color: var(--blanco);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.navbar .menu a:hover {
+    color: var(--gris-claro);
+}
+
+.navbar .order_online {
+    background-color: var(--blanco);
+    color: var(--rojo-oscuro);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.navbar .order_online:hover {
+    background-color: var(--gris-claro);
+}
+
+/* ================================
+   SLIDER PRINCIPAL
+================================ */
+.slider {
+    position: relative;
+    height: 420px;
+    overflow: hidden;
+    margin-top: 80px; /* Espacio para navbar fija */
+}
+
+.slider img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.45);
+}
+
+.slider-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blanco);
+}
+
+.slider .detail-box {
+    text-align: center;
+    max-width: 600px;
+    padding: 20px;
+}
+
+.slider .detail-box h1 {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 15px;
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.slider .detail-box p {
+    font-size: 18px;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+/* ================================
+   SECCIÓN NOSOTROS
+================================ */
+.nosotros-section {
+    width: 100%;
+    padding: 60px 10%;
+    background: var(--gris-claro);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nosotros-contenido {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    max-width: 1200px;
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+.nosotros-imagen img {
+    width: 450px;
+    height: auto;
+    border-radius: 15px;
+    object-fit: cover;
+    box-shadow: 0 5px 20px var(--sombra);
+}
+
+.nosotros-texto {
+    flex: 1;
+}
+
+.nosotros-texto h2 {
+    font-size: 2.3rem;
+    margin-bottom: 15px;
+    color: var(--rojo-oscuro);
+    font-weight: 700;
+    border-left: 5px solid var(--rojo-oscuro);
+    padding-left: 12px;
+}
+
+.nosotros-texto p {
+    font-size: 1.1rem;
+    color: var(--gris-oscuro);
+    line-height: 1.7;
+    margin-bottom: 15px;
+}
+
+.btn-nosotros {
+    display: inline-block;
+    padding: 10px 20px;
+    background: var(--rojo-oscuro);
+    color: var(--blanco);
+    border-radius: 8px;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-nosotros:hover {
+    background: var(--rojo-claro-hover);
+    transform: translateY(-3px);
+}
+
+/* ================================
+   SECCIÓN UBICACIÓN
+================================ */
+.ubicacion-section {
+    padding: 60px 20px;
+    background: var(--blanco);
+    text-align: center;
+}
+
+.ubicacion-content h2 {
+    font-size: 32px;
+    margin-bottom: 10px;
+    color: var(--rojo-oscuro);
+}
+
+.ubicacion-content p {
+    font-size: 18px;
+    color: var(--gris-medio);
+    margin-bottom: 30px;
+}
+
+.ubicacion-mapa {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px var(--sombra);
+}
+
+.ubicacion-mapa iframe {
+    width: 100%;
+    height: 450px;
+    border: 0;
+}
+
+/* ================================
+   SECCIÓN DE EVENTOS (RECOMENDADOS Y FILTROS)
+================================ */
+#seccionRecomendados {
+    padding: 50px 20px;
+    background-color: var(--blanco);
+    margin-bottom: 40px;
+}
+
 .titulo-seccion {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 25px 0 15px;
-    padding: 0 25px; /* AUMENTADO para separar del borde */
+    margin-bottom: 30px;
 }
 
-/* Título centrado y elegante */
 .titulo-eventos {
     font-size: 28px;
     font-weight: 700;
-    flex: 1;
+    color: var(--rojo-oscuro);
     text-align: center;
-    color: #2c2c2c;
-    font-family: "Poppins", sans-serif;
+    flex: 1;
 }
 
-/* Botón rojo vino */
 .btn-ver-todo {
-    background-color: #7b0c21; /* rojo vino elegante */
-    color: white;
+    background-color: var(--rojo-oscuro);
+    color: var(--blanco);
     border: none;
-    padding: 7px 18px;
+    padding: 10px 20px;
     border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: 0.3s ease;
-    margin-rigth: 40cm; /* MÁS SEPARACIÓN A LA IZQUIERDA */
+    transition: background-color 0.3s ease;
 }
 
-/* Hover */
 .btn-ver-todo:hover {
-    background-color: #5d0819;
-    transform: scale(1.05);
+    background-color: var(--rojo-claro-hover);
+}
+
+.slider-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.slider-favoritos {
+    display: flex;
+    gap: 25px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 10px;
+    width: 100%;
+    scrollbar-width: none;
+}
+
+.slider-favoritos::-webkit-scrollbar {
+    display: none;
+}
+
+.arrow {
+    background-color: var(--rojo-oscuro);
+    border: none;
+    color: var(--blanco);
+    font-size: 28px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.arrow:hover {
+    background-color: var(--rojo-claro-hover);
+}
+
+.tarjeta-evento {
+    min-width: 300px;
+    background-color: var(--blanco);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 12px var(--sombra);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.tarjeta-evento:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px var(--sombra);
+}
+
+.tarjeta-evento img {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.tarjeta-evento .titulo-evento {
+    font-size: 19px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--gris-oscuro);
+}
+
+.tarjeta-evento .descripcion-evento {
+    font-size: 14px;
+    text-align: center;
+    color: var(--gris-medio);
+}
+
+.tarjeta-evento .fecha-evento {
+    text-align: center;
+    font-size: 14px;
+    color: var(--gris-oscuro);
+}
+
+.btn-inscribirse {
+    background-color: var(--rojo-oscuro);
+    border-color: var(--rojo-oscuro);
+    color: var(--blanco);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 10px 20px;
+    border-radius: 8px;
+}
+
+.btn-inscribirse:hover {
+    background-color: var(--rojo-claro-hover);
+    border-color: var(--rojo-claro-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--sombra);
+}
+
+/* ================================
+   MENÚ DE FILTROS
+================================ */
+#menuFiltros {
+    padding: 50px 20px;
+    background-color: var(--gris-claro);
+}
+
+#menuFiltrosContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.btnFiltro {
+    background-color: var(--rojo-oscuro);
+    border: none;
+    padding: 10px 18px;
+    color: var(--blanco);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.btnFiltro:hover,
+.btnFiltro.activo {
+    background-color: var(--rojo-claro-hover);
+}
+
+#contenedorTarjetas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    padding: 20px 0;
+}
+
+/* ================================
+   AUTORIDADES
+================================ */
+.autoridades {
+    padding: 50px 20px;
+    background-color: var(--gris-claro);
+    text-align: center;
+}
+
+.titulo-autoridades {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--rojo-oscuro);
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.titulo-autoridades::after {
+    content: "";
+    display: block;
+    width: 90px;
+    height: 4px;
+    background-color: var(--rojo-oscuro);
+    margin: 12px auto 0;
+    border-radius: 2px;
+}
+
+.slider-autoridades {
+    display: flex;
+    gap: 25px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 15px;
+    scrollbar-width: none;
+}
+
+.slider-autoridades::-webkit-scrollbar {
+    display: none;
+}
+
+.autoridad-card {
+    min-width: 220px;
+    background-color: var(--blanco);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px var(--sombra);
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.autoridad-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 25px var(--sombra);
+}
+
+.autoridad-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.autoridad-card h3 {
+    font-size: 18px;
+    color: var(--gris-oscuro);
+    margin-bottom: 10px;
+}
+
+.autoridad-card p {
+    font-size: 15px;
+    color: var(--gris-medio);
+    margin-bottom: 15px;
+}
+
+.btn-detalles {
+    background-color: var(--rojo-oscuro);
+    color: var(--blanco);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-detalles:hover {
+    background-color: var(--rojo-claro-hover);
+}
+
+/* ================================
+   COMENTARIOS
+================================ */
+.comentarios-section {
+    padding: 50px 20px;
+    background-color: var(--blanco);
+    text-align: center;
+}
+
+.comentarios-section h2 {
+    font-size: 28px;
+    color: var(--rojo-oscuro);
+    margin-bottom: 30px;
+}
+
+.comentarios-lista {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.comentario {
+    background-color: var(--gris-claro);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px var(--sombra);
+    max-width: 100000px; /* Manteniendo el largo como pediste */
+    text-align: left;
+}
+
+.comentario h3 {
+    color: var(--rojo-oscuro);
+    margin-bottom: 10px;
+}
+
+.comentario p {
+    color: var(--gris-oscuro);
+    margin-bottom: 10px;
+}
+
+.comentario small {
+    color: var(--gris-medio);
+}
+
+.comments-btn {
+    background-color: var(--rojo-oscuro);
+    color: var(--blanco);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.comments-btn:hover {
+    background-color: var(--rojo-claro-hover);
+}
+
+/* ================================
+   FOOTER
+================================ */
+.uta-footer {
+    background-color: var(--rojo-oscuro);
+    color: var(--blanco);
+    padding: 40px 20px 20px;
+    text-align: center;
+}
+
+.uta-footer-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.footer-col {
+    flex: 1;
+    min-width: 200px;
+}
+
+.footer-col h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.footer-col p,
+.footer-col li {
+    margin-bottom: 8px;
+}
+
+.social-icons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.social-icons img {
+    width: 30px;
+    height: 30px;
+    transition: transform 0.3s ease;
+}
+
+.social-icons img:hover {
+    transform: scale(1.1);
+}
+
+.uta-footer-bottom {
+    border-top: 1px solid var(--gris-medio);
+    padding-top: 15px;
+    font-size: 14px;
+}
+
+/* ================================
+   RESPONSIVIDAD
+================================ */
+@media (max-width: 768px) {
+    .navbar .menu {
+        display: none; /* Podrías agregar un menú móvil */
+    }
+
+    .nosotros-contenido {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .nosotros-imagen img {
+        width: 90%;
+    }
+
+    .nosotros-texto h2 {
+        text-align: center;
+        border-left: none;
+        padding-left: 0;
+    }
+
+    .ubicacion-content h2 {
+        font-size: 26px;
+    }
+
+    .ubicacion-mapa iframe {
+        height: 350px;
+    }
+
+    .mision-vision {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .slider-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .arrow {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+
+    .tarjeta-evento {
+        min-width: 250px;
+    }
+
+    .autoridad-card {
+        min-width: 180px;
+    }
+
+    .comentarios-lista {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* ================================
+   ANIMACIONES ADICIONALES
+================================ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+    </style>
+<style>
+/* ====== SECCIÓN NOSOTROS ====== */
+.nosotros-section {
+    width: 100%;
+    padding: 60px 10%;
+    background: #f5f6fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nosotros-contenido {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    max-width: 1200px;
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+/* Imagen */
+.nosotros-imagen img {
+    width: 450px;
+    height: auto;
+    border-radius: 15px;
+    object-fit: cover;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+/* Texto */
+.nosotros-texto {
+    flex: 1;
+}
+
+.nosotros-texto h2 {
+    font-size: 2.3rem;
+    margin-bottom: 15px;
+    color:  #640c0cff;
+    font-weight: 700;
+    border-left: 5px solid  #640c0cff;
+    padding-left: 12px;
+}
+
+.nosotros-texto p {
+    font-size: 1.1rem;
+    color: #444;
+    line-height: 1.7;
+    margin-bottom: 15px;
+}
+
+/* Botón */
+.btn-nosotros {
+    display: inline-block;
+    padding: 10px 20px;
+    background:  #640c0cff;
+    color: white;
+    border-radius: 8px;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.btn-nosotros:hover {
+    background:  #683939ff;
+    transform: translateY(-3px);
+}
+
+/* Animación fade-in */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .nosotros-contenido {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .nosotros-imagen img {
+        width: 90%;
+    }
+
+    .nosotros-texto h2 {
+        text-align: center;
+        border-left: none;
+        padding-left: 0;
+    }
+}
+
+
+</style>
+
+  <!-- nosotros -->
+
+<!-- ubicacion -->
+<section class="ubicacion-section" id="ubicacionSection">
+    <div class="ubicacion-content">
+        <h2>📍 Nuestra Ubicación</h2>
+        <p>Encuéntranos fácilmente en el mapa a continuación.</p>
+    </div>
+
+    <div class="ubicacion-mapa">
+        <!-- Aquí se carga el mapa desde la base -->
+        <?php 
+            // Ejemplo: $ubicacion contiene el iframe cargado desde la BD
+            // echo $ubicacion;
+        ?>
+
+        <!-- TEMPORAL: Ejemplo de prueba -->
+       <?php
+            // Se utiliza el array ya cargado $nosData
+            if (!empty($nosData["maps"])) {
+              // Permitir la inserción del iframe sin sanitizar si se confía en la fuente (BD)
+              // ADVERTENCIA: Esta es una excepción. Si los datos no vienen de una fuente segura, esto es un riesgo XSS.
+              echo $nosData["maps"];
+            } else {
+              echo "<p>No hay un mapa configurado.</p>";
+            }
+            ?>
+    </div>
+</section>
+<style>
+    .ubicacion-section {
+    padding: 60px 20px;
+    background: #f5f5f5;
+    text-align: center;
+}
+
+.ubicacion-content h2 {
+    font-size: 32px;
+    margin-bottom: 10px;
+    color: #222;
+}
+
+.ubicacion-content p {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+/* Contenedor del mapa */
+.ubicacion-mapa {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+/* Ajuste del iframe */
+.ubicacion-mapa iframe {
+    width: 100%;
+    height: 450px;
+    border: 0;
 }
 
 /* Responsive */
 @media (max-width: 600px) {
-    .titulo-seccion {
-        flex-direction: column;
-        gap: 10px;
-        padding: 0 10px;
+    .ubicacion-content h2 {
+        font-size: 26px;
     }
-    .btn-ver-todo {
-        margin-left: 0;
+    .ubicacion-mapa iframe {
+        height: 350px;
     }
 }
-</style>
 
-<style>
-    
-</style>
-<div id="menuFiltros" style="display:none;">
-
-    <div id="menuFiltrosContainer">
-
-        <!-- Botones fijos -->
-        <button class="btnFiltro" onclick="generarTarjetasFavoritos()">⭐ Favoritos</button>
-        <button class="btnFiltro" onclick="generarTarjetasGeneral()">Todos</button>
-        <button class="btnFiltro" onclick="generarTarjetasSinCarrera()">Sin Carrera</button>
-
-        <!-- Botones dinámicos (carreras) -->
-        <div id="menuCarreras"></div>
-
-        <div id="contenedorTarjetas" class="contenedor-tarjetas"></div>
-
-
-    </div>
-
-</div>
-<style>
-    
     </style>
+
+<!-- ubicacion -->
 <style>
 
  /* ================================
@@ -1153,7 +1348,7 @@ if (loginModalEl) {
 
 /* TÍTULO */
 #seccionRecomendados .titulo-eventos {
-    margin: 50;
+    margin: 0;
 }
 
 /* SLIDER CONTENEDOR */
@@ -1902,7 +2097,7 @@ function iniciarAutoScroll() {
 /* Botón */
 .send-btn {
     width: 100%;
-    background: #640c0cff;
+    background: #0066cc;
     border: none;
     padding: 10px;
     color: white;
@@ -1912,7 +2107,7 @@ function iniciarAutoScroll() {
 }
 
 .send-btn:hover {
-    background: #a93f3fff;
+    background: #004c99;
 }
 
 /* Cerrar */
@@ -1945,97 +2140,13 @@ function iniciarAutoScroll() {
 
 </style>
     
-<!-- MISIÓN Y VISIÓN -->
-<section class="mision-vision">
-    <div class="mv-box">
-        <h2>Misión</h2>
-        <p>
-            <?= $misionVision['mision'] ?>
-        </p>
-    </div>
 
-    <div class="mv-box">
-        <h2>Visión</h2>
-        <p>
-              <?= $misionVision['vision'] ?>
-        </p>
-    </div>
-</section>
 
 
 
 <!-- AUTORIDADES (SLIDER) -->
-<section class="autoridades">
-   <h2 class="titulo-autoridades">Autoridades UTA</h2>
 
-    <div class="slider-container">
 
-        <button class="arrow left" onclick="moveLeft()">
-            <i class="fa-solid fa-chevron-left"></i>
-        </button>
-
-       <div id="sliderAutoridades" class="slider-autoridades">
-
-           
-        </div>
-
-        <button class="arrow right" onclick="moveRight()">
-            <i class="fa-solid fa-chevron-right"></i>
-        </button>
-
-    </div>
-</section>
-<style>
-/* ============================
-   TÍTULO ELEGANTE DE SECCIÓN
-============================ */
-.titulo-autoridades {
-    font-size: 32px;
-    font-weight: 800;
-    color:  #640c0cff; /* Azul institucional elegante */
-    text-align: center;
-    margin: 50px 0 30px;
-    letter-spacing: 1px;
-    position: relative;
-    font-family: "Poppins", sans-serif;
-}
-
-/* Línea decorativa debajo del título */
-.titulo-autoridades::after {
-    content: "";
-    display: block;
-    width: 90px;
-    height: 4px;
-    background:  #640c0cff;
-    margin: 12px auto 0;
-    border-radius: 2px;
-}
-
-/* Línea sutil más larga (doble decoración) */
-.titulo-autoridades::before {
-    content: "";
-    display: block;
-    width: 180px;
-    height: 1.5px;
-    background: #640c0cff;
-    margin: 0 auto 6px;
-    border-radius: 2px;
-}
-
-/* Versión responsive */
-@media (max-width: 600px) {
-    .titulo-autoridades {
-        font-size: 26px;
-        margin: 40px 0 25px;
-    }
-    .titulo-autoridades::after {
-        width: 70px;
-    }
-    .titulo-autoridades::before {
-        width: 150px;
-    }
-}
-</style>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -2147,287 +2258,10 @@ document.addEventListener("DOMContentLoaded", () => {
         slider.addEventListener("mouseenter", () => clearInterval(auto));
         slider.addEventListener("mouseleave", () => auto = setInterval(autoSlide, 3000));
     }
-
-
-
 </script>
-<style>
-    /* ================================
-   CONTENEDOR GENERAL
-================================ */
-.autoridades-section {
-    width: 100%;
-    padding: 40px 20px;
-    background: #f5f7fa;
-    text-align: center;
-}
-
-/* ================================
-   SLIDER
-================================ */
-.slider-container-autoridades {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    padding: 10px 0;
-}
-
-.slider-autoridades {
-    display: flex;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    gap: 25px;
-    padding: 15px;
-    scrollbar-width: none;
-}
-
-.slider-autoridades::-webkit-scrollbar {
-    display: none;
-}
-
-/* ================================
-   TARJETAS
-================================ */
-.autoridad-card {
-    min-width: 220px;
-    max-width: 220px;
-    background: #fff;
-    border-radius: 15px;
-    padding: 15px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
-}
-
-.autoridad-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 25px rgba(0,0,0,0.2);
-}
-
-.autoridad-card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 12px;
-    margin-bottom: 10px;
-}
-
-.autoridad-card h3 {
-    font-size: 18px;
-    color: #222;
-    margin: 8px 0;
-}
-
-.autoridad-card p {
-    font-size: 15px;
-    color: #555;
-    margin-bottom: 10px;
-}
-
-.btn-detalles {
-    background: #9e0c0cff;
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: 0.3s ease;
-}
-
-.btn-detalles:hover {
-    background: #272a2eff;
-}
-
-/* ================================
-   Botones laterales del slider
-================================ */
-.arrow-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #004aad;
-    color: white;
-    border: none;
-    font-size: 26px;
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.3s ease;
-}
-
-.arrow-btn:hover {
-    background: #002d6b;
-}
-
-.arrow-left { left: 10px; }
-.arrow-right { right: 10px; }
-
-    </style>
-  <style> 
-  /* ================================
-   MODAL GENERAL
-================================ */
-.modal-content {
-    border-radius: 18px !important;
-    overflow: hidden;
-    padding-bottom: 10px;
-}
-
-.modal-header {
-    background: #640c0cff;
-    color: #fff;
-    padding: 18px;
-}
-
-.modal-title {
-    font-size: 22px;
-}
-
-.modal-body {
-    padding: 20px 25px;
-    font-size: 16px;
-}
-
-.modal-body p {
-    margin-bottom: 15px;
-    line-height: 1.6;
-}
-
-.modal-body ul {
-    list-style: none;
-    padding: 0;
-}
-
-.modal-body ul li {
-    margin-bottom: 8px;
-    padding: 8px;
-    background: #f3f3f3;
-    border-radius: 8px;
-}
-
-/* ================================
-   FOOTER
-================================ */
-.modal-footer {
-    padding: 15px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.modal-footer .btn {
-    border-radius: 8px !important;
-    padding: 8px 14px;
-}
-
-.modal-footer .btn-secondary {
-    background: #640c0cff;
-    color: white;
-}
-
-.modal-footer .btn-secondary:hover {
-    background: #24272cff;
-}
-
-  </style>
     <div id="modals-root"></div>
 
-<section id="comentariosSection" class="comentarios">
 
-    <!-- LISTADO DE COMENTARIOS (luego se llenará desde la BD) -->
-   <section class="comentarios-section">
-    <h2>Comentarios recientes</h2>
-
-    <div id="comentariosLista" class="comentarios-lista">
-        <p>Cargando comentarios...</p>
-    </div>
-
-    <button class="comments-btn" onclick="openCommentModal()">
-    Añadir comentario
-</button>
-
-<!-- Modal -->
-<div id="commentModal" class="comment-modal-overlay" style="display:none;">
-    <div class="comment-modal">
-        <span class="modal-close" onclick="closeCommentModal()">×</span>
-
-        <h2>Enviar comentario</h2>
-
-        <form id="commentForm">
-            <label>Nombre:</label>
-            <input type="text" name="nombre" required>
-
-            <label>Teléfono:</label>
-            <input type="text" name="telefono" placeholder="09XXXXXXXX" required>
-
-            <label>Correo institucional:</label>
-            <input type="email" name="correo" placeholder="ejemplo@uta.edu.ec" required>
-
-            <label>Comentario:</label>
-            <textarea name="comentario" rows="4" required></textarea>
-
-            <button type="submit" class="send-btn">Enviar</button>
-        </form>
-
-        <p id="commentMsg" class="msg"></p>
-    </div>
-</div>
-
-  <script>
-function openCommentModal() {
-    document.getElementById("commentModal").style.display = "flex";
-}
-
-function closeCommentModal() {
-    document.getElementById("commentModal").style.display = "none";
-}
-
-// Enviar formulario
-document.getElementById("commentForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    let formData = new FormData(this);
-
-    fetch("./home/guardar_comentario.php", {
-        method: "POST",
-        body: formData
-    })
-    .then(r => r.json())
-    .then(data => {
-        const msg = document.getElementById("commentMsg");
-
-        if (data.status === "success") {
-            msg.style.color = "green";
-            msg.textContent = data.msg;
-
-            // limpiar formulario
-            document.getElementById("commentForm").reset();
-
-            // cerrar modal en 1.5 sec
-            setTimeout(() => {
-                closeCommentModal();
-                msg.textContent = "";
-            }, 1500);
-
-        } else {
-            msg.style.color = "red";
-            msg.textContent = data.msg;
-        }
-    })
-    .catch(err => {
-        alert("Error al conectar con el servidor");
-    });
-});
-</script>
-
-</section>
 </section>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
