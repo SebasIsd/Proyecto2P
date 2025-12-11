@@ -1,8 +1,14 @@
 <?php
-/*************************************************
- * Admin → Crear Evento/Curso (con requisitos)
- *************************************************/
-require_once '../includes/conexion.php';
+session_start();
+require_once __DIR__ . '/../includes/conexion.php';
+require_once __DIR__ . '/../includes/check_event_permission.php'; // opcional pero recomendado
+
+// Verificar sesión y cédula (debe haberse guardado en login)
+if (!isset($_SESSION['correo']) || !isset($_SESSION['cedula'])) {
+    header("Location: ../index.php");
+    exit();
+}
+$cedula = $_SESSION['cedula'];
 
 $mensaje = '';
 $errores = [];

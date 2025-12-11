@@ -1,90 +1,26 @@
 <?php
 session_start();
-require_once __DIR__ . '/../includes/conexion.php';
+require_once '../includes/conexion.php'; // 📌 IMPORTANTE PARA QUE $conn FUNCIONE
 
-// ---- Permisos básicos ----
-if (!isset($_SESSION['correo']) || !isset($_SESSION['cedula'])) {
+// seguridad: solo administrador
+if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre'] ?? '') !== 'administrador') {
     header("Location: ../index.php");
     exit();
 }
-
-$cedula = $_SESSION['cedula'];
-
-// Comprobar que el usuario realmente aparece en PERSONAL_EVENTO como responsable/ponente
-$stmtCheck = $conn->prepare("
-    SELECT COUNT(*) AS cnt 
-    FROM PERSONAL_EVENTO 
-    WHERE CED_USU = ? AND (ES_RESPONSABLE = 1 OR UPPER(ROL_EVENTO) = 'PONENTE')
-");
-$stmtCheck->bind_param("s", $cedula);
-$stmtCheck->execute();
-$resCheck = $stmtCheck->get_result()->fetch_assoc();
-$stmtCheck->close();
-
-if ((int)$resCheck['cnt'] === 0) {
-    // No es staff: denegar
-    header("Location: ../index.php?error=sin_permiso");
-    exit();
-}
-
-// Obtener lista de eventos donde figura (detalles)
-$stmt = $conn->prepare("
-    SELECT e.ID_EVE_CUR, e.TIT_EVE_CUR, e.FEC_INI_EVE_CUR, e.FEC_FIN_EVE_CUR, e.LUGAR, p.ROL_EVENTO, p.ES_RESPONSABLE
-    FROM EVENTOS_CURSOS e
-    INNER JOIN PERSONAL_EVENTO p ON e.ID_EVE_CUR = p.ID_EVE_CUR
-    WHERE p.CED_USU = ?
-    ORDER BY e.FEC_INI_EVE_CUR DESC
-");
-$stmt->bind_param("s", $cedula);
-$stmt->execute();
-$result = $stmt->get_result();
-$eventos = $result->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-
-// Guardar en sesión (opcional) la lista de eventos como cache
-$ids = array_map(function($r){ return (int)$r['ID_EVE_CUR']; }, $eventos);
-$_SESSION['event_ids'] = json_encode($ids);
-$_SESSION['is_event_staff'] = true;
-
-
-// Obtener datos reales de la BD
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM EVENTOS_CURSOS");
-$stmt->execute();
-$totalEventos = $stmt->get_result()->fetch_assoc()['total'];
-
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM USUARIOS");
-$stmt->execute();
-$usuariosRegistrados = $stmt->get_result()->fetch_assoc()['total'];
-
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM INSCRIPCIONES WHERE ESTADO_INS = 'Preinscrito'");
-$stmt->execute();
-$inscripcionesPendientes = $stmt->get_result()->fetch_assoc()['total'];
-
-// Eventos por mes (últimos 6 meses, ajusta según necesidades)
-$eventosPorMes = [];
-for ($i = 5; $i >= 0; $i--) {
-    $mes = date('Y-m', strtotime("-$i months"));
-    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM EVENTOS_CURSOS WHERE DATE_FORMAT(FEC_INI_EVE_CUR, '%Y-%m') = ?");
-    $stmt->bind_param("s", $mes);
-    $stmt->execute();
-    $eventosPorMes[] = $stmt->get_result()->fetch_assoc()['count'];
-}
-$mesesLabels = [];
-for ($i = 5; $i >= 0; $i--) {
-    $mesesLabels[] = date('M', strtotime("-$i months"));
-}
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Administrador - UTA</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crear Evento - UTA</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<style>
         :root {
             --primary: #a30000;
             --primary-hover: #d51313;
@@ -348,102 +284,176 @@ for ($i = 5; $i >= 0; $i--) {
     </style>
 </head>
 <body>
-    <!-- Sidebar Navbar Lateral Izquierdo -->
-    <div class="sidebar">
-        <div class="logo">
-            <img src="../images/favico.png" alt="Logo UTA">
-        </div>
-        <a href="admin_inicio.php" class="active"><i class="fas fa-home me-2"></i> Inicio</a>
-        <a href="miseventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Requisitos de Inscripción</a>
-        <a href="requisitosAprobacion.php"><i class="fa fa-clipboard-check"></i> Requisitos de Aprobación</a>
-        <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
-        <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
-        <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-        <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="logo text-center mb-3">
+        <img src="../images/favico.png" width="120">
+    </div>
+    <a href="adminInicio.php"><i class="fas fa-home me-2"></i>Inicio</a>
+    <a href="#" class="active"><i class="fas fa-calendar-check me-2"></i>Gestionar Eventos</a>
+    <a href="gestionUsuarios.php"><i class="fas fa-users me-2"></i>Gestionar Usuarios</a>
+    <a href="perfil.php"><i class="fas fa-user me-2"></i>Perfil</a>
+    <a href="configuraciones.php"><i class="fas fa-cog me-2"></i>Configuraciones</a>
+    <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a>
+</div>
+
+
+<div class="content">
+
+    <!-- 📌 MENSAJE DE GUARDADO -->
+    <?php if (!empty($_GET['msg'])): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?= htmlspecialchars($_GET['msg']); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <?php endif; ?>
+
+
+    <!-- 📌 FORMULARIO CREAR EVENTO -->
+    <div class="card p-4 shadow-sm mb-4">
+        <h4 class="mb-3">Crear Evento — Seleccionar Responsable</h4>
+
+        <form id="formEvento" method="post" action="guardarEvento.php">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label">Título del evento *</label>
+                    <input type="text" name="TIT_EVE_CUR" class="form-control" required maxlength="150">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Responsable *</label>
+                    <div class="input-group">
+                        <input type="text" id="responsable_display" class="form-control" readonly placeholder="Seleccione...">
+                        <input type="hidden" id="RESPONSABLE_CED" name="RESPONSABLE_CED">
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#modalBuscar"
+                                class="btn btn-outline-secondary">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <small id="responsableNombre" class="text-primary fw-bold"></small>
+                </div>
+
+                <div class="col-12 text-end mt-3">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </div>
+        </form>
     </div>
 
-    <!-- Contenido Principal -->
-    <div class="content">
-        <h1 class="mb-4">Dashboard Responsable</h1>
-        <p>Bienvenido, <?= ucfirst($_SESSION['rol_nombre']) ?> (<?= $_SESSION['correo'] ?>)</p>
 
-        <!-- Tarjetas de Estadísticas -->
-        <div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <i class="fas fa-calendar-alt"></i> Total Eventos
-            </div>
-            <div class="card-body text-center">
-                <h2><?= $totalEventos ?></h2>
-                <p>Eventos creados en la plataforma.</p>
-            </div>
-        </div>
-    </div>
+    <!-- 📌 LISTADO DE EVENTOS EN LA MISMA VISTA -->
+    <?php
+    $q = $conn->query("
+        SELECT e.ID_EVE_CUR, e.TIT_EVE_CUR,
+       CONCAT(u.NOM_PRI_USU,' ',u.APE_PRI_USU) AS responsable
+FROM EVENTOS_CURSOS e
+LEFT JOIN USUARIOS u ON u.CED_USU = e.RESPONSABLE_CED
+ORDER BY e.ID_EVE_CUR DESC
 
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <i class="fas fa-users"></i> Usuarios Registrados
-            </div>
-            <div class="card-body text-center">
-                <h2><?= $usuariosRegistrados ?></h2>
-                <p>Usuarios activos en el sistema.</p>
-            </div>
-        </div>
-    </div>
+    ");
+    ?>
 
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <i class="fas fa-hourglass-half"></i> Inscripciones Pendientes
-            </div>
-            <div class="card-body text-center">
-                <h2><?= $inscripcionesPendientes ?></h2>
-                <p>Inscripciones por aprobar.</p>
-            </div>
-        </div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="mb-3"><i class="bi bi-list-ul me-2"></i>Eventos Registrados</h5>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <input type="search" id="buscarEventos" class="form-control"
+               placeholder="Buscar por título o responsable...">
     </div>
 </div>
 
-        <!-- Gráfico de Eventos por Mes -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">Eventos por Mes</div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="eventosChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<table id="tablaEventos" class="table table-striped table-bordered table-sm align-middle">
+
+                <thead class="table-secondary">
+                    <tr>
+                        
+        <th class="text-center">Fav</th>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Responsable</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php if($q->num_rows > 0): ?>
+                    <?php while($r = $q->fetch_assoc()): ?>
+                 <tr>
+
+    <!-- ⭐ FAVORITO ANTES DEL ID -->
+    <?php
+    $favQuery = $conn->query("SELECT 1 FROM EVENTOS_FAVORITOS WHERE ID_EVE_CUR = {$r['ID_EVE_CUR']}");
+    $esFavorito = $favQuery->num_rows > 0;
+    ?>
+    <td class="text-center">
+        <i class="fa-solid fa-heart fs-4 favorito"
+           data-id="<?= $r['ID_EVE_CUR'] ?>"
+           style="cursor:pointer; color:<?= $esFavorito ? 'red' : '#bbb' ?>;">
+        </i>
+    </td>
+
+    <!-- ID -->
+    <td><?= $r['ID_EVE_CUR'] ?></td>
+
+    <!-- Título -->
+    <td><?= htmlspecialchars($r['TIT_EVE_CUR']) ?></td>
+
+    <!-- Responsable -->
+    <td><?= htmlspecialchars($r['responsable']) ?></td>
+
+    <!-- Acciones -->
+    <td class="text-center">
+        <a href="editarEvento.php?id=<?= $r['ID_EVE_CUR'] ?>" class="btn btn-warning btn-sm">
+            <i class="bi bi-pencil"></i>
+        </a>
+        <a href="eliminarEvento.php?id=<?= $r['ID_EVE_CUR'] ?>" class="btn btn-danger btn-sm"
+           onclick="return confirm('¿Eliminar este evento?')">
+            <i class="bi bi-trash"></i>
+        </a>
+    </td>
+
+</tr>
+
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr><td colspan="4" class="text-center text-muted">Aún no hay eventos registrados</td></tr>
+                <?php endif; ?>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <script>
-        // Gráfico con Chart.js
-        const ctx = document.getElementById('eventosChart').getContext('2d');
-        const eventosChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: <?= json_encode($mesesLabels) ?>,
-                datasets: [{
-                    label: 'Eventos Creados',
-                    data: <?= json_encode($eventosPorMes) ?>,
-                    backgroundColor: 'rgba(163, 0, 0, 0.6)', /* Rojo con opacidad */
-                    borderColor: 'rgba(163, 0, 0, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    </script>
+</div> <!-- FIN CONTENT -->
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+
+// Validar que haya responsable
+$("#formEvento").on("submit",function(e){
+    if(!$("#RESPONSABLE_CED").val()){
+        alert("Seleccione un responsable");
+        e.preventDefault();
+    }
+});
+
+// 🔍 BUSCADOR EN LISTA DE EVENTOS
+$("#buscarEventos").on("input", function () {
+    const filtro = $(this).val().toLowerCase();
+    $("#tablaEventos tbody tr").each(function () {
+        const texto = $(this).text().toLowerCase();
+        $(this).toggle(texto.includes(filtro));
+    });
+});
+
+</script>
+<?php include "modalBuscarResponsable.php"; ?>
+
 </body>
 </html>

@@ -1,14 +1,41 @@
 <?php
 session_start();
-if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'administrador') {
-  header("Location: ../index.php"); exit();
-}
 require_once __DIR__ . '/../includes/conexion.php';
+require_once __DIR__ . '/../includes/check_event_permission.php'; // opcional, recomendable
 
+// Verificar sesión y cédula (establecida en el login)
+if (!isset($_SESSION['correo']) || !isset($_SESSION['cedula'])) {
+    header("Location: ../index.php");
+    exit();
+}
+$cedula = $_SESSION['cedula'];
+
+// Obtener idEvento desde GET y validar básico
 $idEvento = isset($_GET['evento']) ? (int)$_GET['evento'] : 0;
 if ($idEvento <= 0) {
     die('Evento inválido.');
 }
+
+// Comprobar que el usuario sea responsable/ponente de ese evento
+// (si quieres permitir administradores globales, añade una condición para $_SESSION['rol_nombre'] === 'administrador')
+$stmtCheck = $conn->prepare("
+    SELECT 1
+    FROM PERSONAL_EVENTO p
+    WHERE p.ID_EVE_CUR = ? AND p.CED_USU = ? AND (p.ES_RESPONSABLE = 1 OR UPPER(p.ROL_EVENTO) = 'PONENTE')
+    LIMIT 1
+");
+$stmtCheck->bind_param("is", $idEvento, $cedula);
+$stmtCheck->execute();
+$stmtCheck->store_result();
+if ($stmtCheck->num_rows === 0) {
+    $stmtCheck->close();
+    header("Location: ../index.php?error=sin_permiso");
+    exit();
+}
+$stmtCheck->close();
+
+// A partir de aquí puedes continuar con la consulta del evento y participantes aptos
+// (tu código original a partir de "Obtener info del evento" continúa sin cambios)
 
 // Obtener info del evento
 $sqlEv = "
@@ -207,14 +234,12 @@ $stmt->close();
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="admin_inicio.php" class="active"><i class="fas fa-home me-2"></i> Inicio</a>
         <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
         <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
         <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
-        <a href="eventos_certificables.php" class="active"><i class="fa fa-certificate"></i> Generación de Certificados</a>
-        <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
+        <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-        <a href="#"><i class="fas fa-cog me-2"></i> Configuraciones</a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
     </div>
   <!-- Contenido principal -->
