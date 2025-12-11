@@ -1,7 +1,8 @@
+
 <?php
 // Usar __DIR__ para rutas absolutas seguras
 // Incluir la consulta de autoridades y otras configuraciones
-require __DIR__ . '/home/autoridades.php';
+
 $sliderData = include __DIR__ . "/home/slider.php";
 $misionVision = include __DIR__ . '/home/mision_vision.php';
 $footerData = include __DIR__ . '/home/footer.php';
@@ -35,77 +36,991 @@ if (!is_array($footerData)) {
     ];
 }
 ?>
-
 <!DOCTYPE html>
-<html>
-
+<html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
-  <link rel="shortcut icon" href="images/favico.png" type="">
-
-  <title> Eventos - UTA </title>
-
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css" integrity="sha512-CruCP+TD3yXzlvvijET8wV5WxxEh5H8P4cmz0RFbKK6FlZ2sYl3AEsKlLPHbniXKSrDdFewhbmBK5skbdsASbQ==" crossorigin="anonymous" />
-  <link href="css/font-awesome.min.css" rel="stylesheet" />
-  <link href="css/style.css" rel="stylesheet" />
-  <link href="css/responsive.css" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UTA - Portal Universitario</title>
+    <link rel="stylesheet" href="css/index.css">
+      <link rel="stylesheet" href="css/slider.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/estiloslogin.css">
+  <link rel="stylesheet" href="css/estiloslogin.css"> 
+  <link rel="stylesheet" href="css/filtro.css">    
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
 </head>
-
 <body>
 
-  <div class="hero_area">
-    <div class="bg-box">
-      <img src="images/hero-bg.jpg" alt="">
-    </div>
-    <header class="header_section">
-      <div class="container">
-        <nav class="navbar navbar-expand-lg custom_nav-container ">
-          <a class="navbar-brand" href="index.php">
-            <span>
-              Eventos CTT UTA
-            </span>
-          </a>
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <div class="logo">
+            <h2>UTA</h2>
+            <p>Universidad Técnica de Ambato</p>
+        </div>
 
-          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class=""> </span>
-          </button>
+        <nav class="menu">
+            <a href="index.php">Inicio</a>
+         <a href="#eventosSection" class="scroll-link">Eventos</a>
 
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav  mx-auto ">
-              <li class="nav-item active">
-                <a class="nav-link" href="index.php">Inicio <span class="sr-only"></span></a>
-              </li>
-              <li class="nav-item">
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="contacto.php">Contactanos</a>
-              </li>
-            </ul>
-            <div class="user_option">
-              <a href="#" class="user_link"></a>
-              <a class="cart_link" href="#">
-              </a>
-              <form class="form-inline">
-                <button class="btn  my-2 my-sm-0 nav_search-btn" type="submit"></button>
-              </form>
-              <a href="#" class="order_online" data-bs-toggle="modal" data-bs-target="#loginModal">login</a>
-            </div>
-          </div>
+               <a href="#comentariosSection" class="scroll-link">Comentarios</a>
+
+            <a href="contactanos.php">Contactanos</a>
         </nav>
-      </div>
+   <script>
+document.querySelectorAll('.scroll-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const targetId = this.getAttribute("href").replace("#", "");
+        const target = document.getElementById(targetId);
+
+        if (target) {
+            // Scroll suave
+            target.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+            // Quitar clase si ya existe
+            target.classList.remove("focus-section");
+
+            // Activar foco después del scroll
+            setTimeout(() => {
+                target.classList.add("focus-section");
+
+                // Quitar foco después de 1.5s
+                setTimeout(() => {
+                    target.classList.remove("focus-section");
+                }, 1500);
+            }, 400);
+        }
+    });
+});
+</script>
+<style>
+    /* ================================
+   VARIABLES GLOBALES PARA COLORES
+================================ */
+:root {
+    --rojo-oscuro: #490505ff; /* Rojo oscuro base */
+    --rojo-claro-hover: #DC143C; /* Rojo más claro solo para hovers en botones */
+    --blanco: #ffffff; /* Blanco puro */
+    --gris-claro: #f5f5f5; /* Fondo suave */
+    --gris-medio: #cccccc; /* Bordes y texto secundario */
+    --gris-oscuro: #333333; /* Texto principal */
+    --sombra: rgba(0, 0, 0, 0.1); /* Sombras suaves */
+}
+
+/* ================================
+   RESET Y BASE GENERAL
+================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif; /* Fuente moderna y legible */
+    line-height: 1.6;
+    color: var(--gris-oscuro);
+    background-color: var(--gris-claro);
+    overflow-x: hidden; /* Evitar scroll horizontal */
+}
+
+/* ================================
+   NAVBAR
+================================ */
+.navbar {
+    background-color: var(--rojo-oscuro);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 10px var(--sombra);
+}
+
+.navbar .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.navbar .logo h2 {
+    color: var(--blanco);
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.navbar .logo p {
+    color: var(--blanco);
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.navbar .menu {
+    display: flex;
+    gap: 20px;
+}
+
+.navbar .menu a {
+    color: var(--blanco);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.navbar .menu a:hover {
+    color: var(--gris-claro);
+}
+
+.navbar .order_online {
+    background-color: var(--blanco);
+    color: var(--rojo-oscuro);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+}
+
+.navbar .order_online:hover {
+    background-color: var(--gris-claro);
+}
+
+/* ================================
+   SLIDER PRINCIPAL
+================================ */
+.slider {
+    position: relative;
+    height: 420px;
+    overflow: hidden;
+    margin-top: 80px; /* Espacio para navbar fija */
+}
+
+.slider img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.45);
+}
+
+.slider-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blanco);
+}
+
+.slider .detail-box {
+    text-align: center;
+    max-width: 600px;
+    padding: 20px;
+}
+
+.slider .detail-box h1 {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 15px;
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.slider .detail-box p {
+    font-size: 18px;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+/* ================================
+   SECCIÓN DE EVENTOS (RECOMENDADOS Y FILTROS)
+================================ */
+#seccionRecomendados {
+    padding: 50px 20px;
+    background-color: var(--blanco);
+    margin-bottom: 40px;
+}
+
+.titulo-seccion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.titulo-eventos {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--rojo-oscuro);
+    text-align: center;
+    flex: 1;
+}
+
+.btn-ver-todo {
+    background-color: var(--rojo-oscuro);
+    color: var(--blanco);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-ver-todo:hover {
+    background-color: var(--rojo-claro-hover);
+}
+
+.slider-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.slider-favoritos {
+    display: flex;
+    gap: 25px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 10px;
+    width: 100%;
+    scrollbar-width: none;
+}
+
+.slider-favoritos::-webkit-scrollbar {
+    display: none;
+}
+
+.arrow {
+    background-color: var(--rojo-oscuro);
+    border: none;
+    color: var(--blanco);
+    font-size: 28px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.arrow:hover {
+    background-color: var(--rojo-claro-hover);
+}
+
+.tarjeta-evento {
+    min-width: 300px;
+    background-color: var(--blanco);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 12px var(--sombra);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.tarjeta-evento:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px var(--sombra);
+}
+
+.tarjeta-evento img {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.tarjeta-evento .titulo-evento {
+    font-size: 19px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--gris-oscuro);
+}
+
+.tarjeta-evento .descripcion-evento {
+    font-size: 14px;
+    text-align: center;
+    color: var(--gris-medio);
+}
+
+.tarjeta-evento .fecha-evento {
+    text-align: center;
+    font-size: 14px;
+    color: var(--gris-oscuro);
+}
+
+.btn-inscribirse {
+    background-color: var(--rojo-oscuro);
+    border-color: var(--rojo-oscuro);
+    color: var(--blanco);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 10px 20px;
+    border-radius: 8px;
+}
+
+.btn-inscribirse:hover {
+    background-color: var(--rojo-claro-hover);
+    border-color: var(--rojo-claro-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--sombra);
+}
+
+/* ================================
+   MENÚ DE FILTROS
+================================ */
+#menuFiltros {
+    padding: 50px 20px;
+    background-color: var(--gris-claro);
+}
+
+#menuFiltrosContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.btnFiltro {
+    background-color: var(--rojo-oscuro);
+    border: none;
+    padding: 10px 18px;
+    color: var(--blanco);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.btnFiltro:hover,
+.btnFiltro.activo {
+    background-color: var(--rojo-claro-hover);
+}
+
+#contenedorTarjetas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    padding: 20px 0;
+}
+
+/* ================================
+   MISIÓN Y VISIÓN
+================================ */
+.mision-vision {
+    display: flex;
+    justify-content: space-around;
+    padding: 50px 20px;
+    background-color: var(--blanco);
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.mv-box {
+    flex: 1;
+    padding: 30px;
+    background-color: var(--gris-claro);
+    border-radius: 15px;
+    box-shadow: 0 4px 12px var(--sombra);
+    text-align: center;
+}
+
+.mv-box h2 {
+    color: var(--rojo-oscuro);
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.mv-box p {
+    color: var(--gris-oscuro);
+    line-height: 1.6;
+}
+
+/* ================================
+   AUTORIDADES
+================================ */
+.autoridades {
+    padding: 50px 20px;
+    background-color: var(--gris-claro);
+    text-align: center;
+}
+
+.titulo-autoridades {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--rojo-oscuro);
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.titulo-autoridades::after {
+    content: "";
+    display: block;
+    width: 90px;
+    height: 4px;
+    background-color: var(--rojo-oscuro);
+    margin: 12px auto 0;
+    border-radius: 2px;
+}
+
+.slider-autoridades {
+    display: flex;
+    gap: 25px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 15px;
+    scrollbar-width: none;
+}
+
+.slider-autoridades::-webkit-scrollbar {
+    display: none;
+}
+
+.autoridad-card {
+    min-width: 220px;
+    background-color: var(--blanco);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px var(--sombra);
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.autoridad-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 25px var(--sombra);
+}
+
+.autoridad-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.autoridad-card h3 {
+    font-size: 18px;
+    color: var(--gris-oscuro);
+    margin-bottom: 10px;
+}
+
+.autoridad-card p {
+    font-size: 15px;
+    color: var(--gris-medio);
+    margin-bottom: 15px;
+}
+
+.btn-detalles {
+    background-color: var(--rojo-oscuro);
+    color: var(--blanco);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-detalles:hover {
+    background-color: var(--rojo-claro-hover);
+}
+
+/* ================================
+   COMENTARIOS
+================================ */
+.comentarios-section {
+    padding: 50px 20px;
+    background-color: var(--blanco);
+    text-align: center;
+}
+
+.comentarios-section h2 {
+    font-size: 28px;
+    color: var(--rojo-oscuro);
+    margin-bottom: 30px;
+}
+
+.comentarios-lista {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.comentario {
+    background-color: var(--gris-claro);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px var(--sombra);
+    max-width: 300px;
+    text-align: left;
+}
+
+.comentario h3 {
+    color: var(--rojo-oscuro);
+    margin-bottom: 10px;
+}
+
+.comentario p {
+    color: var(--gris-oscuro);
+    margin-bottom: 10px;
+}
+
+.comentario small {
+    color: var(--gris-medio);
+}
+
+.comments-btn {
+    background-color: var(--rojo-oscuro);
+    color: var(--blanco);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.comments-btn:hover {
+    background-color: var(--rojo-claro-hover);
+}
+
+/* ================================
+   FOOTER
+================================ */
+.uta-footer {
+    background-color: var(--rojo-oscuro);
+    color: var(--blanco);
+    padding: 40px 20px 20px;
+    text-align: center;
+}
+
+.uta-footer-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.footer-col {
+    flex: 1;
+    min-width: 200px;
+}
+
+.footer-col h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.footer-col p,
+.footer-col li {
+    margin-bottom: 8px;
+}
+
+.social-icons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.social-icons img {
+    width: 30px;
+    height: 30px;
+    transition: transform 0.3s ease;
+}
+
+.social-icons img:hover {
+    transform: scale(1.1);
+}
+
+.uta-footer-bottom {
+    border-top: 1px solid var(--gris-medio);
+    padding-top: 15px;
+    font-size: 14px;
+}
+.uta-footer-bottom a {
+    color: var(--blanco);
+    text-decoration: none;
+    padding-left: 10px;
+    margin: 0 5px;
+}
+.uta-footer-bottom i {
+    color: yellow;
+    padding: 0 5px;
+}
+/* ================================
+   RESPONSIVIDAD
+================================ */
+@media (max-width: 768px) {
+    .navbar .menu {
+        display: none; /* Podrías agregar un menú móvil */
+    }
+
+    .mision-vision {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .slider-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .arrow {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+
+    .tarjeta-evento {
+        min-width: 250px;
+    }
+
+    .autoridad-card {
+        min-width: 180px;
+    }
+
+    .comentarios-lista {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+</style>
+
+<!-- Botón login en el navbar -->
+<a href="#" class="order_online" data-bs-toggle="modal" data-bs-target="#loginModal" style="color:black">login</a>
+       
     </header>
-    <section class="slider_section ">
-      <div id="customCarousel1" class="carousel slide" data-ride="carousel">
+
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content login-modal-content">
+      <div class="modal-body p-0">
+        <div class="login-box">
+          <img src="images/usu/logouta.jpg" class="logo-uta" alt="Logo UTA">
+          <h2>login</h2>
+          <?php if (!empty($error)): ?>
+            <div class="error"><?= $error ?></div>
+          <?php endif; ?>
+          <?php if (isset($_GET['error'])): ?>
+            <div class="error">
+              <?php
+              if ($_GET['error'] == 'usuario_no_encontrado') echo "⚠️ Usuario no encontrado.";
+              elseif ($_GET['error'] == 'contraseña_incorrecta') echo "⚠️ Contraseña incorrecta.";
+              elseif ($_GET['error'] == 'rol_no_valido') echo "⚠️ Rol no válido.";
+              elseif ($_GET['error'] == 'usuario_no_verificado') echo "⚠️ El usuario aún no está verificado por el administrador.";
+              ?>
+            </div>
+          <?php endif; ?>
+          <form method="POST" action="login/validar.php">
+            <div class="input-group">
+              <label for="usuario">Usuario</label>
+              <input type="email" name="usuario" id="usuario" placeholder="Ingrese su correo" required>
+            </div>
+            <div class="input-group">
+              <label for="clave">Contraseña</label>
+              <input type="password" name="clave" id="clave" placeholder="Ingrese su contraseña" required>
+            </div>
+            <button type="submit" class="btn-login">Ingresar</button>
+          </form>
+          <br>
+          <div class="text-center mt-2" style="font-size: 0.9rem;">
+            <a href="#" class="link-registro" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" data-bs-dismiss="modal">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+          <br>
+          <div class="registro">
+            ¿No tienes cuenta?
+            <a href="Login/registrar/Registrarse.php">Registrate aquí</a>
+          </div>
+          <p class="nota">© Universidad Técnica de Ambato - 2025</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content login-modal-content">
+      <div class="modal-body p-0">
+        <div class="login-box">
+          <h2>Recuperar Contraseña</h2>
+          <form id="formRequestReset">
+            <p style="color: #ccc; font-size: 0.9rem;">Ingresa tu correo y te enviaremos un código de 6 dígitos.</p>
+            <div id="msgRequestReset" class="mb-2"></div>
+            <div class="input-group">
+              <label for="emailRequest">Correo</label>
+              <input type="email" name="emailRequest" id="emailRequest" placeholder="tu_correo@uta.edu.ec" required>
+            </div>
+            <button type="submit" class="btn-login" id="btnRequestReset">Enviar Código</button>
+          </form>
+          <div class="text-center mt-3">
+            <a href="#" class="link-registro" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">
+              Volver a Iniciar Sesión
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="resetCodeModal" tabindex="-1" aria-labelledby="resetCodeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content login-modal-content">
+      <div class="modal-body p-0">
+        <div class="login-box">
+          <h2>Verificar Código</h2>
+          <form id="formValidateCode">
+            <p style="color: #ccc; font-size: 0.9rem;">Revisa tu correo e ingresa el código de 6 dígitos.</p>
+            <div id="msgValidateCode" class="mb-2"></div>
+            <input type="hidden" name="emailValidate" id="emailValidate">
+            <div class="input-group">
+              <label for="resetCode">Código de 6 dígitos</label>
+              <input type="text" name="resetCode" id="resetCode" maxlength="6" inputmode="numeric" required>
+            </div>
+            <button type="submit" class="btn-login" id="btnValidateCode">Verificar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content login-modal-content">
+      <div class="modal-body p-0">
+        <div class="login-box">
+          <h2>Establecer Nueva Contraseña</h2>
+          <form id="formNewPassword">
+            <div id="msgNewPassword" class="mb-2"></div>
+            <input type="hidden" name="emailNewPass" id="emailNewPass">
+            <input type="hidden" name="codeNewPass" id="codeNewPass">
+            <div class="input-group">
+              <label for="newPassword">Nueva Contraseña</label>
+              <input type="password" name="newPassword" id="newPassword" placeholder="Mín. 8 caracteres" required>
+            </div>
+            <div class="input-group">
+              <label for="confirmPassword">Confirmar Contraseña</label>
+              <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Repite la contraseña" required>
+            </div>
+            <button type="submit" class="btn-login" id="btnNewPassword">Cambiar Contraseña</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+    const loginModalEl = document.getElementById('loginModal');
+if (loginModalEl) {
+  loginModalEl.addEventListener('show.bs.modal', function(event) {
+    const button = event.relatedTarget;
+    const redirectPage = button?.getAttribute('data-redirect') || '';
+    let form = loginModalEl.querySelector('form');
+    if (form) {
+      let redirectInput = form.querySelector('input[name="redirect_to"]');
+      if (!redirectInput) {
+        redirectInput = document.createElement('input');
+        redirectInput.type = 'hidden';
+        redirectInput.name = 'redirect_to';
+        form.appendChild(redirectInput);
+      }
+      redirectInput.value = redirectPage;
+    }
+  });
+}
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+  const forgotModalEl = document.getElementById('forgotPasswordModal');
+  const codeModalEl = document.getElementById('resetCodeModal');
+  const newPassModalEl = document.getElementById('newPasswordModal');
+
+  if (forgotModalEl) {
+    const forgotModal = new bootstrap.Modal(forgotModalEl);
+    const codeModal = new bootstrap.Modal(codeModalEl);
+    const newPassModal = new bootstrap.Modal(newPassModalEl);
+    const formRequest = document.getElementById('formRequestReset');
+    const formValidate = document.getElementById('formValidateCode');
+    const formNewPass = document.getElementById('formNewPassword');
+    const msgRequest = document.getElementById('msgRequestReset');
+    const msgValidate = document.getElementById('msgValidateCode');
+    const msgNewPass = document.getElementById('msgNewPassword');
+
+    function showMessage(container, message, isSuccess = false) {
+      const colorClass = isSuccess ? 'green' : '';
+      container.innerHTML = `<div class="error" style="color:${colorClass};">${message}</div>`;
+    }
+
+    formRequest.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('emailRequest').value;
+      const btn = document.getElementById('btnRequestReset');
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+      showMessage(msgRequest, '');
+
+      const formData = new FormData();
+      formData.append('email', email);
+
+      fetch('login/solicitar_reset.php', { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            showMessage(msgRequest, data.msg, true);
+            document.getElementById('emailValidate').value = email;
+            setTimeout(() => {
+              forgotModal.hide();
+              codeModal.show();
+            }, 1500);
+          } else {
+            showMessage(msgRequest, data.msg, false);
+          }
+        })
+        .catch(err => { showMessage(msgRequest, 'Error de conexión con el servidor.', false); })
+        .finally(() => {
+          btn.disabled = false;
+          btn.textContent = 'Enviar Código';
+        });
+    });
+
+    formValidate.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnValidateCode');
+      btn.disabled = true;
+      btn.textContent = 'Verificando...';
+      showMessage(msgValidate, '');
+
+      const formData = new FormData(formValidate);
+      const email = formData.get('emailValidate');
+      const code = formData.get('resetCode');
+
+      fetch('login/validar_codigo_reset.php', { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            document.getElementById('emailNewPass').value = email;
+            document.getElementById('codeNewPass').value = code;
+            codeModal.hide();
+            newPassModal.show();
+          } else {
+            showMessage(msgValidate, data.msg, false);
+          }
+        })
+        .catch(err => { showMessage(msgValidate, 'Error de conexión.', false); })
+        .finally(() => {
+          btn.disabled = false;
+          btn.textContent = 'Verificar';
+        });
+    });
+
+    formNewPass.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const newPass = document.getElementById('newPassword').value;
+      const confirmPass = document.getElementById('confirmPassword').value;
+      showMessage(msgNewPass, '');
+
+      if (newPass !== confirmPass) {
+        showMessage(msgNewPass, 'Las contraseñas no coinciden.', false);
+        return;
+      }
+
+      const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@$#\-_])[A-Za-z\d!@$#\-_]{8,}$/;
+      if (!regex.test(newPass)) {
+        showMessage(msgNewPass, 'La contraseña no es segura (mín 8 car, Mayús, minús, núm, símbolo !@$#_-).', false);
+        return;
+      }
+
+      const btn = document.getElementById('btnNewPassword');
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      const formData = new FormData(formNewPass);
+
+      fetch('login/actualizar_password.php', { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            showMessage(msgNewPass, data.msg, true);
+            setTimeout(() => { newPassModal.hide(); }, 2500);
+          } else {
+            showMessage(msgNewPass, data.msg, false);
+          }
+        })
+        .catch(err => { showMessage(msgNewPass, 'Error de conexión.', false); })
+        .finally(() => {
+          btn.disabled = false;
+          btn.textContent = 'Cambiar Contraseña';
+        });
+    });
+
+    [forgotModalEl, codeModalEl, newPassModalEl].forEach(modalEl => {
+      modalEl.addEventListener('hidden.bs.modal', function() {
+        showMessage(msgRequest, '');
+        showMessage(msgValidate, '');
+        showMessage(msgNewPass, '');
+        formRequest.reset();
+        formValidate.reset();
+        formNewPass.reset();
+      });
+    });
+
+    const loginModalEl = document.getElementById('loginModal');
+    if (loginModalEl) {
+      loginModalEl.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const redirectPage = button?.getAttribute('data-redirect') || '';
+        let form = loginModalEl.querySelector('form');
+        if (form) {
+          let redirectInput = form.querySelector('input[name="redirect_to"]');
+          if (!redirectInput) {
+            redirectInput = document.createElement('input');
+            redirectInput.type = 'hidden';
+            redirectInput.name = 'redirect_to';
+            form.appendChild(redirectInput);
+          }
+          redirectInput.value = redirectPage;
+        }
+      });
+    }
+  }
+});
+</script>
+<!-- Botón login final -->
+    <!-- SLIDER -->
+    <section class="slider">
+        <img src="images/nosotros/uta_fisei.jpg" alt="UTA Banner">
+        <div class="slider-overlay">
+            <section class="slider_section ">
+      <div id="customCarousel1" class="carousel slide" data-ride="carousel" data-interval="1500">   
         <div class="carousel-inner">
 
           <?php foreach ($sliderData as $index => $item) : ?>
@@ -135,608 +1050,1493 @@ if (!is_array($footerData)) {
         </div>
       </div>
     </section>
-    </div>
-
-  <section class="offer_section layout_padding-bottom py-5">
-    <h1 class="text-center mb-4" style="font-size:34px; color:#6d1313;">AUTORIDADES</h1>
-    <div class="container">
-      <div class="row g-4">
-
-        <?php if (!empty($autoridades)): ?>
-          <?php foreach ($autoridades as $a):
-            $id = (int)$a['id'];
-            $modalId = "autoridadModal_$id";
-            $foto = htmlspecialchars($a['foto'] ?? 'images/placeholder.jpg');
-            $titulo = htmlspecialchars(trim($a['titulo'] ?? ''));
-            $nombre = htmlspecialchars(trim($a['nombre'] ?? ''));
-            $cargo = htmlspecialchars(trim($a['cargo'] ?? 'Autoridad'));
-            $encabezado = trim(($titulo ? $titulo . ' ' : '') . $nombre);
-            $resumen = htmlspecialchars($a['resumen'] ?? '');
-            $direccion = htmlspecialchars($a['direccion'] ?? '');
-            $telefono = htmlspecialchars($a['telefono'] ?? '');
-            $ext = htmlspecialchars($a['telefono_ext'] ?? '');
-            $horario = htmlspecialchars($a['horario'] ?? '');
-            $email = htmlspecialchars($a['email'] ?? '');
-            ?>
-            <div class="col-12">
-              <div class="card shadow-sm border-0">
-                <div class="row g-0">
-                  <div class="col-md-4 bg-light text-center p-3">
-                    <img src="<?= $foto ?>" alt="<?= $encabezado ?>" class="img-fluid rounded">
-                    <?php if ($email): ?>
-                      <div class="mt-2">
-                        <a href="mailto:<?= $email ?>" style="color:#6d1313; font-weight:600;">
-                          <?= $email ?>
-                        </a>
-                      </div>
-                    <?php endif; ?>
-                  </div>
-
-                  <div class="col-md-8 d-flex flex-column justify-content-center p-4">
-                    <div style="font-size:1rem; color:#6d1313; font-weight:700;"><?= $cargo ?></div>
-                    <h5 class="fw-bold"><?= $encabezado ?></h5>
-                    <button class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#<?= $modalId ?>">Más detalles</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal fade" id="<?= $modalId ?>" tabindex="-1" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title"><?= $encabezado ?></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                  </div>
-                  <div class="modal-body">
-                    <?php if ($resumen): ?><p><?= nl2br($resumen) ?></p><?php endif; ?>
-                    <ul>
-                      <?php if ($direccion): ?><li><strong>Dirección:</strong> <?= $direccion ?></li><?php endif; ?>
-                      <?php if ($telefono): ?><li><strong>Teléfono:</strong> <?= $telefono ?><?= $ext ? ' ext ' . $ext : '' ?></li><?php endif; ?>
-                      <?php if ($horario): ?><li><strong>Horario:</strong> <?= nl2br($horario) ?></li><?php endif; ?>
-                    </ul>
-                  </div>
-                  <div class="modal-footer">
-                    <?php if ($email): ?><a href="mailto:<?= $email ?>" class="btn btn-primary">Contactar</a><?php endif; ?>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          <?php endforeach; ?>
-        <?php else: ?>
-          <p class="text-center">No hay autoridades registradas.</p>
-        <?php endif; ?>
-
-      </div>
-    </div>
-  </section>
-  <section class="about_section layout_padding" style="background-color: #6f0909;">
-    <div class="container">
-      <div class="row mt-4">
-        <div class="col-md-6">
-          <div class="box">
-            <h3><strong>Misión</strong></h3>
-            <p><?= nl2br(htmlspecialchars($misionVision["mision"], ENT_QUOTES, 'UTF-8')) ?></p>
-          </div>
         </div>
-        <div class="col-md-6">
-          <div class="box">
-            <h3><strong>Visión</strong></h3>
-            <p><?= nl2br(htmlspecialchars($misionVision["vision"], ENT_QUOTES, 'UTF-8')) ?></p>
-          </div>
-        </div>
-      </div>
+    </section>
+
+
+
+    <!-- BIENVENIDA -->
+  <h3  id="eventosSection" class="titulo-eventos">Eventos</h3>
+
+<div id="seccionRecomendados">
+
+   <div class="titulo-seccion">
+    <h3 class="titulo-eventos">⭐ Recomendados</h3>
+    <button onclick="fintodo()" class="btn-ver-todo">Ver todo</button>
+</div>
+    <div class="slider-container">
+        <button class="arrow left" onclick="moverSlider(-1)">❮</button>
+        <div class="slider-favoritos" id="sliderFavoritos"></div>
+        <button class="arrow right" onclick="moverSlider(1)">❯</button>
     </div>
-  </section>
-  <section class="food_section layout_padding-bottom">
-    <div class="container">
-      <div class="heading_container heading_center">
-        <h2 style="color: #6f0909;">Eventos</h2>
-      </div>
 
-      <ul class="filters_menu" id="filtrosCarreras">
-        </ul>
+</div>
 
-      <div class="filters-content">
-        <div class="row" id="contenedorEventos">
-          </div>
-      </div>
+<style>
+/* Contenedor del título + botón */
+.titulo-seccion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 25px 0 15px;
+    padding: 0 25px; /* AUMENTADO para separar del borde */
+}
+
+/* Título centrado y elegante */
+.titulo-eventos {
+    font-size: 28px;
+    font-weight: 700;
+    flex: 1;
+    text-align: center;
+    color: #2c2c2c;
+    font-family: "Poppins", sans-serif;
+}
+
+/* Botón rojo vino */
+.btn-ver-todo {
+    background-color: #7b0c21; /* rojo vino elegante */
+    color: white;
+    border: none;
+    padding: 7px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s ease;
+    margin-rigth: 40cm; /* MÁS SEPARACIÓN A LA IZQUIERDA */
+}
+
+/* Hover */
+.btn-ver-todo:hover {
+    background-color: #5d0819;
+    transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .titulo-seccion {
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 10px;
+    }
+    .btn-ver-todo {
+        margin-left: 0;
+    }
+}
+</style>
+
+<style>
+    
+</style>
+<div id="menuFiltros" style="display:none;">
+
+    <div id="menuFiltrosContainer">
+
+        <!-- Botones fijos -->
+        <button class="btnFiltro" onclick="generarTarjetasFavoritos()">⭐ Favoritos</button>
+        <button class="btnFiltro" onclick="generarTarjetasGeneral()">Todos</button>
+        <button class="btnFiltro" onclick="generarTarjetasSinCarrera()">Sin Carrera</button>
+
+        <!-- Botones dinámicos (carreras) -->
+        <div id="menuCarreras"></div>
+
+        <div id="contenedorTarjetas" class="contenedor-tarjetas"></div>
+
+
     </div>
-  </section>
-  <section class="comment_section layout_padding">
-    <div class="container" id="comentarios">
-      <div class="heading_container">
-        <h2>Comentarios recientes</h2>
-      </div>
 
-      <div id="listaComentarios">
-        <p>Cargando comentarios...</p>
-      </div>
+</div>
+<style>
+    
+    </style>
+<style>
 
-      <button class="btn btn-warning" onclick="location.href='contacto.php?from=add'" style="background-color: #6f0909; color: white;">
-        Añadir comentario
-      </button>
+ /* ================================
+   SECCIÓN RECOMENDADOS - ESTILOS
+================================ */
 
-    </div>
-  </section>
-  <footer class="footer_section" style="background-color: #6f0909;">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-4 footer-col">
-          <div class="footer_contact">
-            <h4>Contacto</h4>
-            <div class="contact_link_box">
-              <a>
-                <i class="fa fa-phone" aria-hidden="true"></i>
-                <span><?= htmlspecialchars($footerData["telefono"]) ?></span>
-              </a>
-              <a>
-                <i class="fa fa-envelope" aria-hidden="true"></i>
-                <span><?= htmlspecialchars($footerData["correo"]) ?></span>
-              </a>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4 footer-col">
-          <div class="footer_detail">
-            <a class="footer-logo">Uta</a>
-            <p><?= htmlspecialchars($footerData["Des_logo"]) ?></p>
-            <div class="footer_social">
-              <a href="<?= htmlspecialchars($footerData["face"]) ?>"><i class="fa fa-facebook" aria-hidden="true"></i></a>
-              <a href="<?= htmlspecialchars($footerData["ins_gra"]) ?>"><i class="fa fa-instagram" aria-hidden="true"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4 footer-col">
-          <h4>Horarios De atencion</h4>
-          <p><?= htmlspecialchars($footerData["dias"]) ?></p>
-          <p><?= htmlspecialchars($footerData["horas"]) ?></p>
-        </div>
-      </div>
-      <div class="footer-info">
-        <p>
-          &copy; <span id="displayYear"></span>
-          <?= htmlspecialchars($footerData["derechos"]) ?>
-        </p>
-      </div>
-    </div>
-  </footer>
-  <script src="js/jquery-3.4.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-  <script src="js/bootstrap.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-  <script src="https://unpkg.com/isotope-layout@3.0.4/dist/isotope.pkgd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js"></script>
-  <script src="js/custom.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+/* CONTENEDOR PRINCIPAL */
+#seccionRecomendados {
+    margin-top: 40px;
+    width: 100%;
+}
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      // 1. Carga de filtros de carreras
-      fetch("./login/registrar/car.php")
-        .then(res => res.json())
-        .then(data => {
-          let contenedor = document.getElementById("filtrosCarreras");
-          if (!contenedor) return;
+/* TÍTULO */
+#seccionRecomendados .titulo-eventos {
+    margin: 50;
+}
 
-          let btnTodos = document.createElement("li");
-          btnTodos.textContent = "Todos";
-          btnTodos.dataset.filter = ".all";
-          btnTodos.classList.add("active");
-          contenedor.appendChild(btnTodos);
+/* SLIDER CONTENEDOR */
+#seccionRecomendados .slider-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+}
 
-          let btnSin = document.createElement("li");
-          btnSin.textContent = "Sin carrera";
-          btnSin.dataset.filter = data.sin_carrera;
-          contenedor.appendChild(btnSin);
+/* BOTONES FLECHA */
+#seccionRecomendados .arrow {
+    background: #a30000;
+    border: none;
+    color: white;
+    font-size: 28px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.25s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-          data.carreras.forEach(c => {
-            let li = document.createElement("li");
-            li.dataset.filter = `.carrera_${c.id}`;
-            li.textContent = c.nombre;
-            contenedor.appendChild(li);
-          });
+#seccionRecomendados .arrow:hover {
+    background: #7a0000;
+    transform: scale(1.1);
+}
 
-          contenedor.querySelectorAll("li").forEach(li => {
-            li.addEventListener("click", function() {
-              contenedor.querySelectorAll("li").forEach(item => item.classList.remove("active"));
-              this.classList.add("active");
-              filtrarEventos(this.dataset.filter);
-            });
-          });
-        })
-        .catch(err => console.error("Error al cargar filtros de carrera:", err));
+#seccionRecomendados .arrow:active {
+    transform: scale(0.9);
+}
 
-      // 2. Carga y visualización de eventos
-      fetch("./login/registrar/eventos.php")
-        .then(res => res.json())
-        .then(data => {
-          mostrarEventos(data);
-        })
-        .catch(err => console.error("Error al cargar eventos:", err));
+/* ÁREA donde van las tarjetas */
+#seccionRecomendados .slider-favoritos {
+    display: flex;
+    gap: 25px;
+    overflow: hidden;
+    scroll-behavior: smooth;
+    padding: 10px;
+    width: 100%;
+}
 
-      // 3. Carga de comentarios
-      fetch("./home/obtener_comentarios.php")
+/* TARJETAS dentro del slider */
+#seccionRecomendados .tarjeta-evento {
+    min-width: 300px;
+    background: white;
+    border-radius: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+    transition: 0.25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+#seccionRecomendados .tarjeta-evento:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+/* IMAGEN */
+#seccionRecomendados .tarjeta-evento img {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 12px;
+    background: #f6f6f6;
+}
+
+/* TÍTULO DEL EVENTO */
+#seccionRecomendados .tarjeta-evento .titulo-evento {
+    font-size: 19px;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 15px;
+}
+
+/* DESCRIPCIÓN */
+#seccionRecomendados .tarjeta-evento .descripcion-evento {
+    font-size: 14px;
+    text-align: center;
+    color: #555;
+    margin-top: 10px;
+}
+
+/* FECHA */
+#seccionRecomendados .tarjeta-evento .fecha-evento {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 14px;
+    color: #444;
+}
+
+/* BOTÓN FAVORITO */
+#seccionRecomendados .tarjeta-evento .btn-fav {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: #ffe6ec;
+    color: #c40030;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 16px;
+}
+
+#seccionRecomendados .tarjeta-evento .btn-fav:hover {
+    background: #ffbfd0;
+}
+
+/* BOTÓN FAVORITO - ACTIVO */
+#seccionRecomendados .tarjeta-evento .btn-fav.active {
+    background: #ff224d;
+    color: #fff;
+    transform: scale(1.05);
+}
+
+/* Fondo de la foto */
+.slider img {
+    width: 100%;
+    height: 420px;
+    object-fit: cover;
+    filter: brightness(0.45); /* oscurece la imagen para mejorar el texto */
+}
+
+/* Capa oscura encima de la imagen */
+.slider-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 420px;
+    display: flex;
+    align-items: center;
+    z-index: 10;
+}
+
+/* Contenido del texto */
+.slider .detail-box {
+    color: white;
+    padding: 20px;
+    max-width: 600px;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+/* Títulos bonitos */
+.slider .detail-box h1 {
+    font-size: 42px;
+    font-weight: 800;
+    text-shadow: 0 3px 10px rgba(0,0,0,0.4);
+}
+
+/* Descripción */
+.slider .detail-box p {
+    font-size: 18px;
+    line-height: 1.4;
+    margin-top: 10px;
+    opacity: 0.9;
+}
+
+/* Indicadores abajo */
+#customCarousel1 .carousel-indicators li {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: white;
+    opacity: 0.6;
+}
+
+#customCarousel1 .carousel-indicators .active {
+    background-color: #a30000;
+    opacity: 1;
+}
+
+/* Animación suave */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* ❌ OCULTAR indicadores numéricos generados por Bootstrap 5 */
+.carousel-indicators [data-bs-target] {
+    display: none !important;
+}
+
+/* ✔ Usar solo los puntos clásicos de Bootstrap 4 */
+.carousel-indicators li {
+    width: 12px;
+    height: 12px;
+    background-color: white;
+    border: 2px solid #a90000;
+    border-radius: 50%;
+    margin: 5px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: 0.3s;
+}
+
+.carousel-indicators .active {
+    background-color: #a90000;
+    opacity: 1;
+}
+
+/* ✔ Colocarlos más arriba para evitar solapamiento con números ocultos */
+.carousel-indicators {
+    bottom: 20px !important;
+}
+
+    </style>
+<script>
+
+    // 📌 Donde se guardan los eventos (solo para tarjetas nuevas)
+let eventosFavoritosNuevos = [];
+let eventosGeneralesNuevos = [];
+
+
+// ======================================================
+// 🔥 1. Mostrar tarjetas SOLO de FAVORITOS
+// ======================================================
+function generarTarjetasFavoritos() {
+
+    fetch("./login/registrar/eventos_favoritos.php")
         .then(r => r.json())
-        .then(comments => {
-          const cont = document.getElementById("listaComentarios");
-          if (!cont) return;
+        .then(data => {
+            eventosFavoritosNuevos = data;
+            dibujarTarjetas(eventosFavoritosNuevos);
+        });
+}
 
-          if (comments.length === 0) {
-            cont.innerHTML = "<p>No hay comentarios aún.</p>";
-            return;
-          }
 
-          let html = "";
-          comments.forEach(c => {
-            // Se utiliza htmlspecialchars() para sanitizar la salida
-            const nombre = c.nombre ? htmlspecialchars(c.nombre) : 'Anónimo';
-            const fecha = c.fecha ? htmlspecialchars(c.fecha) : '';
-            const comentario = c.comentario ? htmlspecialchars(c.comentario) : '';
+// ======================================================
+// 🔥 2. Mostrar tarjetas de TODOS los eventos
+// ======================================================
+function generarTarjetasGeneral() {
 
-            html += `
-              <div class="comment_item" 
-                   style="border:1px solid #eee; padding:15px; border-radius:10px; margin-bottom:15px;">
-                <p><strong>${nombre}</strong> <span style="color:#999;">(${fecha})</span></p>
-                <p>${comentario}</p>
-              </div>
-            `;
-          });
-          cont.innerHTML = html;
-        })
-        .catch(err => console.error("Error al cargar comentarios:", err));
+    fetch("./login/registrar/eventos.php")
+        .then(r => r.json())
+        .then(data => {
+            eventosGeneralesNuevos = data;
+            dibujarTarjetas(eventosGeneralesNuevos);
+        });
+}
+    function generarTarjetasSinCarrera() {
+
+            // Si todavía no se cargan los eventos generales → cargar y luego filtrar
+        
+
+                fetch("./login/registrar/eventos.php")
+                    .then(r => r.json())
+                    .then(data => {
+                        eventosGeneralesNuevos = data;
+
+                        // FILTRAR AQUÍ
+                        const sinCarrera = eventosGeneralesNuevos.filter(e => e.id_carrera == 0);
+
+                        // Dibujar tarjetas filtradas
+                        dibujarTarjetas(sinCarrera);
+                    });
+
+
+        }
+function filtrarCarrera(idCarrera) {
+
+    // Si todavía no están cargados los eventos generales → cargar y luego filtrar
+    if (eventosGeneralesNuevos.length === 0) {
+
+        fetch("./login/registrar/eventos.php")
+            .then(r => r.json())
+            .then(data => {
+                eventosGeneralesNuevos = data;
+
+                const filtrados = eventosGeneralesNuevos.filter(e => e.id_carrera == idCarrera);
+                dibujarTarjetas(filtrados);
+            });
+
+    } else {
+
+        // Si ya están cargados → filtrar directamente
+        const filtrados = eventosGeneralesNuevos.filter(e => e.id_carrera == idCarrera);
+        dibujarTarjetas(filtrados);
+    }
+}
+
+
+
+
+
+// ======================================================
+// 🎨 3. Dibujar tarjetas genérico (reutilizable)
+// ======================================================
+function dibujarTarjetas(lista) {
+
+    let cont = document.getElementById("contenedorTarjetas");
+    cont.innerHTML = ""; // limpiar
+
+    if (!lista || lista.length === 0) {
+        cont.innerHTML = "<p>No hay eventos disponibles.</p>";
+        return;
+    }
+
+    lista.forEach(e => {
+
+        cont.innerHTML += `
+            <div class="tarjeta-evento">
+                <img src="${e.imagen ?? 'images/placeholder_default.png'}" 
+                     alt="imagen del evento">
+
+                <div class="titulo-evento">${e.nombre}</div>
+
+                <div class="descripcion-evento">
+                    ${e.descripcion}
+                </div>
+
+                <div class="fecha-evento">
+                    ${e.fecha}
+                </div>
+
+              <button class="btn btn-inscribirse btn-sm mt-2"
+    data-bs-toggle="modal"
+    data-bs-target="#loginModal"
+    data-redirect="buscar_eventos.php">
+    Inscribirse
+</button>
+            </div>
+        `;
+    });
+}
+
+</script>
+<style>
+    /* Estilo del botón Inscribirse */
+.btn-inscribirse {
+    background-color: #9a0918ff; /* Rojo Bootstrap */
+    border-color: #dc3545;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.375rem;
+}
+
+.btn-inscribirse:hover {
+    background-color: #bb2d3b; /* Rojo más oscuro al hover */
+    border-color: #b02a37;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-inscribirse:active {
+    background-color: #b02a37;
+    border-color: #a52834;
+    transform: translateY(0);
+}
+
+.btn-inscribirse:focus {
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5);
+}
+    </style>
+<style>
+
+
+    #contenedorTarjetas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    width: 100%;
+    padding: 20px 0;
+    box-sizing: border-box;
+}
+.tarjeta-evento {
+    width: 290px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0px 4px 18px rgba(0,0,0,0.12);
+    transition: 0.25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+
+    .contenedor-tarjetas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.tarjeta-evento {
+    width: 290px;
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+    transition: 0.25s;
+}
+
+.tarjeta-evento:hover {
+    transform: translateY(-4px);
+    box-shadow: 0px 6px 22px rgba(0,0,0,0.18);
+}
+
+
+.tarjeta-evento img {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.titulo-evento {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 12px 0 5px 0;
+    text-align: center;
+}
+
+
+.descripcion-evento {
+    text-align: center;
+    color: #555;
+    margin-top: 5px;
+
+    /* Control para textos largos */
+    max-height: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fecha-evento {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+
+.btn-fav {
+    width: 100%;
+    margin-top: auto;
+    border: 1px solid #444;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-fav:hover {
+    background: #eeeeee;
+}
+
+/* Contenedor del menú */
+.titulo-eventos {
+    text-align: center;
+    font-size: 34px;
+    font-weight: 800;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    color: #2e2e2e;
+}
+
+.titulo-eventos::after {
+    content: "";
+    width: 90px;
+    height: 4px;
+    background: #b30000;
+    display: block;
+    margin: 12px auto 0 auto;
+    border-radius: 6px;
+}
+    
+
+/* CONTENEDOR PRINCIPAL PARA TODOS LOS BOTONES */
+#menuFiltrosContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px auto;
+    width: 100%;
+}
+
+/* ESTILO DE BOTONES (FIJOS + DINÁMICOS) */
+.btnFiltro,
+#menuCarreras button {
+    background: #861a10ff;
+    border: none;
+    padding: 10px 18px;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+
+.btnFiltro:hover,
+#menuCarreras button:hover {
+    background: #4e555b;
+    transform: scale(1.05);
+}
+
+/* BOTÓN ACTIVO */
+.activo {
+    background: #1f085cff !important;
+    font-weight: bold;
+    transform: scale(1.05);
+}
+@media (max-width: 600px) {
+    .tarjeta-evento {
+        width: 90%;
+    }
+
+    .descripcion-evento {
+        max-height: none; /* mostrar todo en móvil */
+    }
+}
+
+
+/* Ocultar completamente los indicadores generados por Bootstrap 5 */
+.carousel-indicators button,
+.carousel-indicators [data-bs-target],
+.carousel-indicators .active[data-bs-target] {
+    display: none !important;
+}
+
+
+</style>
+
+    <!-- SECCIÓN DE TARJETAS -->
+
+   <script>     
+function verTodo() {
+    document.getElementById("seccionRecomendados").style.display = "none"; // oculta todo el bloque
+    document.getElementById("menuFiltros").style.display = "block";
+
+    mostrarEventos(eventosGlobales);
+    cargarCarrerasMenu();
+}
+function fintodo(){
+verTodo();
+generarTarjetasFavoritos();
+
+}
+
+
+// =============================
+//     FUNCIÓN mostrarEventos
+// =============================
+function mostrarEventos(lista) {
+    const contenedor = document.getElementById("sliderFavoritos");
+
+    if (!contenedor) {
+        console.error("❌ No existe el contenedor #sliderFavoritos");
+        return;
+    }
+
+    if (!lista || lista.length === 0) {
+        contenedor.innerHTML = "<p>No hay eventos disponibles.</p>";
+        return;
+    }
+
+    let html = "";
+    lista.forEach(ev => {
+        html += `
+            <div class="card card-evento">
+                <img src="${ev.imagen}" alt="">
+                <h4>${ev.nombre}</h4>
+                <p>${ev.descripcion}</p>
+                <p>${ev.fecha}</p>
+               
+              <button class="btn btn-inscribirse btn-sm mt-2"
+    data-bs-toggle="modal"
+    data-bs-target="#loginModal"
+    data-redirect="buscar_eventos.php">
+    Inscribirse
+</button>
+            </div>
+        `;
     });
 
-    function mostrarEventos(data) {
-      let contenedor = document.getElementById("contenedorEventos");
-      contenedor.innerHTML = "";
+    contenedor.innerHTML = html;
+}
 
-      data.forEach(evento => {
-        const id_carrera = evento.id_carrera ? evento.id_carrera : null;
-        const claseCarrera = id_carrera ? `carrera_${id_carrera}` : "sin_carrera";
 
-        // Sanitización para XSS antes de insertar en el DOM
-        const nombre = htmlspecialchars(evento.nombre || '');
-        const descripcion = htmlspecialchars(evento.descripcion || '');
-        const imagen = htmlspecialchars(evento.imagen || '');
-        const fecha = htmlspecialchars(evento.fecha || '');
+// =============================
+//     MOVER MANUAL POR FLECHAS
+// =============================
+function moverSlider(direccion) {
+    const slider = document.getElementById("sliderFavoritos");
+    slider.scrollLeft += direccion * 300;
+}
 
-        let div = document.createElement("div");
-        div.className = `col-sm-6 col-lg-4 all ${claseCarrera}`;
 
-        div.innerHTML = `
-            <div class="box" >
-                <div>
-                    <div class="img-box">
-                        <img src="${imagen}" alt="${nombre}">
-                    </div>
-                    <div class="detail-box" style="background-color: #6f0909;">
-                        <h5>${nombre}</h5>
-                        <p>${descripcion}</p>
-                        <div class="options">
-                        <h6>Fecha de duracion</h6>
-                            <h6>${fecha}</h6>
-                        </div>
-                        <button  class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal" 
-                        data-redirect="buscar_eventos.php" >
-                        Inscribirse
-                    </button>
-                </div>
-                    </div>
+// =============================
+//   CARGAR FAVORITOS DEL SLIDER
+// =============================
+function cargarSliderFavoritos() {
+    let favoritos = JSON.parse(localStorage.getItem("favoritos")) || [];
+
+    if (favoritos.length === 0) {
+        document.getElementById("sliderFavoritos").innerHTML = `
+            <p class="text-center w-100">No tienes eventos favoritos aún.</p>
+        `;
+        return;
+    }
+
+    let eventosFavoritos = eventosGlobales.filter(ev => favoritos.includes(ev.id));
+
+    let html = "";
+    eventosFavoritos.forEach(ev => {
+        html += `
+            <div class="card card-fav">
+                <img src="${ev.imagen}" class="card-img-top" alt="img">
+                <div class="card-body">
+                    <h5>${ev.nombre}</h5>
+                    <p>${ev.fecha}</p>
+                    <button onclick="toggleFavorito(${ev.id})" class="btn btn-danger">Quitar ❤️</button>
                 </div>
             </div>
         `;
-        contenedor.appendChild(div);
-      });
-    }
+    });
 
-    function filtrarEventos(filtro) {
-      let eventos = document.querySelectorAll("#contenedorEventos .all");
+    document.getElementById("sliderFavoritos").innerHTML = html;
+}
+function cargarCarrerasMenu() {
+fetch("./login/registrar/car.php")
+    .then(r => r.json())
+    .then(data => {
+        let html = "";
 
-      eventos.forEach(e => {
-        // Elimina el punto para comparar clases
-        const filtroClass = filtro.startsWith('.') ? filtro.substring(1) : filtro;
+        data.carreras.forEach(c => {   // ✅ AQUÍ SÍ ES CORRECTO
+            html += `
+                <button class="btn btn-secondary" onclick="filtrarCarrera(${c.id})">
+                    ${c.nombre}
+                </button>
+            `;
+        });
 
-        if (filtro === ".all") {
-          e.style.display = "block";
-        } else if (e.classList.contains(filtroClass)) {
-          e.style.display = "block";
-        } else {
-          e.style.display = "none";
+        document.getElementById("menuCarreras").innerHTML = html;
+    });
+
+}
+// =============================
+//    CARGAR EVENTOS DESDE PHP
+// =============================
+let eventosGlobales = [];
+
+fetch("./login/registrar/eventos_favoritos.php")
+    .then(r => r.json())
+    .then(data => {
+        eventosGlobales = data;
+        cargarSliderFavoritos();
+        mostrarEventos(eventosGlobales);
+        iniciarAutoScroll();   // 🔥 activar movimiento automático
+    })
+    .catch(err => console.error("Error cargando eventos:", err));
+// =====================================================
+//      🔥 MOVIMIENTO AUTOMÁTICO SUAVE DEL SLIDER
+// =====================================================
+
+let autoScrollActivo = true;
+
+function iniciarAutoScroll() {
+    const slider = document.getElementById("sliderFavoritos");
+    if (!slider) return;
+
+    function mover() {
+        if (!autoScrollActivo) return;
+
+        slider.scrollLeft += 1;   // velocidad suave
+
+        // si llega al final vuelve al inicio
+        if (slider.scrollLeft + slider.clientWidth >= slider.scrollWidth - 5) {
+            slider.scrollLeft = 0;
         }
-      });
+
+        requestAnimationFrame(mover);
     }
+
+    mover();
+
+    // detener cuando el usuario pasa el mouse
+    slider.addEventListener("mouseenter", () => autoScrollActivo = false);
+    slider.addEventListener("mouseleave", () => autoScrollActivo = true);
+}
+
+</script>
+
+
+
+<style>
+/* Fondo oscuro */
+.comment-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn .3s ease;
+}
+
+/* Caja */
+.comment-modal {
+    background: #ffffff;
+    padding: 25px;
+    width: 360px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: slideIn .25s ease;
+    position: relative;
+}
+
+.comment-modal h2 {
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    text-align: center;
+}
+
+/* Inputs */
+.comment-modal input,
+.comment-modal textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+/* Botón */
+.send-btn {
+    width: 100%;
+    background: #640c0cff;
+    border: none;
+    padding: 10px;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.send-btn:hover {
+    background: #a93f3fff;
+}
+
+/* Cerrar */
+.modal-close {
+    position: absolute;
+    right: 12px;
+    top: 8px;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+/* Mensajes */
+.msg {
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity:0; }
+    to { opacity:1; }
+}
+
+@keyframes slideIn {
+    from { transform: scale(0.8); opacity:0; }
+    to { transform: scale(1); opacity:1; }
+}
+
+
+</style>
     
-    // Función simple de sanitización de HTML para JS
-    function htmlspecialchars(str) {
-      if (typeof str !== 'string') return '';
-      return str.replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
+<!-- MISIÓN Y VISIÓN -->
+<section class="mision-vision">
+    <div class="mv-box">
+        <h2>Misión</h2>
+        <p>
+            <?= $misionVision['mision'] ?>
+        </p>
+    </div>
+
+    <div class="mv-box">
+        <h2>Visión</h2>
+        <p>
+              <?= $misionVision['vision'] ?>
+        </p>
+    </div>
+</section>
+
+
+
+<!-- AUTORIDADES (SLIDER) -->
+<section class="autoridades">
+   <h2 class="titulo-autoridades">Autoridades UTA</h2>
+
+    <div class="slider-container">
+
+        <button class="arrow left" onclick="moveLeft()">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+       <div id="sliderAutoridades" class="slider-autoridades">
+
+           
+        </div>
+
+        <button class="arrow right" onclick="moveRight()">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+    </div>
+</section>
+<style>
+/* ============================
+   TÍTULO ELEGANTE DE SECCIÓN
+============================ */
+.titulo-autoridades {
+    font-size: 32px;
+    font-weight: 800;
+    color:  #640c0cff; /* Azul institucional elegante */
+    text-align: center;
+    margin: 50px 0 30px;
+    letter-spacing: 1px;
+    position: relative;
+    font-family: "Poppins", sans-serif;
+}
+
+/* Línea decorativa debajo del título */
+.titulo-autoridades::after {
+    content: "";
+    display: block;
+    width: 90px;
+    height: 4px;
+    background:  #640c0cff;
+    margin: 12px auto 0;
+    border-radius: 2px;
+}
+
+/* Línea sutil más larga (doble decoración) */
+.titulo-autoridades::before {
+    content: "";
+    display: block;
+    width: 180px;
+    height: 1.5px;
+    background: #640c0cff;
+    margin: 0 auto 6px;
+    border-radius: 2px;
+}
+
+/* Versión responsive */
+@media (max-width: 600px) {
+    .titulo-autoridades {
+        font-size: 26px;
+        margin: 40px 0 25px;
     }
-  </script>
-  <?php // La lógica de los modales se mantiene abajo, fuera del body para seguir la estructura original ?>
-  <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content login-modal-content">
-        <div class="modal-body p-0">
-          <div class="login-box">
-            <img src="images/usu/logouta.jpg" class="logo-uta" alt="Logo UTA">
-            <h2>login</h2>
-            <?php if (!empty($error)): ?>
-              <div class="error"><?= $error ?></div>
-            <?php endif; ?>
-            <?php if (isset($_GET['error'])): ?>
-              <div class="error">
-                <?php
-                if ($_GET['error'] == 'usuario_no_encontrado') echo "⚠️ Usuario no encontrado.";
-                elseif ($_GET['error'] == 'contraseña_incorrecta') echo "⚠️ Contraseña incorrecta.";
-                elseif ($_GET['error'] == 'rol_no_valido') echo "⚠️ Rol no válido.";
-                elseif ($_GET['error'] == 'usuario_no_verificado') echo "⚠️ El usuario aún no está verificado por el administrador.";
-                ?>
-              </div>
-            <?php endif; ?>
-            <form method="POST" action="login/validar.php">
-              <div class="input-group">
-                <label for="usuario">Usuario</label>
-                <input type="email" name="usuario" id="usuario" placeholder="Ingrese su correo" required>
-              </div>
-              <div class="input-group">
-                <label for="clave">Contraseña</label>
-                <input type="password" name="clave" id="clave" placeholder="Ingrese su contraseña" required>
-              </div>
-              <button type="submit" class="btn-login">Ingresar</button>
-            </form>
-            <br>
-            <div class="text-center mt-2" style="font-size: 0.9rem;">
-              <a href="#" class="link-registro" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" data-bs-dismiss="modal">
-                ¿Olvidaste tu contraseña?
-              </a>
-            </div>
-            <br>
-            <div class="registro">
-              ¿No tienes cuenta?
-              <a href="Login/registrar/Registrarse.php">Registrate aquí</a>
-            </div>
-            <p class="nota">© Universidad Técnica de Ambato - 2025</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    .titulo-autoridades::after {
+        width: 70px;
+    }
+    .titulo-autoridades::before {
+        width: 150px;
+    }
+}
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
 
-  <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content login-modal-content">
-        <div class="modal-body p-0">
-          <div class="login-box">
-            <h2>Recuperar Contraseña</h2>
-            <form id="formRequestReset">
-              <p style="color: #ccc; font-size: 0.9rem;">Ingresa tu correo y te enviaremos un código de 6 dígitos.</p>
-              <div id="msgRequestReset" class="mb-2"></div>
-              <div class="input-group">
-                <label for="emailRequest">Correo</label>
-                <input type="email" name="emailRequest" id="emailRequest" placeholder="tu_correo@uta.edu.ec" required>
-              </div>
-              <button type="submit" class="btn-login" id="btnRequestReset">Enviar Código</button>
-            </form>
-            <div class="text-center mt-3">
-              <a href="#" class="link-registro" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">
-                Volver a Iniciar Sesión
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    fetch("home/autoridad2.php")
+        .then(r => r.json())
+        .then(autoridades => {
+            let slider = document.getElementById("sliderAutoridades");
+            slider.innerHTML = "";
 
-  <div class="modal fade" id="resetCodeModal" tabindex="-1" aria-labelledby="resetCodeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content login-modal-content">
-        <div class="modal-body p-0">
-          <div class="login-box">
-            <h2>Verificar Código</h2>
-            <form id="formValidateCode">
-              <p style="color: #ccc; font-size: 0.9rem;">Revisa tu correo e ingresa el código de 6 dígitos.</p>
-              <div id="msgValidateCode" class="mb-2"></div>
-              <input type="hidden" name="emailValidate" id="emailValidate">
-              <div class="input-group">
-                <label for="resetCode">Código de 6 dígitos</label>
-                <input type="text" name="resetCode" id="resetCode" maxlength="6" inputmode="numeric" required>
-              </div>
-              <button type="submit" class="btn-login" id="btnValidateCode">Verificar</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+            if (autoridades.length === 0) {
+                slider.innerHTML = "<p>No hay autoridades registradas.</p>";
+                return;
+            }
 
-  <div class="modal fade" id="newPasswordModal" tabindex="-1" aria-labelledby="newPasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content login-modal-content">
-        <div class="modal-body p-0">
-          <div class="login-box">
-            <h2>Establecer Nueva Contraseña</h2>
-            <form id="formNewPassword">
-              <div id="msgNewPassword" class="mb-2"></div>
-              <input type="hidden" name="emailNewPass" id="emailNewPass">
-              <input type="hidden" name="codeNewPass" id="codeNewPass">
-              <div class="input-group">
-                <label for="newPassword">Nueva Contraseña</label>
-                <input type="password" name="newPassword" id="newPassword" placeholder="Mín. 8 caracteres" required>
-              </div>
-              <div class="input-group">
-                <label for="confirmPassword">Confirmar Contraseña</label>
-                <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Repite la contraseña" required>
-              </div>
-              <button type="submit" class="btn-login" id="btnNewPassword">Cambiar Contraseña</button>
-            </form>
-          </div>
-        </div>
-      </div>
+            let modalsHTML = "";
+
+            autoridades.forEach(a => {
+                let id = a.id;
+                let modalId = "autoridadModal_" + id;
+
+                let foto = a.foto || "images/placeholder_default.png";
+                let cargo = a.cargo || "Autoridad";
+                let encabezado = `${a.titulo ?? ""} ${a.nombre ?? ""}`.trim();
+
+                slider.innerHTML += `
+                    <div class="autoridad autoridad-card">
+                        <img src="${foto}" alt="${encabezado}">
+                        <h3>${encabezado}</h3>
+                        <p>${cargo}</p>
+                        <button class="btn-detalles" data-bs-toggle="modal" data-bs-target="#${modalId}">
+                            Más detalles
+                        </button>
+                    </div>
+                `;
+
+                modalsHTML += `
+                    <div class="modal fade" id="${modalId}" tabindex="-1">
+                      <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title">${encabezado}</h5>
+                          
+                          </div>
+                          <div class="modal-body">
+                            ${a.resumen ? `<p>${a.resumen.replace(/\n/g, "<br>")}</p>` : ""}
+                            <ul>
+                              ${a.direccion ? `<li><strong>Dirección:</strong> ${a.direccion}</li>` : ""}
+                              ${a.telefono ? `<li><strong>Teléfono:</strong> ${a.telefono}${a.telefono_ext ? " ext " + a.telefono_ext : ""}</li>` : ""}
+                              ${a.horario ? `<li><strong>Horario:</strong> ${a.horario.replace(/\n/g, "<br>")}</li>` : ""}
+                            </ul>
+                          </div>
+                          <div class="modal-footer">
+                            ${a.email ? `<a href="mailto:${a.email}" class="btn btn-secondary">Contactar</a>` : ""}
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById("modals-root").insertAdjacentHTML("beforeend", modalsHTML);
+
+
+            setTimeout(inicializarSlider, 200);
+        })
+        .catch(err => {
+            console.error("Error al cargar autoridades:", err);
+            document.getElementById("sliderAutoridades").innerHTML = "Error cargando autoridades";
+        });
+});
+</script>
+
+
+
+
+  
+    
+ <!-- Slider Autoridades -->
+ <script>
+    // === SLIDER AUTORIDADES ===
+    function inicializarSlider() {
+        const slider = document.querySelector(".slider-autoridades")
+        if (!slider || slider.children.length === 0) {
+            console.warn("Slider vacío, no se puede iniciar.");
+            return;
+        }
+
+        // Detectar ancho real de cada tarjeta (incluye padding y espacio)
+        const cardWidth = slider.children[0].offsetWidth + 30;
+
+        window.moveRight = function () {
+            slider.scrollBy({ left: cardWidth, behavior: 'smooth' });
+        };
+
+        window.moveLeft = function () {
+            slider.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+        };
+
+       function autoSlide() {
+    slider.scrollBy({ left: 2, behavior: 'smooth' });
+
+    // Reinicia cuando llega al final
+    if (slider.scrollLeft + slider.clientWidth >= slider.scrollWidth - 5) {
+        slider.scrollTo({ left: 0 });
+    }
+}
+       let auto = setInterval(autoSlide, 20); // Movimiento suave continuo
+        slider.addEventListener("mouseenter", () => clearInterval(auto));
+        slider.addEventListener("mouseleave", () => auto = setInterval(autoSlide, 3000));
+    }
+
+
+
+</script>
+<style>
+    /* ================================
+   CONTENEDOR GENERAL
+================================ */
+.autoridades-section {
+    width: 100%;
+    padding: 40px 20px;
+    background: #f5f7fa;
+    text-align: center;
+}
+
+/* ================================
+   SLIDER
+================================ */
+.slider-container-autoridades {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: 10px 0;
+}
+
+.slider-autoridades {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    gap: 25px;
+    padding: 15px;
+    scrollbar-width: none;
+}
+
+.slider-autoridades::-webkit-scrollbar {
+    display: none;
+}
+
+/* ================================
+   TARJETAS
+================================ */
+.autoridad-card {
+    min-width: 220px;
+    max-width: 220px;
+    background: #fff;
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.autoridad-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+}
+
+.autoridad-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.autoridad-card h3 {
+    font-size: 18px;
+    color: #222;
+    margin: 8px 0;
+}
+
+.autoridad-card p {
+    font-size: 15px;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.btn-detalles {
+    background: #9e0c0cff;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s ease;
+}
+
+.btn-detalles:hover {
+    background: #272a2eff;
+}
+
+/* ================================
+   Botones laterales del slider
+================================ */
+.arrow-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #004aad;
+    color: white;
+    border: none;
+    font-size: 26px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s ease;
+}
+
+.arrow-btn:hover {
+    background: #002d6b;
+}
+
+.arrow-left { left: 10px; }
+.arrow-right { right: 10px; }
+
+    </style>
+  <style> 
+  /* ================================
+   MODAL GENERAL
+================================ */
+.modal-content {
+    border-radius: 18px !important;
+    overflow: hidden;
+    padding-bottom: 10px;
+}
+
+.modal-header {
+    background: #640c0cff;
+    color: #fff;
+    padding: 18px;
+}
+
+.modal-title {
+    font-size: 22px;
+}
+
+.modal-body {
+    padding: 20px 25px;
+    font-size: 16px;
+}
+
+.modal-body p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.modal-body ul {
+    list-style: none;
+    padding: 0;
+}
+
+.modal-body ul li {
+    margin-bottom: 8px;
+    padding: 8px;
+    background: #f3f3f3;
+    border-radius: 8px;
+}
+
+/* ================================
+   FOOTER
+================================ */
+.modal-footer {
+    padding: 15px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-footer .btn {
+    border-radius: 8px !important;
+    padding: 8px 14px;
+}
+
+.modal-footer .btn-secondary {
+    background: #640c0cff;
+    color: white;
+}
+
+.modal-footer .btn-secondary:hover {
+    background: #24272cff;
+}
+
+  </style>
+    <div id="modals-root"></div>
+
+<section id="comentariosSection" class="comentarios">
+
+    <!-- LISTADO DE COMENTARIOS (luego se llenará desde la BD) -->
+   <section class="comentarios-section">
+    <h2>Comentarios recientes</h2>
+
+    <div id="comentariosLista" class="comentarios-lista">
+        <p>Cargando comentarios...</p>
     </div>
-  </div>
+
+    <button class="comments-btn" onclick="openCommentModal()">
+    Añadir comentario
+</button>
+
+<!-- Modal -->
+<div id="commentModal" class="comment-modal-overlay" style="display:none;">
+    <div class="comment-modal">
+        <span class="modal-close" onclick="closeCommentModal()">×</span>
+
+        <h2>Enviar comentario</h2>
+
+        <form id="commentForm">
+            <label>Nombre:</label>
+            <input type="text" name="nombre" required>
+
+            <label>Teléfono:</label>
+            <input type="text" name="telefono" placeholder="09XXXXXXXX" required>
+
+            <label>Correo institucional:</label>
+            <input type="email" name="correo" placeholder="ejemplo@uta.edu.ec" required>
+
+            <label>Comentario:</label>
+            <textarea name="comentario" rows="4" required></textarea>
+
+            <button type="submit" class="send-btn">Enviar</button>
+        </form>
+
+        <p id="commentMsg" class="msg"></p>
+    </div>
+</div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const forgotModalEl = document.getElementById('forgotPasswordModal');
-      const codeModalEl = document.getElementById('resetCodeModal');
-      const newPassModalEl = document.getElementById('newPasswordModal');
+function openCommentModal() {
+    document.getElementById("commentModal").style.display = "flex";
+}
 
-      if (forgotModalEl) {
-        const forgotModal = new bootstrap.Modal(forgotModalEl);
-        const codeModal = new bootstrap.Modal(codeModalEl);
-        const newPassModal = new bootstrap.Modal(newPassModalEl);
-        const formRequest = document.getElementById('formRequestReset');
-        const formValidate = document.getElementById('formValidateCode');
-        const formNewPass = document.getElementById('formNewPassword');
-        const msgRequest = document.getElementById('msgRequestReset');
-        const msgValidate = document.getElementById('msgValidateCode');
-        const msgNewPass = document.getElementById('msgNewPassword');
+function closeCommentModal() {
+    document.getElementById("commentModal").style.display = "none";
+}
 
-        function showMessage(container, message, isSuccess = false) {
-          const colorClass = isSuccess ? 'green' : '';
-          container.innerHTML = `<div class="error" style="color:${colorClass};">${message}</div>`;
+// Enviar formulario
+document.getElementById("commentForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let formData = new FormData(this);
+
+    fetch("./home/guardar_comentario.php", {
+        method: "POST",
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        const msg = document.getElementById("commentMsg");
+
+        if (data.status === "success") {
+            msg.style.color = "green";
+            msg.textContent = data.msg;
+
+            // limpiar formulario
+            document.getElementById("commentForm").reset();
+
+            // cerrar modal en 1.5 sec
+            setTimeout(() => {
+                closeCommentModal();
+                msg.textContent = "";
+            }, 1500);
+
+        } else {
+            msg.style.color = "red";
+            msg.textContent = data.msg;
         }
-
-        formRequest.addEventListener('submit', function(e) {
-          e.preventDefault();
-          const email = document.getElementById('emailRequest').value;
-          const btn = document.getElementById('btnRequestReset');
-          btn.disabled = true;
-          btn.textContent = 'Enviando...';
-          showMessage(msgRequest, '');
-
-          const formData = new FormData();
-          formData.append('email', email);
-
-          fetch('login/solicitar_reset.php', { method: 'POST', body: formData })
-            .then(response => response.json())
-            .then(data => {
-              if (data.status === 'success') {
-                showMessage(msgRequest, data.msg, true);
-                document.getElementById('emailValidate').value = email;
-                setTimeout(() => {
-                  forgotModal.hide();
-                  codeModal.show();
-                }, 1500);
-              } else {
-                showMessage(msgRequest, data.msg, false);
-              }
-            })
-            .catch(err => { showMessage(msgRequest, 'Error de conexión con el servidor.', false); })
-            .finally(() => {
-              btn.disabled = false;
-              btn.textContent = 'Enviar Código';
-            });
-        });
-
-        formValidate.addEventListener('submit', function(e) {
-          e.preventDefault();
-          const btn = document.getElementById('btnValidateCode');
-          btn.disabled = true;
-          btn.textContent = 'Verificando...';
-          showMessage(msgValidate, '');
-
-          const formData = new FormData(formValidate);
-          const email = formData.get('emailValidate');
-          const code = formData.get('resetCode');
-
-          fetch('login/validar_codigo_reset.php', { method: 'POST', body: formData })
-            .then(response => response.json())
-            .then(data => {
-              if (data.status === 'success') {
-                document.getElementById('emailNewPass').value = email;
-                document.getElementById('codeNewPass').value = code;
-                codeModal.hide();
-                newPassModal.show();
-              } else {
-                showMessage(msgValidate, data.msg, false);
-              }
-            })
-            .catch(err => { showMessage(msgValidate, 'Error de conexión.', false); })
-            .finally(() => {
-              btn.disabled = false;
-              btn.textContent = 'Verificar';
-            });
-        });
-
-        formNewPass.addEventListener('submit', function(e) {
-          e.preventDefault();
-          const newPass = document.getElementById('newPassword').value;
-          const confirmPass = document.getElementById('confirmPassword').value;
-          showMessage(msgNewPass, '');
-
-          if (newPass !== confirmPass) {
-            showMessage(msgNewPass, 'Las contraseñas no coinciden.', false);
-            return;
-          }
-
-          const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@$#\-_])[A-Za-z\d!@$#\-_]{8,}$/;
-          if (!regex.test(newPass)) {
-            showMessage(msgNewPass, 'La contraseña no es segura (mín 8 car, Mayús, minús, núm, símbolo !@$#_-).', false);
-            return;
-          }
-
-          const btn = document.getElementById('btnNewPassword');
-          btn.disabled = true;
-          btn.textContent = 'Guardando...';
-
-          const formData = new FormData(formNewPass);
-
-          fetch('login/actualizar_password.php', { method: 'POST', body: formData })
-            .then(response => response.json())
-            .then(data => {
-              if (data.status === 'success') {
-                showMessage(msgNewPass, data.msg, true);
-                setTimeout(() => { newPassModal.hide(); }, 2500);
-              } else {
-                showMessage(msgNewPass, data.msg, false);
-              }
-            })
-            .catch(err => { showMessage(msgNewPass, 'Error de conexión.', false); })
-            .finally(() => {
-              btn.disabled = false;
-              btn.textContent = 'Cambiar Contraseña';
-            });
-        });
-
-        [forgotModalEl, codeModalEl, newPassModalEl].forEach(modalEl => {
-          modalEl.addEventListener('hidden.bs.modal', function() {
-            showMessage(msgRequest, '');
-            showMessage(msgValidate, '');
-            showMessage(msgNewPass, '');
-            formRequest.reset();
-            formValidate.reset();
-            formNewPass.reset();
-          });
-        });
-
-        const loginModalEl = document.getElementById('loginModal');
-        if (loginModalEl) {
-          loginModalEl.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const redirectPage = button?.getAttribute('data-redirect') || '';
-            let form = loginModalEl.querySelector('form');
-            if (form) {
-              let redirectInput = form.querySelector('input[name="redirect_to"]');
-              if (!redirectInput) {
-                redirectInput = document.createElement('input');
-                redirectInput.type = 'hidden';
-                redirectInput.name = 'redirect_to';
-                form.appendChild(redirectInput);
-              }
-              redirectInput.value = redirectPage;
-            }
-          });
-        }
-      }
+    })
+    .catch(err => {
+        alert("Error al conectar con el servidor");
     });
-  </script>
+});
+</script>
+
+</section>
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    function htmlspecialchars(str) {
+        return str.replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")
+                  .replace(/"/g, "&quot;");
+    }
+
+    // === CARGAR COMENTARIOS DE LA BASE ===
+    fetch("./home/obtener_comentarios.php")
+        .then(res => res.json())
+        .then(data => {
+            const lista = document.getElementById("comentariosLista");
+
+            if (!data || data.length === 0) {
+                lista.innerHTML = "<p>No hay comentarios aún.</p>";
+                return;
+            }
+
+            let html = "";
+            data.forEach(c => {
+                const nombre = c.nombre ? htmlspecialchars(c.nombre) : "Anónimo";
+                const comentario = c.comentario ? htmlspecialchars(c.comentario) : "";
+                const fecha = c.fecha ? htmlspecialchars(c.fecha) : "";
+
+                html += `
+                    <div class="comentario">
+                        <h3>${nombre}</h3>
+                        <p>"${comentario}"</p>
+                        <small>Publicado el ${fecha}</small>
+                    </div>
+                `;
+            });
+
+            lista.innerHTML = html;
+        })
+        .catch(err => console.error("Error cargando comentarios:", err));
+
+});
+</script>
+<!-- 📌 Contenedor global donde se inyectarán todos los modals -->
+  <!-- FOOTER -->
+<footer class="uta-footer">
+    <div class="uta-footer-container">
+
+        <!-- CONTACTO -->
+        <div class="footer-col">
+            <h3>Contacto</h3>
+
+            <p>📍 Ambato - Ecuador</p>
+            <p>📞 <?= htmlspecialchars($footerData["telefono"]) ?></p>
+            <p>📧 <?= htmlspecialchars($footerData["correo"]) ?></p>
+        </div>
+
+        <!-- INFORMACIÓN -->
+        <div class="footer-col">
+            <h3>Información</h3>
+            <ul>
+                <li>Sobre la Universidad</li>
+                <li>Carreras</li>
+                <li>Servicios</li>
+            </ul>
+        </div>
+
+        <!-- HORARIOS -->
+        <div class="footer-col">
+            <h3>Horarios de Atención</h3>
+            <ul>
+                <li><?= htmlspecialchars($footerData["dias"]) ?></li>
+                <li><?= htmlspecialchars($footerData["horas"]) ?></li>
+            </ul>
+        </div>
+
+        <!-- CENTRO UTA -->
+        <div class="footer-col logo-center">
+            <h2>UTA</h2>
+            <p>Universidad para tu futuro</p>
+
+            <div class="social-icons">
+    <a href="<?= htmlspecialchars($footerData["face"]) ?>">
+        <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook">
+    </a>
+
+    <a href="<?= htmlspecialchars($footerData["ins_gra"]) ?>">
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
+    </a>
+</div>
+        </div>  
+
+    </div>
+    <div class="uta-footer-bottom">
+                 <?= htmlspecialchars($footerData["derechos"]) ?>
+                 <br>
+                <a href="https://sdsnt2003.atlassian.net/servicedesk/customer/portal/102" target="_blank"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>Encontraste un fallo?</a>
+    </div>
+</footer>
+
+
 </body>
 </html>

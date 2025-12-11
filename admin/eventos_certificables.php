@@ -1,20 +1,42 @@
 <?php
 session_start();
-if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'administrador') {
-  header("Location: ../index.php");
-  exit();
+require_once __DIR__ . '/../includes/conexion.php';
+require_once __DIR__ . '/../includes/check_event_permission.php'; // opcional pero recomendado
+
+// Verificar sesión y cédula (debe haberse guardado en login)
+if (!isset($_SESSION['correo']) || !isset($_SESSION['cedula'])) {
+    header("Location: ../index.php");
+    exit();
+}
+$cedula = $_SESSION['cedula'];
+
+// 1) Obtener lista de eventos donde la cédula figura como RESPONSABLE o PONENTE
+$stmtEv = $conn->prepare("
+    SELECT e.ID_EVE_CUR
+    FROM EVENTOS_CURSOS e
+    INNER JOIN PERSONAL_EVENTO p ON e.ID_EVE_CUR = p.ID_EVE_CUR
+    WHERE p.CED_USU = ? AND (p.ES_RESPONSABLE = 1 OR UPPER(p.ROL_EVENTO) = 'PONENTE')
+    ORDER BY e.FEC_INI_EVE_CUR DESC
+");
+$stmtEv->bind_param("s", $cedula);
+$stmtEv->execute();
+$resEvTmp = $stmtEv->get_result();
+
+$misEventos = [];
+while ($row = $resEvTmp->fetch_assoc()) {
+    $misEventos[] = (int)$row['ID_EVE_CUR'];
+}
+$stmtEv->close();
+
+// Si no pertenece a ningún evento, denegar acceso (o mostrar vacío)
+if (empty($misEventos)) {
+    // Puedes redirigir o mostrar sin resultados; aquí denegamos acceso
+    header("Location: ../index.php?error=sin_permiso");
+    exit();
 }
 
-require_once __DIR__ . '/../includes/conexion.php';
-
-/*
- * Eventos aptos para certificación:
- * - Evento ya finalizado (FEC_FIN_EVE_CUR <= CURDATE())
- * - Contar inscripciones
- * - Contar inscripciones que cumplen TODOS los requisitos obligatorios
- *   y (si es Pagado) tienen pago aprobado.
- */
-
+// 2) Construir la consulta original pero limitada a los IDs del responsable
+// Nota: tomamos tu SQL original y le añadimos "AND e.ID_EVE_CUR IN (...)"
 $sql = "
 SELECT
   e.ID_EVE_CUR,
@@ -62,6 +84,7 @@ FROM EVENTOS_CURSOS e
 JOIN TIPOS_EVENTO te ON te.ID_TIPO_EVE = e.ID_TIPO_EVE
 JOIN INSCRIPCIONES i ON i.ID_EVE_CUR = e.ID_EVE_CUR
 WHERE e.FEC_FIN_EVE_CUR <= CURDATE()
+  -- placeholder for event filtering will be injected here
 GROUP BY
   e.ID_EVE_CUR,
   e.TIT_EVE_CUR,
@@ -73,8 +96,34 @@ GROUP BY
 ORDER BY e.FEC_FIN_EVE_CUR DESC
 ";
 
-$evRes = $conn->query($sql);
+// 3) Inyectar cláusula IN(...) segura
+$placeholders = implode(',', array_fill(0, count($misEventos), '?'));
+$filterClause = " AND e.ID_EVE_CUR IN ($placeholders) ";
+$sql = str_replace('-- placeholder for event filtering will be injected here', $filterClause, $sql);
+
+// 4) Preparar statement y bind dinámico
+$stmt = $conn->prepare($sql);
+if (!$stmt) {
+    die("Error preparing statement: " . $conn->error);
+}
+
+// bind_param requires references and a types string
+$types = str_repeat('i', count($misEventos));
+$params = array_merge([$types], $misEventos);
+
+// build references array for call_user_func_array
+$refs = [];
+foreach ($params as $key => $value) {
+    $refs[$key] = &$params[$key];
+}
+
+// bind params and execute
+call_user_func_array([$stmt, 'bind_param'], $refs);
+$stmt->execute();
+$evRes = $stmt->get_result();
+$stmt->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -165,6 +214,12 @@ $evRes = $conn->query($sql);
       overflow: hidden;
     }
 
+     .card-header {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
+    
     .table thead {
       background: var(--primary);
       color: white;
@@ -226,34 +281,38 @@ $evRes = $conn->query($sql);
 
 <body>
   <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="../images/favico.png" alt="Logo UTA">
+    <div class="sidebar">
+        <div class="logo">
+            <img src="../images/favico.png" alt="Logo UTA">
+        </div>
+        <a href="admin_inicio.php" ><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="miseventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Requisitos de Inscripción</a>
+        <a href="requisitosAprobacion.php"><i class="fa fa-clipboard-check"></i> Requisitos de Aprobación</a>
+        <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
+        <a href="eventos_certificables.php" class="active"><i class="fa fa-certificate"></i> Generación de Certificados</a>
+        <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
+        <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
+                      <br> <br> <br><br><br>
+        <hr>
+          <a href="https://sdsnt2003.atlassian.net/servicedesk/customer/portal/102" target="_blank"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>Encontraste un fallo?</a>
     </div>
-    <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
-    <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-    <a href="evidencias_global.php"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
-    <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
-    <a href="eventos_certificables.php" class="active"><i class="fa fa-certificate"></i> Generación de Certificados</a>
-    <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
-    <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-    <a href="admin_configuraciones.php"><i class="fas fa-cog me-2"></i> Configuraciones</a>
-    <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
-  </div>
 
   <div class="content">
     <div class="card mb-3">
       <div class="card-body">
         <h3 class="mb-1">Eventos aptos para generación de certificados</h3>
-        <div class="text-muted">
-          Se muestran los eventos que ya finalizaron y el número de participantes que cumplen
-          con todos los requisitos (evidencias y pagos aprobados, en caso de eventos pagados).
-        </div>
       </div>
     </div>
+       <!-- Input de búsqueda en tiempo real -->
+        <div style="min-width:260px; max-width:420px; width:100%;">
+          <input id="buscarEvento" class="form-control search-input" type="search" placeholder="Buscar por título, tipo, fecha o modalidad..." aria-label="Buscar eventos">
+        </div></br>
 
     <div class="card">
-      <div class="card-header">Listado de eventos</div>
+      <div class="card-header">
+        Listado de eventos
+      </div>
       <div class="card-body table-responsive">
         <table class="table align-middle">
           <thead>
@@ -313,12 +372,71 @@ $evRes = $conn->query($sql);
                   </td>
                 </tr>
               <?php endwhile; ?>
+              <!-- fila de "no results" oculta por defecto -->
+              <tr id="noResults" style="display:none;">
+                <td colspan="8" class="text-center text-muted py-4">No se encontraron eventos.</td>
+              </tr>
             <?php endif; ?>
           </tbody>
         </table>
       </div>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // BÚSQUEDA EN TIEMPO REAL (sin botón) - debounce 200ms
+    (function() {
+      const input = document.getElementById('buscarEvento');
+      const tabla = document.getElementById('tablaCertEventos');
+      if (!input || !tabla) return;
+      const tbody = tabla.querySelector('tbody');
+      const noResults = document.getElementById('noResults');
+
+      function debounce(fn, delay) {
+        let t;
+        return function(...args) {
+          clearTimeout(t);
+          t = setTimeout(() => fn.apply(this, args), delay);
+        };
+      }
+
+      function normalize(text) {
+        return (text || '').toString().trim().toLowerCase();
+      }
+
+      function filtrar(q) {
+        q = normalize(q);
+        // todas las filas reales (excluimos la fila noResults si existe)
+        const filas = Array.from(tbody.querySelectorAll('tr')).filter(tr => tr.id !== 'noResults');
+        let anyVisible = false;
+
+        filas.forEach(tr => {
+          // columnas: 0=evento,1=tipo,2=fechas,3=modalidad,4=horas,5=inscritos,6=aptos,7=acciones
+          const title = normalize(tr.cells[0]?.textContent);
+          const tipo = normalize(tr.cells[1]?.textContent);
+          const fechas = normalize(tr.cells[2]?.textContent);
+          const modalidad = normalize(tr.cells[3]?.textContent);
+          const combined = `${title} ${tipo} ${fechas} ${modalidad}`.replace(/\s+/g, ' ');
+
+          if (!q || combined.indexOf(q) !== -1) {
+            tr.style.display = '';
+            anyVisible = true;
+          } else {
+            tr.style.display = 'none';
+          }
+        });
+
+        if (!anyVisible) {
+          if (noResults) noResults.style.display = '';
+        } else {
+          if (noResults) noResults.style.display = 'none';
+        }
+      }
+
+      const debounced = debounce((e) => filtrar(e.target.value), 200);
+      input.addEventListener('input', debounced);
+    })();
+  </script>
 </body>
 
 </html>

@@ -1,39 +1,90 @@
 <?php
 session_start();
-if (!isset($_SESSION['correo']) || strtolower($_SESSION['rol_nombre']) !== 'administrador') {
-  header("Location: ../index.php"); exit();
-}
 require_once __DIR__ . '/../includes/conexion.php';
+require_once __DIR__ . '/../includes/check_event_permission.php'; // contiene user_is_event_staff() y user_is_any_event_staff()
+
+// Verificamos sesión
+if (!isset($_SESSION['correo']) || !isset($_SESSION['cedula'])) {
+    header("Location: ../index.php");
+    exit();
+}
+
+$cedula = $_SESSION['cedula']; // debe establecerse en el login
+
+// Obtener la lista de eventos donde esta cédula figura como RESPONSABLE o PONENTE
+$stmtEv = $conn->prepare("
+    SELECT e.ID_EVE_CUR, e.TIT_EVE_CUR
+    FROM EVENTOS_CURSOS e
+    INNER JOIN PERSONAL_EVENTO p ON e.ID_EVE_CUR = p.ID_EVE_CUR
+    WHERE p.CED_USU = ? AND (p.ES_RESPONSABLE = 1 OR UPPER(p.ROL_EVENTO) = 'PONENTE')
+    ORDER BY e.FEC_INI_EVE_CUR DESC
+");
+$stmtEv->bind_param("s", $cedula);
+$stmtEv->execute();
+$evRes = $stmtEv->get_result(); // $evRes es un mysqli_result compatible con tu while
+$misEventos = [];
+while ($r = $evRes->fetch_assoc()) {
+    $misEventos[] = (int)$r['ID_EVE_CUR'];
+}
+$stmtEv->close();
+
+// Si no pertenece a ningún evento, denegar acceso
+if (empty($misEventos)) {
+    header("Location: ../index.php?error=sin_permiso");
+    exit();
+}
 
 /* ====== Filtros ====== */
+// Nota: ahora el combo de eventos mostrará SOLO los eventos que representa el user
 $eventId = isset($_GET['evento']) && $_GET['evento'] !== '' ? (int)$_GET['evento'] : null;
 $tipo    = isset($_GET['tipo'])   && $_GET['tipo']   !== '' ? $_GET['tipo']   : null; // NUMERICO/TEXTO_CORTO/DOCUMENTO
 $estado  = isset($_GET['estado']) && $_GET['estado'] !== '' ? $_GET['estado'] : null; // Pendiente/Aprobado/Rechazado
 $q       = trim($_GET['q'] ?? ''); // búsqueda por nombre, cédula o requisito
 
-/* Combo de eventos (obligatorio) */
-$evRes = $conn->query("SELECT ID_EVE_CUR, TIT_EVE_CUR FROM EVENTOS_CURSOS ORDER BY FEC_INI_EVE_CUR DESC");
+// Si el usuario escogió un evento, validar que realmente le pertenece
+if ($eventId !== null && !in_array($eventId, $misEventos, true)) {
+    // Alternativa: podrías redirigir al primer evento, o mostrar mensaje. Aquí denegamos.
+    header("Location: evidencias_global.php?error=no_permiso_evento");
+    exit();
+}
+
+// Combo de eventos (solo los suyos)
+$evRes = null;
+if (!empty($misEventos)) {
+    // Obtener resultados con una consulta IN(...) usando placeholders
+    $placeholders = implode(',', array_fill(0, count($misEventos), '?'));
+    $types = str_repeat('i', count($misEventos));
+    $sql = "SELECT ID_EVE_CUR, TIT_EVE_CUR FROM EVENTOS_CURSOS WHERE ID_EVE_CUR IN ($placeholders) ORDER BY FEC_INI_EVE_CUR DESC";
+    $stmt = $conn->prepare($sql);
+    // bind dinámico
+    $stmt->bind_param($types, ...$misEventos);
+    $stmt->execute();
+    $evRes = $stmt->get_result();
+    $stmt->close();
+}
 
 /* Estados y tipos para combos */
 $tiposOpts   = ['NUMERICO' => 'Numérico', 'TEXTO_CORTO' => 'Texto', 'DOCUMENTO' => 'Documento'];
 $estadosOpts = ['Pendiente','Aprobado','Rechazado'];
 
 /* Si no hay evento elegido, no consultamos */
-$rows = null; $total = 0; $page=1; $perPage=50;
+$rows = null; $total = 0; $page = 1; $perPage = 50;
+// <-- inicializar por defecto para evitar warnings
 
 if ($eventId) {
   $where = ["i.ID_EVE_CUR = ".(int)$eventId];
+  $where[] = "r.TIPO_REQUISITO = 'INSCRIPCION'";
   if ($tipo)    $where[] = "r.TIPO = '".$conn->real_escape_string($tipo)."'";
   if ($estado)  $where[] = "ev.ESTADO_VALIDACION = '".$conn->real_escape_string($estado)."'";
   if ($q !== '') {
     $qLike = "%".$conn->real_escape_string($q)."%";
     $where[] = "(u.CED_USU LIKE '$qLike' OR CONCAT(u.APE_PRI_USU,' ',u.NOM_PRI_USU) LIKE '$qLike' OR r.NOM_REQ LIKE '$qLike')";
   }
-  $sqlWhere = "WHERE ".implode(" AND ", $where);
+  $sqlWhere = "WHERE ".implode(" AND ", $where); 
 
   $baseSql = "
     SELECT 
-      i.ID_INS, i.ID_EVE_CUR, e.TIT_EVE_CUR,
+      i.ID_INS, i.ID_EVE_CUR, e.TIT_EVE_CUR, e.NOTAS_FINALIZADAS,
       u.CED_USU, CONCAT(u.APE_PRI_USU,' ',u.NOM_PRI_USU) AS NOMBRE,
       r.ID_REQ, r.NOM_REQ, r.TIPO, r.VALOR_MINIMO,
       ev.VALOR_NUMERICO, ev.VALOR_TEXTO, ev.URL_ARCHIVO, ev.NOMBRE_ARCHIVO, ev.TIPO_MIME,
@@ -46,7 +97,8 @@ if ($eventId) {
     $sqlWhere
   ";
 
-  /* Paginación */
+
+  // Paginación
   $perPage = 50;
   $page = max(1, (int)($_GET['page'] ?? 1));
   $offset = ($page - 1) * $perPage;
@@ -55,6 +107,7 @@ if ($eventId) {
   $rows  = $conn->query($baseSql . " ORDER BY NOMBRE, r.NOM_REQ LIMIT $perPage OFFSET $offset");
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -180,6 +233,12 @@ if ($eventId) {
             font-weight: 600;
             font-size: 1.15rem;
         }
+
+         .card-header {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
 
         .table {
             margin: 0;
@@ -321,30 +380,39 @@ if ($eventId) {
             .sidebar a:hover { padding-left: 16px; }
             .content { margin-left: 80px; padding: 20px; }
         }
+
+       /* Estilo para los campos deshabilitados */
+.disabled-input {
+  background-color: #f8f9fa;  /* Fondo gris claro */
+  pointer-events: none;  /* Evita que se pueda interactuar con el campo */
+  opacity: 0.7;  /* Opacidad para indicar que está deshabilitado */
+}
+
     </style>
 </head>
 <body>
   <!-- Sidebar -->
-    <div class="sidebar">
+     <div class="sidebar">
         <div class="logo">
             <img src="../images/favico.png" alt="Logo UTA">
         </div>
-        <a href="admin_inicio.php"><i class="fas fa-home me-2"></i> Inicio</a>
-        <a href="gestionar_eventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
-        <a href="evidencias_global.php" class="active"><i class="fa fa-clipboard-check"></i> Gestionar Evidencias</a>
+        <a href="admin_inicio.php" ><i class="fas fa-home me-2"></i> Inicio</a>
+        <a href="miseventos.php"><i class="fas fa-calendar-check me-2"></i> Gestionar Eventos</a>
+        <a href="evidencias_global.php" class="active"><i class="fa fa-clipboard-check"></i> Requisitos de Inscripción</a>
+        <a href="requisitosAprobacion.php"><i class="fa fa-clipboard-check"></i> Requisitos de Aprobación</a>
         <a href="verificar_pagos.php"><i class="fa fa-credit-card"></i> Gestionar Pagos</a>
         <a href="eventos_certificables.php"><i class="fa fa-certificate"></i> Generación de Certificados</a>
-        <a href="editar_usuario.php"><i class="fas fa-users me-2"></i> Gestionar Usuarios</a>
         <a href="perfil.php"><i class="fas fa-user me-2"></i> Perfil</a>
-        <a href="admin_configuraciones.php"><i class="fas fa-cog me-2"></i> Configuraciones</a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
+              <br> <br> <br><br><br>
+        <hr>
+          <a href="https://sdsnt2003.atlassian.net/servicedesk/customer/portal/102" target="_blank"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>Encontraste un fallo?</a>
     </div>
 
   <div class="content">
     <div class="card mb-3">
       <div class="card-body">
         <h3 class="mb-1">Evidencias por evento</h3>
-        <div class="text-muted">Selecciona un evento y busca por participante (cédula o nombre) o por requisito.</div>
       </div>
     </div>
 
@@ -382,11 +450,17 @@ if ($eventId) {
               <?php endforeach; ?>
             </select>
           </div>
-          <div class="col-md-2">
-            <label class="form-label">Buscar</label>
-            <input type="text" name="q" id="buscarInp" value="<?= htmlspecialchars($q) ?>" class="form-control"
-                   placeholder="Cédula, nombre o requisito" <?= !$eventId ? 'disabled' : '' ?>>
-          </div>
+       <div class="col-md-2">
+  <label class="form-label">Buscar</label>
+  <input type="text"
+         class="form-control"
+         name="q"
+         id="buscarInp"
+         value="<?= htmlspecialchars($q) ?>"
+         placeholder="Buscar "
+         >
+</div>
+
           <!-- no botón: se envía automático -->
         </form>
       </div>
@@ -453,16 +527,19 @@ if ($eventId) {
                       <input type="hidden" name="tipo" value="<?= $r['TIPO'] ?>">
 
                       <?php if ($r['TIPO']==='NUMERICO'): ?>
-                        <input type="number" step="0.01" class="form-control"
-                               name="valor_numerico"
-                               value="<?= $r['VALOR_NUMERICO'] !== null ? (float)$r['VALOR_NUMERICO'] : '' ?>"
-                               placeholder="Ingrese nota">
+                        <input type="number" step="0.01"
+       class="form-control "
+       name="valor_numerico"
+       value="<?= $r['VALOR_NUMERICO'] !== null ? (float)$r['VALOR_NUMERICO'] : '' ?>"
+       placeholder="Ingrese nota">
+
                       <?php elseif ($r['TIPO']==='TEXTO_CORTO'): ?>
-                        <input type="text" class="form-control"
-                               name="valor_texto"
-                               value="<?= htmlspecialchars($r['VALOR_TEXTO'] ?? '') ?>"
-                               placeholder="Texto corto">
-                      <?php else: ?>
+    <button type="button"
+            class="btn btn-sm btn-outline-primary btn-ver-texto"
+            data-texto="<?= htmlspecialchars($r['VALOR_TEXTO'] ?? '') ?>">
+        <i class="fa fa-eye"></i> Ver
+    </button>
+<?php else: ?>
                         <span class="text-muted">—</span>
                       <?php endif; ?>
 
@@ -479,25 +556,33 @@ if ($eventId) {
     <span class="text-muted">—</span>
   <?php endif; ?>
 </td>
+<td>
+    <select name="estado" class="form-select form-select-sm">
+        <?php foreach ($estadosOpts as $opt): ?>
+            <option value="<?= $opt ?>"
+                <?= $r['ESTADO_VALIDACION'] === $opt ? 'selected' : '' ?>>
+                <?= $opt ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</td>
 
-                  <td style="min-width:150px">
-                    <select name="estado" class="form-select">
-                      <?php foreach ($estadosOpts as $opt): ?>
-                        <option <?= $r['ESTADO_VALIDACION']===$opt?'selected':'' ?>><?= $opt ?></option>
-                      <?php endforeach; ?>
-                    </select>
-                  </td>
                   <td style="min-width:220px">
-                    <textarea name="observacion" class="form-control" rows="1"
-                              placeholder="Observación..."><?= htmlspecialchars($r['OBSERVACION'] ?? '') ?></textarea>
-                  </td>
+                 <textarea name="observacion" class="form-control"
+          rows="1"
+          placeholder="Observación..."
+          ><?= htmlspecialchars($r['OBSERVACION'] ?? '') ?></textarea>
+
+        </td>
                   <td class="text-center">
-                      <button type="button" class="btn btn-uta btn-sm" data-bs-toggle="modal" data-bs-target="#confirmModal">
+                      <button type="submit" class="btn btn-uta btn-sm"
+        >
   <i class="fa fa-save"></i> Guardar
 </button>
 
+
+
                     </form>
-                  </td>
                 </tr>
               <?php endwhile; ?>
             </tbody>
@@ -538,21 +623,34 @@ if ($eventId) {
   </div>
 </div>
 
-<!-- Modal de confirmación -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+<!-- Modal para ver texto -->
+<div class="modal fade" id="textoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="confirmModalLabel">Confirmar acción</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <h5 class="modal-title">Texto enviado por el participante</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        ¿Estás seguro de que deseas guardar los cambios realizados en esta evidencia?
+        <p id="textoContenido" style="white-space: pre-wrap; font-size:1.05rem;"></p>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" id="confirmSaveBtn" class="btn btn-primary">Guardar</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+  <!-- Toast de guardado -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:2000">
+  <div id="saveToast" class="toast align-items-center text-bg-success border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body">
+        Evidencia guardada correctamente.
       </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
     </div>
   </div>
 </div>
@@ -667,23 +765,41 @@ if (docModalEl && docFrame && docTitleEl && window.bootstrap) {
 // Verifica que el botón de "Guardar" en el modal está bien referenciado
 const confirmSaveBtn = document.getElementById('confirmSaveBtn');
 
-// Verifica que el modal y el formulario estén presentes
-if (confirmSaveBtn) {
-  confirmSaveBtn.addEventListener('click', function () {
-    // Cerrar el modal
-    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-    modal.hide();
 
-    // Encontrar el formulario y enviarlo
-    const form = document.querySelector('.form-evidencia');
-    if (form) {
-      form.submit();
-    }
+
+
+// ===== Toast cuando se guardó =====
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('success') === '1') {
+  const toastEl = document.getElementById('saveToast');
+  if (toastEl) {
+    const toast = new bootstrap.Toast(toastEl, { delay: 2200 });
+    toast.show();
+  }
+  // limpiar el success de la URL sin recargar
+  urlParams.delete('success');
+  const newUrl = window.location.pathname + '?' + urlParams.toString();
+  window.history.replaceState({}, '', newUrl);
+}
+
+// ===== Modal "Ver texto" =====
+const textoModalEl = document.getElementById('textoModal');
+const textoContenido = document.getElementById('textoContenido');
+
+if (textoModalEl && textoContenido && window.bootstrap) {
+  const textoModal = new bootstrap.Modal(textoModalEl);
+
+  document.querySelectorAll('.btn-ver-texto').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const txt = btn.dataset.texto || '';
+      textoContenido.textContent = txt;
+      textoModal.show();
+    });
   });
 }
 
 
-    
+
   </script>
 </body>
 </html>

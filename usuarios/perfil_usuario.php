@@ -303,6 +303,9 @@ $certificados = $stmt_cert->get_result()->fetch_all(MYSQLI_ASSOC);
         <a href="buscar_eventos.php"><i class="fas fa-search"></i> <span>Buscar Eventos</span></a>
         <a href="perfil_usuario.php" class="active"><i class="fas fa-user"></i> <span>Perfil</span></a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a>
+                <br> <br> <br><br><br><br><br><br><br><br><br>  <br><br><br><br><br>
+        <hr>
+          <a href="https://sdsnt2003.atlassian.net/servicedesk/customer/portal/102" target="_blank"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>Encontraste un fallo?</a>
     </div>
 
     <div class="content">
@@ -456,6 +459,49 @@ $certificados = $stmt_cert->get_result()->fetch_all(MYSQLI_ASSOC);
                         </div>
                         </div>
                     </div>
+
+                    <!-- ===== DOCUMENTOS PERSONALES ===== -->
+                    <div class="card mt-4">
+                        <div class="card-header-custom">
+                            <i class="fas fa-file-alt me-2"></i> Mis Documentos Personales
+                        </div>
+                        <div class="card-body-custom">
+                            <p class="text-muted mb-3">Sube documentos requeridos comúnmente para eventos. Estos se usarán automáticamente en inscripciones si coinciden con los requisitos.</p>
+                            
+                            <?php
+                            // Obtener requisitos de tipo DOCUMENTO (puedes limitar a comunes con WHERE NOM_REQ IN ('Cédula', 'Certificado de Matrícula'))
+                            $req_docs = $conn->query("SELECT * FROM REQUISITOS WHERE TIPO = 'DOCUMENTO' ORDER BY NOM_REQ")->fetch_all(MYSQLI_ASSOC);
+                            
+                            foreach ($req_docs as $req): 
+                                // Verificar si ya tiene subido
+                                $stmt_doc = $conn->prepare("SELECT * FROM usuarios_documentos WHERE CED_USU = ? AND ID_REQ = ?");
+                                $stmt_doc->bind_param("si", $cedula, $req['ID_REQ']);
+                                $stmt_doc->execute();
+                                $doc_existente = $stmt_doc->get_result()->fetch_assoc();
+                            ?>
+                                <div class="mb-4 border-bottom pb-3">
+                                    <h6><?= htmlspecialchars($req['NOM_REQ']) ?></h6>
+                                    <?php if ($doc_existente): ?>
+                                        <p class="text-success"><i class="fas fa-check-circle"></i> Ya subido: <?= htmlspecialchars($doc_existente['NOMBRE_ARCHIVO']) ?> (Subido el <?= date('d/m/Y', strtotime($doc_existente['FECHA_SUBIDA'])) ?>)</p>
+                                        <a href="./<?= htmlspecialchars($doc_existente['URL_ARCHIVO']) ?>" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i> Ver</a>
+                                    <?php else: ?>
+                                        <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> No subido aún.</p>
+                                    <?php endif; ?>
+                                    
+                                    <!-- Formulario para subir/reemplazar -->
+                                    <form method="POST" enctype="multipart/form-data" action="procesar_documento_perfil.php">
+                                        <input type="hidden" name="id_req" value="<?= $req['ID_REQ'] ?>">
+                                        <div class="mb-2">
+                                            <label class="form-label">Subir/Reemplazar (PDF/JPG/PNG, máx 5MB):</label>
+                                            <input type="file" class="form-control" name="documento" accept=".pdf,.jpg,.jpeg,.png" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-upload"></i> <?= $doc_existente ? 'Reemplazar' : 'Subir' ?></button>
+                                    </form>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>

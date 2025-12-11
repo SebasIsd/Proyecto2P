@@ -64,6 +64,7 @@ if (!is_array($footerData)) {
   <link href="css/responsive.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/estiloslogin.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
@@ -141,12 +142,12 @@ if (!is_array($footerData)) {
     </div>
 
   <br>
-  <section class="about_section layout_padding" style="background-color: #6f0909;">
+  <section class="about_section layout_padding"">
     <div class="container">
       <div class="row">
         <div class="col-md-6 ">
           <div class="img-box">
-            <img src="images/nosotros/<?= htmlspecialchars($nosData["ruta"]) ?>" alt="Nosotros">
+            <img src="images/nosotros/<?= htmlspecialchars($nosData["ruta"]) ?>" alt="Nosotros" class="box-img" style="border-radius: 10px; height: auto; width: 100%; object-fit: cover; height: 400px; overflow: hidden; transition: transform 0.3s;">
           </div>
         </div>
         <div class="col-md-6">
@@ -155,7 +156,7 @@ if (!is_array($footerData)) {
               <h2>Nosotros</h2>
             </div>
             <p><?= nl2br(htmlspecialchars($nosData["des_noso"])) ?></p>
-            <a href="<?= htmlspecialchars($nosData["link_noso"]) ?>">Read More</a>
+            <a href="<?= htmlspecialchars($nosData["link_noso"]) ?>" style="text-decoration:none;">Saber más...</a>
           </div>
         </div>
       </div>
@@ -173,7 +174,7 @@ if (!is_array($footerData)) {
             <form id="formComentario">
 
               <div>
-                <input type="text" class="form-control" name="nombre" id="campoNombre" placeholder="Tu Nombre" required />
+                <input type="text" class="form-control" name="nombre" id="campoNombre" placeholder="Tu Nombre..." required/>
               </div>
 
               <div>
@@ -195,8 +196,8 @@ if (!is_array($footerData)) {
                 <input type="date" class="form-control" name="fecha" id="fechaActual" readonly />
               </div>
 
-              <div class="btn_box">
-                <button type="submit" style="background-color: #6f0909;">Enviar comentario</button>
+              <div class="btn_box mt-3">
+                <button type="submit" style="margin-top: 15px; background-color: #222831; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; cursor: pointer; transition: background-color 0.3s;">Enviar comentario</button>
               </div>
 
             </form>
@@ -235,35 +236,47 @@ if (!is_array($footerData)) {
             $github_url = htmlspecialchars($dev['github_url'] ?? '#');
             $whatsapp_url = htmlspecialchars($dev['whatsapp_url'] ?? '#');
             $correo_url = htmlspecialchars($dev['correo_url'] ?? '#');
-            $ruta_completa = htmlspecialchars($dev["ruta_completa"] ?? 'images/placeholder.jpg');
+            $ruta_completa = htmlspecialchars($dev["ruta_completa"] ?? 'images/placeholder_default.png');
           ?>
             <div class="item">
               <div class="box">
-                <div class="detail-box" style="background-color: #6f0909;">
-                  <h6><?= $nombre_completo ?></h6>
-                  <p><?= $descripcion ?></p>
-                  <a href="<?= $github_url ?>" target="_blank">
-                    <i class="fa fa-github" aria-hidden="true" style="color:black;"></i>
-                  </a>
-                  <a href="<?= $whatsapp_url ?>" target="_blank">
-                    <i class="fa fa-whatsapp" aria-hidden="true" style="color:green;"></i>
-                  </a>
-                  <a href="<?= $correo_url ?>" target="_blank">
-                    <i class="fa fa-envelope" aria-hidden="true"></i>
-                  </a>
-                </div>
+                  <div class="detail-box" style="background-color: #f0e3e3ff;">
+                    <div class="detail-box-dev">
+                        <h6><?= $nombre_completo ?></h6>
+                        <p><?= $descripcion ?></p>  
+                    <hr>
+                    <?php if ($github_url != '#'): ?>
+                      <a href="<?= $github_url ?>" target="_blank" class="btn btn-sm dev-social-btn btn-github">
+                        <i class="fa-brands fa-github"></i>
+                      </a>
+                    <?php endif; ?>
+                    
+                    <?php if ($whatsapp_url != '#'): ?>
+                      <a href="<?= $whatsapp_url ?>" target="_blank" class="btn btn-sm dev-social-btn btn-whatsapp">
+                        <i class="fa-brands fa-whatsapp"></i>
+                      </a>
+                    <?php endif; ?>
+                    
+                    <?php if ($correo_url != '#'): ?>
+                      <a href="<?= $correo_url ?>" target="_blank" class="btn btn-sm dev-social-btn btn-email">
+                        <i class="fa-solid fa-envelope"></i> 
+                      </a>
+                    <?php endif; ?>
+                  </div>
+                  </div>
                 <div class="img-box">
                   <img src="<?= $ruta_completa ?>" alt="<?= $nombre_completo ?>" class="box-img">
                 </div>
               </div>
             </div>
+
           <?php endforeach; ?>
 
         </div>
       </div>
     </div>
   </section>
-  <footer class="footer_section" style="background-color: #6f0909;">
+  <footer class="footer_section">
     <div class="container">
       <div class="row">
         <div class="col-md-4 footer-col">
@@ -286,8 +299,8 @@ if (!is_array($footerData)) {
             <a class="footer-logo">Uta</a>
             <p><?= htmlspecialchars($footerData["Des_logo"]) ?></p>
             <div class="footer_social">
-              <a href="<?= htmlspecialchars($footerData["face"]) ?>"><i class="fa fa-facebook" aria-hidden="true"></i></a>
-              <a href="<?= htmlspecialchars($footerData["ins_gra"]) ?>"><i class="fa fa-instagram" aria-hidden="true"></i></a>
+              <a href="<?= htmlspecialchars($footerData["face"]) ?>"><i class="fa-brands fa-facebook"></i></a>
+              <a href="<?= htmlspecialchars($footerData["ins_gra"]) ?>"><i class="fa-brands fa-instagram"></i></a>
             </div>
           </div>
         </div>
