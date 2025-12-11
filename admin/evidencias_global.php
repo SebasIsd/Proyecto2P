@@ -553,14 +553,17 @@ if ($eventId) {
     <span class="text-muted">—</span>
   <?php endif; ?>
 </td>
+<td>
+    <select name="estado" class="form-select form-select-sm">
+        <?php foreach ($estadosOpts as $opt): ?>
+            <option value="<?= $opt ?>"
+                <?= $r['ESTADO_VALIDACION'] === $opt ? 'selected' : '' ?>>
+                <?= $opt ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</td>
 
-                
-
-                      <?php foreach ($estadosOpts as $opt): ?>
-                        <option <?= $r['ESTADO_VALIDACION']===$opt?'selected':'' ?>><?= $opt ?></option>
-                      <?php endforeach; ?>
-                    </select>
-                  </td>
                   <td style="min-width:220px">
                  <textarea name="observacion" class="form-control"
           rows="1"
