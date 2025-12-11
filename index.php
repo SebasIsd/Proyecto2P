@@ -191,6 +191,7 @@ body {
     cursor: pointer;
     font-weight: 600;
     transition: background-color 0.3s ease;
+    text-decoration: none;
 }
 
 .navbar .order_online:hover {
@@ -1467,8 +1468,7 @@ function dibujarTarjetas(lista) {
 
         cont.innerHTML += `
             <div class="tarjeta-evento">
-                
-                <img src="${e.imagen ?? 'img/noimage.png'}" 
+                <img src="${e.imagen ?? 'images/placeholder_default.png'}" 
                      alt="imagen del evento">
 
                 <div class="titulo-evento">${e.nombre}</div>
