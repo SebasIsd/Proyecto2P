@@ -357,8 +357,10 @@ for ($i = 5; $i >= 0; $i--) {
         <a href="buscar_eventos.php"><i class="fas fa-search"></i> <span>Buscar Eventos</span></a>
         <a href="perfil_usuario.php"><i class="fas fa-user"></i> <span>Perfil</span></a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a>
+        <br> <br> <br><br><br><br><br><br><br><br><br>  <br><br><br>
+        <hr>
+          <a href="https://sdsnt2003.atlassian.net/servicedesk/customer/portal/102" target="_blank"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>Encontraste un fallo?</a>
     </div>
-
     <div class="content">
         <h1 class="mb-4">Dashboard Usuario</h1>
         <p>Bienvenido, <?= ucfirst($_SESSION['rol_nombre']) ?> (<?= $_SESSION['correo'] ?>)</p>

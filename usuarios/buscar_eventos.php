@@ -26,6 +26,7 @@ $sql = "
         e.MOD_EVE_CUR,
         e.COS_EVE_CUR,
         e.LUGAR,
+        e.IMG_EVE_CUR,
         t.NOM_TIPO_EVE,
         e.CUPOS_DISPONIBLES,
         e.CAPACIDAD_MAXIMA,
@@ -351,16 +352,25 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
         .btn-inscribir, .btn-detalles { width: 100%; justify-content: center; }
     }
     /* --- Ajuste visual para botones del buscador --- */
-#filtros-form .d-flex button {
-  flex: 1;
-  font-size: 0.95rem;
-}
+    #filtros-form .d-flex button {
+    flex: 1;
+    font-size: 0.95rem;
+    }
 
-#filtros-form .btn-primary i,
-#filtros-form .btn-clear i {
-  margin-right: 6px;
-}
-
+    #filtros-form .btn-primary i,
+    #filtros-form .btn-clear i {
+    margin-right: 6px;
+    }
+    .event-card {
+        transition: all 0.3s ease;
+        border-radius: 16px !important;
+    }
+    .card-img-top {
+        transition: all 0.3s ease;
+    }
+    .event-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
 </style>
 
 </head>
@@ -375,6 +385,9 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
         <a href="buscar_eventos.php" class="active"><i class="fas fa-search"></i> <span>Buscar Eventos</span></a>
         <a href="perfil_usuario.php"><i class="fas fa-user"></i> <span>Perfil</span></a>
         <a href="../Login/logout.php"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a>
+                <br> <br> <br><br><br><br><br><br><br><br><br>  <br><br><br>
+        <hr>
+          <a href="https://sdsnt2003.atlassian.net/servicedesk/customer/portal/102" target="_blank"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>Encontraste un fallo?</a>
     </div>
     <div class="content">
         <div class="page-header">
@@ -423,42 +436,58 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
 
         </div>
 
-        <div class="row">
-            <?php if (empty($eventos)): ?>
-                <div class="col-12 text-center py-5">
-                    <i class="fas fa-calendar-times" style="font-size: 3rem; color: #ccc;"></i>
-                    <h5 class="mt-3 text-muted">No se encontraron eventos</h5>
-                </div>
-            <?php else: ?>
-                <?php foreach ($eventos as $e): ?>
-                    <?php 
-                    // Cargar requisitos del evento
-                    $requisitos = $conn->query("
-                        SELECT r.NOM_REQ, r.TIPO
-                        FROM EVENTOS_REQUISITOS er
-                        JOIN REQUISITOS r ON er.ID_REQ = r.ID_REQ
-                        WHERE er.ID_EVE_CUR = {$e['ID_EVE_CUR']}
-                        ORDER BY er.ORDEN
-                    ")->fetch_all(MYSQLI_ASSOC);
-                    ?>
-                    <div class="col-md-6 col-lg-4 mb-5">
-                        <div class="event-card">
-                            <div class="card-header-custom">
-                                <?= htmlspecialchars($e['TIT_EVE_CUR']) ?>
-                            </div>
-                            <div class="card-body">
-                                <div class="event-title">Tipo de evento: <?= htmlspecialchars($e['NOM_TIPO_EVE']) ?></div>
-                                <div class="event-meta">
-                                    <i class="fas fa-calendar"></i>
-                                    <?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?>
-                                    <?= $e['FEC_FIN_EVE_CUR'] && $e['FEC_FIN_EVE_CUR'] !== $e['FEC_INI_EVE_CUR'] ? ' al ' . date('d/m/Y', strtotime($e['FEC_FIN_EVE_CUR'])) : '' ?>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+            <?php foreach ($eventos as $e): 
+                // Imagen por defecto si no hay
+                $imagen = !empty($e['IMG_EVE_CUR']) ? '../' . htmlspecialchars($e['IMG_EVE_CUR']) : '../images/default-event.jpg'; // Crea una imagen por defecto si quieres
+                $fecha = date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR']));
+                if ($e['FEC_FIN_EVE_CUR']) $fecha .= ' - ' . date('d/m/Y', strtotime($e['FEC_FIN_EVE_CUR']));
+                
+                $cupos_texto = $e['tiene_cupos'] ? "<span class='text-success fw-bold'>{$e['CUPOS_DISPONIBLES']} disponibles</span>" : "<span class='text-danger fw-bold'>Cupos agotados</span>";
+                $modalidad = $e['MOD_EVE_CUR'] == 'Pagado' ? "Pagado - \${$e['COS_EVE_CUR']}" : 'Gratis';
+
+                // Obtener requisitos para este evento
+                $requisitos_query = $conn->prepare("
+                    SELECT r.ID_REQ, r.NOM_REQ, r.TIPO
+                    FROM EVENTOS_REQUISITOS er
+                    JOIN REQUISITOS r ON er.ID_REQ = r.ID_REQ
+                    WHERE er.ID_EVE_CUR = ?
+                ");
+                $requisitos_query->bind_param("i", $e['ID_EVE_CUR']);
+                $requisitos_query->execute();
+                $requisitos = $requisitos_query->get_result()->fetch_all(MYSQLI_ASSOC);
+                $requisitos_json = json_encode($requisitos);
+            ?>
+                <div class="col">
+                        <div class="card h-100 shadow-sm border-0 overflow-hidden event-card">
+                            <!-- Imagen con overlay -->
+                            <div class="position-relative">
+                                <img src="<?= $imagen ?>" class="card-img-top" alt="<?= htmlspecialchars($e['TIT_EVE_CUR']) ?>" style="height: 220px; object-fit: cover;">
+                                <div class="card-img-overlay d-flex flex-column justify-content-between p-3" style="background: linear-gradient(to bottom, rgba(163,0,0,0.7) 0%, rgba(163,0,0,0.1) 100%);">
+                                    <div>
+                                        <h5 class="card-title text-white fw-bold mb-1"><?= htmlspecialchars($e['TIT_EVE_CUR']) ?></h5>
+                                        <span class="badge bg-light text-dark"><?= htmlspecialchars($e['NOM_TIPO_EVE']) ?></span>
+                                    </div>
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center gap-2">
-                                    <span class="badge-cupos badge-<?= $e['tiene_cupos'] ? 'disponible' : 'agotado' ?>">
-                                        <?= $e['CUPOS_DISPONIBLES'] ?> / <?= $e['CAPACIDAD_MAXIMA'] ?> cupos
-                                    </span>
-                                    
-                                <button type="button" class="btn-detalles" data-bs-toggle="modal" data-bs-target="#detalleModal"
+                            </div>
+
+                        <!-- Cuerpo de la card -->
+                        <!-- Cuerpo de la card -->
+                            <div class="card-body d-flex flex-column">
+                                <p class="card-text text-muted flex-grow-1" style="font-size: 0.92rem;">
+                                    <?= strlen($e['DES_EVE_CUR']) > 120 ? htmlspecialchars(substr($e['DES_EVE_CUR'], 0, 120)) . '...' : htmlspecialchars($e['DES_EVE_CUR']) ?>
+                                </p>
+
+                                <ul class="list-unstyled small text-muted mt-2">
+                                    <li><i class="fas fa-calendar-alt text-primary me-2"></i><?= $fecha ?></li>
+                                    <li><i class="fas fa-map-marker-alt text-primary me-2"></i><?= htmlspecialchars($e['LUGAR']) ?></li>
+                                    <li><i class="fas fa-users text-primary me-2"></i><?= $cupos_texto ?> de <?= $e['CAPACIDAD_MAXIMA'] ?></li>
+                                    <li><i class="fas fa-tag text-primary me-2"></i><?= $modalidad ?></li>
+                                </ul>
+
+                            <div class="mt-auto pt-3">
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#detalleModal"
                                         data-title="<?= htmlspecialchars($e['TIT_EVE_CUR']) ?>"
                                         data-type="<?= htmlspecialchars($e['NOM_TIPO_EVE']) ?>"
                                         data-start="<?= date('d/m/Y', strtotime($e['FEC_INI_EVE_CUR'])) ?>"
@@ -468,21 +497,31 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
                                         data-description="<?= htmlspecialchars($e['DES_EVE_CUR']) ?>"
                                         data-id="<?= $e['ID_EVE_CUR'] ?>"
                                         data-modalidad="<?= $e['MOD_EVE_CUR'] == 'Pagado' ? 'Pagado ($' . number_format($e['COS_EVE_CUR'], 2) . ')' : 'Gratis' ?>"
-                                        data-requisitos='<?= json_encode($requisitos) ?>'>
-                                    <i class="fas fa-info-circle"></i>   Detalles
-                                </button>
-
-                                    <a href="detalle_evento.php?id=<?= $e['ID_EVE_CUR'] ?>"
-                                       class="btn-inscribir <?= !$e['tiene_cupos'] ? 'disabled' : '' ?>">
-                                        <i class="fas fa-user-plus"></i> Inscribirme
-                                    </a>
+                                        data-requisitos='<?= $requisitos_json ?>'>
+                                        <i class="fas fa-info-circle"></i> Detalles
+                                    </button>
+                                    <?php if ($e['tiene_cupos']): ?>
+                                        <a href="detalle_evento.php?id=<?= $e['ID_EVE_CUR'] ?>" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-user-plus"></i> Inscribirme
+                                        </a>
+                                    <?php else: ?>
+                                        <button class="btn btn-secondary btn-sm" disabled>Cupos agotados</button>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
         </div>
+
+        <?php if (empty($eventos)): ?>
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No se encontraron eventos</h4>
+                <p class="text-muted">Prueba con otros filtros o busca más tarde.</p>
+            </div>
+        <?php endif; ?>
     </div>
 
     <div class="modal fade" id="detalleModal" tabindex="-1" aria-labelledby="detalleModalLabel" aria-hidden="true">
@@ -551,7 +590,7 @@ $tipos = $conn->query("SELECT ID_TIPO_EVE, NOM_TIPO_EVE FROM TIPOS_EVENTO ORDER 
             } else {
                 let list = '<ul class="ps-3 mb-0" style="font-size: 0.95rem;">';
                 requisitos.forEach(r => {
-                    list += `<li><strong>${r.NOM_REQ}</strong> (${r.TIPO})</li>`;
+                    list += `<li><strong>${r.NOM_REQ}</strong></li>`;
                 });
                 list += '</ul>';
                 reqContainer.innerHTML = list;

@@ -221,42 +221,62 @@ $requisitos = $conn->query("
                         </div>
                     <?php else: ?>
                         <h5 class="mb-3">Requisitos del Evento:</h5>
-                        <?php foreach ($requisitos as $r): ?>
-                            <div class="mb-3">
-                                <label class="form-label <?= $r['TIPO'] !== 'NUMERICO' ? 'text-danger' : '' ?>">
-                                    <?= htmlspecialchars($r['NOM_REQ']) ?> 
-                                    <?php if ($r['TIPO'] !== 'NUMERICO'): ?>* (OBLIGATORIO)<?php endif; ?>
-                                </label>
-                                <?php if ($r['TIPO'] === 'DOCUMENTO'): ?>
-                                    <input type="file" class="form-control" name="req_<?= $r['ID_REQ'] ?>" required accept=".pdf,.jpg,.jpeg,.png" onchange="previewFile(this, 'preview_req_<?= $r['ID_REQ'] ?>')">
-                                    <canvas id="preview_req_<?= $r['ID_REQ'] ?>" style="max-width: 200px; display: none; margin-top: 10px;"></canvas>
-                                    <small class="text-muted">Máx. 5MB. Formatos: PDF, JPG, PNG</small>
-                                <?php elseif ($r['TIPO'] === 'TEXTO_CORTO'): ?>
-                                    <input type="text" class="form-control" name="req_<?= $r['ID_REQ'] ?>" required maxlength="500">
-                                <?php elseif ($r['TIPO'] === 'TEXTO_LARGO'): ?>
-                                    <textarea class="form-control" name="req_<?= $r['ID_REQ'] ?>" rows="3" required maxlength="500"></textarea>
-                                <?php elseif ($r['TIPO'] === 'NUMERICO'): ?>
-                                    <!-- NO mostrar input para el usuario -->
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle"></i> Este requisito será evaluado y completado por el docente/administrador.
-                                    </div>
-                                    <input type="hidden" name="req_<?= $r['ID_REQ'] ?>" value="0">
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php foreach ($requisitos as $r): ?>
+                                <div class="mb-3">
+                                    <label class="form-label <?= $r['TIPO'] !== 'NUMERICO' ? 'text-danger' : '' ?>">
+                                        <?= htmlspecialchars($r['NOM_REQ']) ?>
+                                        <?php if ($r['TIPO'] !== 'NUMERICO'): ?>* (OBLIGATORIO)<?php endif; ?>
+                                    </label>
+
+                                    <?php if ($r['TIPO'] === 'DOCUMENTO'): 
+                                        // Verificar si el usuario ya tiene este documento subido en su perfil
+                                        $stmt_doc = $conn->prepare("SELECT * FROM usuarios_documentos WHERE CED_USU = ? AND ID_REQ = ?");
+                                        $stmt_doc->bind_param("si", $cedula, $r['ID_REQ']);
+                                        $stmt_doc->execute();
+                                        $doc_perfil = $stmt_doc->get_result()->fetch_assoc();
+                                    ?>
+                                        <?php if ($doc_perfil): ?>
+                                            <div class="alert alert-success p-2">
+                                                <i class="fas fa-check-circle"></i> 
+                                                Ya tienes este documento subido en tu perfil. <strong>Se usará automáticamente.</strong>
+                                            </div>
+                                            <input type="hidden" name="req_<?= $r['ID_REQ'] ?>_from_perfil" value="1">
+                                        <?php else: ?>
+                                            <input type="file" class="form-control" name="req_<?= $r['ID_REQ'] ?>" required accept=".pdf,.jpg,.jpeg,.png" onchange="previewFile(this, 'preview_req_<?= $r['ID_REQ'] ?>')">
+                                            <canvas id="preview_req_<?= $r['ID_REQ'] ?>" style="max-width: 200px; display: none; margin-top: 10px;"></canvas>
+                                            <small class="text-muted">Máx. 5MB. Formatos permitidos: PDF, JPG, PNG</small>
+                                        <?php endif; ?>
+
+                                    <?php elseif ($r['TIPO'] === 'TEXTO_CORTO'): ?>
+                                        <input type="text" class="form-control" name="req_<?= $r['ID_REQ'] ?>" required maxlength="500" placeholder="Ingresa el texto solicitado">
+
+                                    <?php elseif ($r['TIPO'] === 'TEXTO_LARGO'): ?>
+                                        <textarea class="form-control" name="req_<?= $r['ID_REQ'] ?>" rows="4" required maxlength="1000" placeholder="Ingresa la información detallada"></textarea>
+
+                                    <?php elseif ($r['TIPO'] === 'NUMERICO'): ?>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i> 
+                                            Este requisito será evaluado y completado por el docente o administrador del evento.
+                                        </div>
+                                        <input type="hidden" name="req_<?= $r['ID_REQ'] ?>" value="0">
+
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
                     <?php endif; ?>
 
                     <?php if ($evento['MOD_EVE_CUR'] == 'Pagado'): ?>
-                        <div class="mb-3">
-                            <label class="form-label text-danger"><i class="fas fa-exclamation-triangle"></i> Comprobante de Pago * (OBLIGATORIO)</label>
-                            <input type="file" class="form-control" name="comprobante_pago" required accept=".pdf,.jpg,.jpeg,.png">
-                            <small class="text-muted">Máx. 5MB. Formatos: PDF, JPG, PNG</small>
+                        <div class="alert alert-warning mb-3">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            Este evento es pagado ($<?= number_format($evento['COS_EVE_CUR'], 2) ?>). 
+                            El pago se habilitará una vez que tus requisitos sean aprobados por el docente responsable.
                         </div>
+                        <!-- NO mostrar input de pago aquí -->
                     <?php endif; ?>
 
                     <div class="mt-4">
                         <button type="submit" class="btn-inscribir">
-                            <i class="fas fa-paper-plane"></i> Enviar Inscripción
+                            <i class="fas fa-paper-plane"></i> Enviar Inscripción Inicial
                         </button>
                         <a href="detalle_evento.php?id=<?= $id ?>" class="btn btn-secondary">Cancelar</a>
                     </div>
