@@ -19,3 +19,5 @@ desktop.ini
 *.log
 logs/
 cache/
+
+node_modules/

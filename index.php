@@ -328,6 +328,8 @@ if (!is_array($footerData)) {
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
+    let eventosGlobales = [];
+
     document.addEventListener("DOMContentLoaded", () => {
       // 1. Carga de filtros de carreras
       fetch("./login/registrar/car.php")
@@ -335,6 +337,12 @@ if (!is_array($footerData)) {
         .then(data => {
           let contenedor = document.getElementById("filtrosCarreras");
           if (!contenedor) return;
+
+           let btnFavoritos = document.createElement("li");
+    btnFavoritos.textContent = "Favoritos";
+   btnFavoritos.dataset.filter = ".favoritos";
+
+    contenedor.appendChild(btnFavoritos);
 
           let btnTodos = document.createElement("li");
           btnTodos.textContent = "Todos";
@@ -358,7 +366,12 @@ if (!is_array($footerData)) {
             li.addEventListener("click", function() {
               contenedor.querySelectorAll("li").forEach(item => item.classList.remove("active"));
               this.classList.add("active");
-              filtrarEventos(this.dataset.filter);
+             if (this.dataset.filter === ".favoritos") {
+    cargarFavoritos();
+} else {
+    filtrarEventos(this.dataset.filter);
+}
+
             });
           });
         })
@@ -366,10 +379,12 @@ if (!is_array($footerData)) {
 
       // 2. Carga y visualización de eventos
       fetch("./login/registrar/eventos.php")
-        .then(res => res.json())
-        .then(data => {
-          mostrarEventos(data);
-        })
+    .then(res => res.json())
+    .then(data => {
+        eventosGlobales = data;   // ← Guardar todos los eventos
+        mostrarEventos(eventosGlobales);
+    })
+
         .catch(err => console.error("Error al cargar eventos:", err));
         
         
@@ -421,34 +436,76 @@ if (!is_array($footerData)) {
         })
         .catch(err => console.error("Error al cargar comentarios:", err));
     });
+function cargarFavoritos() {
+  fetch("./login/registrar/eventos_favoritos.php")
+    .then(res => res.json())
+    .then(favoritos => {
+      // Si no hay eventosGlobales cargados, pedimos todos y luego marcamos
+      if (!eventosGlobales || eventosGlobales.length === 0) {
+        // cargamos todos primero (fallback)
+        fetch("./login/registrar/eventos.php")
+          .then(r => r.json())
+          .then(all => {
+            eventosGlobales = all;
+            // Reiniciar marca de favoritos
+            eventosGlobales.forEach(ev => ev.favorito = 0);
+            favoritos.forEach(fav => {
+              const ev = eventosGlobales.find(e => e.id == fav.ID_EVE_CUR || e.id == fav.id);
+              if (ev) ev.favorito = 1;
+            });
+            // Mostrar usando la función de filtrado (no reemplazar DOM arbitrariamente)
+            filtrarEventos('.favoritos');
+          })
+          .catch(err => console.error("Error cargando eventos base:", err));
+        return;
+      }
 
-    function mostrarEventos(data) {
-      let contenedor = document.getElementById("contenedorEventos");
-      contenedor.innerHTML = "";
+      // Reiniciar favoritos globales
+      eventosGlobales.forEach(ev => ev.favorito = 0);
 
-      data.forEach(evento => {
-        const id_carrera = evento.id_carrera ? evento.id_carrera : null;
-        const claseCarrera = id_carrera ? `carrera_${id_carrera}` : "sin_carrera";
+      // Marcar los favoritos en la lista global — manejo flexible de nombres de campo (id/ID_EVE_CUR)
+      favoritos.forEach(fav => {
+        const favId = fav.ID_EVE_CUR ?? fav.id ?? fav.ID_EVE ?? null;
+        if (favId == null) return;
+        const ev = eventosGlobales.find(e => e.id == favId);
+        if (ev) ev.favorito = 1;
+      });
 
-        // Sanitización para XSS antes de insertar en el DOM
+      // Usar el filtrador para mostrar sólo favoritos
+      filtrarEventos('.favoritos');
+    })
+    .catch(err => console.error("Error al cargar favoritos:", err));
+}
+
+
+
+   function mostrarEventos(data) {
+    let contenedor = document.getElementById("contenedorEventos");
+    contenedor.innerHTML = "";
+
+    data.forEach(evento => {
+
+        // Asegurar clase de carrera
+        const id_carrera = evento.id_carrera ? evento.id_carrera : 0;
+        const claseCarrera = `carrera_${id_carrera}`;
+
+        // Asegurar clase de favorito
+        const claseFavorito = evento.favorito == 1 ? "favoritos" : "no_favorito";
+
+        // Sanitizar
         const nombre = htmlspecialchars(evento.nombre || '');
         const descripcion = htmlspecialchars(evento.descripcion || '');
         let imagen = htmlspecialchars(evento.imagen || '');
-        if (imagen.startsWith('/')) {
-            imagen = imagen.substring(1); 
-        }
-        
-        // Si la imagen sigue siendo vacía, usa un placeholder (opcional)
-        if (!imagen) {
-            imagen = 'images/placeholder_default.png'; // Asegúrate de tener esta imagen
-        }
+        if (imagen.startsWith('/')) imagen = imagen.substring(1);
+        if (!imagen) imagen = 'images/placeholder_default.png';
         const fecha = htmlspecialchars(evento.fecha || '');
 
+        // Crear tarjeta
         let div = document.createElement("div");
-        div.className = `col-sm-6 col-lg-4 all ${claseCarrera}`;
+        div.className = `col-sm-6 col-lg-4 all ${claseCarrera} ${claseFavorito}`;
 
         div.innerHTML = `
-            <div class="box" >
+            <div class="box">
                 <div>
                     <div class="img-box">
                         <img src="${imagen}" alt="${nombre}">
@@ -457,38 +514,58 @@ if (!is_array($footerData)) {
                         <h5>${nombre}</h5>
                         <p>${descripcion}</p>
                         <div class="options">
-                        <h6>Fecha de duracion</h6>
+                            <h6>Fecha de duración</h6>
                             <h6>${fecha}</h6>
                         </div>
-                        <button  class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#loginModal" 
-                        data-redirect="buscar_eventos.php" >
-                        Inscribirse
-                    </button>
-                </div>
+                        <button class="btn btn-outline-primary btn-sm mt-2"
+                            data-bs-toggle="modal"
+                            data-bs-target="#loginModal"
+                            data-redirect="buscar_eventos.php">
+                            Inscribirse
+                        </button>
                     </div>
                 </div>
             </div>
         `;
+
         contenedor.appendChild(div);
-      });
+    });
+}
+
+
+   function filtrarEventos(filtro) {
+  if (!eventosGlobales) eventosGlobales = [];
+
+  // Normalizar filtro (acepta ".favoritos", "favoritos", ".carrera_2", ".sin_carrera", ".all")
+  const filtroRaw = typeof filtro === 'string' ? filtro.trim() : '';
+  const filtroNorm = filtroRaw.startsWith('.') ? filtroRaw.substring(1) : filtroRaw;
+
+  let filtrados = [];
+
+  if (filtroNorm === '' || filtroNorm === 'all') {
+    // Todos
+    filtrados = eventosGlobales.slice();
+  } else if (filtroNorm === 'favoritos') {
+    filtrados = eventosGlobales.filter(e => Number(e.favorito) === 1);
+  } else if (filtroNorm === 'sin_carrera' || filtroNorm === 'sin-carrera') {
+    // aquellos con id_carrera 0 o null o '0'
+    filtrados = eventosGlobales.filter(e => !e.id_carrera || Number(e.id_carrera) === 0);
+  } else if (filtroNorm.startsWith('carrera_')) {
+    const parts = filtroNorm.split('_');
+    const id = parts[1] ? Number(parts[1]) : null;
+    if (id === null || Number.isNaN(id)) {
+      filtrados = eventosGlobales.slice();
+    } else {
+      filtrados = eventosGlobales.filter(e => Number(e.id_carrera) === id);
     }
+  } else {
+    // fallback: intentar filtrar por clase literal
+    filtrados = eventosGlobales.slice();
+  }
 
-    function filtrarEventos(filtro) {
-      let eventos = document.querySelectorAll("#contenedorEventos .all");
-
-      eventos.forEach(e => {
-        // Elimina el punto para comparar clases
-        const filtroClass = filtro.startsWith('.') ? filtro.substring(1) : filtro;
-
-        if (filtro === ".all") {
-          e.style.display = "block";
-        } else if (e.classList.contains(filtroClass)) {
-          e.style.display = "block";
-        } else {
-          e.style.display = "none";
-        }
-      });
-    }
+  // Finalmente muestra los resultados (ya genera DOM limpio)
+  mostrarEventos(filtrados);
+}
     
     // Función simple de sanitización de HTML para JS
     function htmlspecialchars(str) {
@@ -500,6 +577,7 @@ if (!is_array($footerData)) {
                 .replace(/'/g, '&#039;');
     }
   </script>
+  
   <?php // La lógica de los modales se mantiene abajo, fuera del body para seguir la estructura original ?>
   <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
