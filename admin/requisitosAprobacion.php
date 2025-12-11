@@ -551,11 +551,12 @@ if ($eventId) {
        <?= $notasFinalizadas ? 'disabled' : '' ?>>
 
                       <?php elseif ($r['TIPO']==='TEXTO_CORTO'): ?>
-                        <input type="text" class="form-control"
-                               name="valor_texto"
-                               value="<?= htmlspecialchars($r['VALOR_TEXTO'] ?? '') ?>"
-                               placeholder="Texto corto">
-                      <?php else: ?>
+    <button type="button"
+            class="btn btn-sm btn-outline-primary btn-ver-texto"
+            data-texto="<?= htmlspecialchars($r['VALOR_TEXTO'] ?? '') ?>">
+        <i class="fa fa-eye"></i> Ver
+    </button>
+<?php else: ?>
                         <span class="text-muted">—</span>
                       <?php endif; ?>
 
@@ -638,6 +639,21 @@ if ($eventId) {
   </div>
 </div>
 
+<!-- Modal para ver texto  -->
+ <!-- Modal para ver texto -->
+<div class="modal fade" id="textoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Texto enviado por el participante</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="textoContenido" style="white-space: pre-wrap; font-size:1.05rem;"></p>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 <div class="modal fade" id="finalizeModal" tabindex="-1" aria-hidden="true">
@@ -820,6 +836,14 @@ if (urlParams.get('success') === '1') {
   window.history.replaceState({}, '', newUrl);
 }
 
+// Abrir modal de texto
+document.querySelectorAll('.btn-ver-texto').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const texto = this.dataset.texto || "(Vacío)";
+    document.getElementById('textoContenido').textContent = texto;
+    new bootstrap.Modal(document.getElementById('textoModal')).show();
+  });
+});
 
 
   </script>
