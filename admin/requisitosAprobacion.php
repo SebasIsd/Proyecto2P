@@ -845,7 +845,21 @@ document.querySelectorAll('.btn-ver-texto').forEach(btn => {
   });
 });
 
+// ===== Modal "Ver texto" =====
+const textoModalEl = document.getElementById('textoModal');
+const textoContenido = document.getElementById('textoContenido');
 
+if (textoModalEl && textoContenido && window.bootstrap) {
+  const textoModal = new bootstrap.Modal(textoModalEl);
+
+  document.querySelectorAll('.btn-ver-texto').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const txt = btn.dataset.texto || '';
+      textoContenido.textContent = txt;
+      textoModal.show();
+    });
+  });
+}
   </script>
 </body>
 </html>
