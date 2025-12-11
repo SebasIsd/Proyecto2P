@@ -90,6 +90,29 @@ body { font-family:'Segoe UI'; background:linear-gradient(135deg,#f5f5f5 0%,#e0e
 .card { border-radius:var(--radius); box-shadow:var(--shadow); border:none; overflow:hidden; }
 .card-header { background:var(--primary); color:white; font-weight:600; }
 .carousel-img { height:300px; object-fit:cover; width:100%; border-bottom:4px solid rgba(0,0,0,0.03);}
+.carousel-item {
+    position: relative; /* Esencial para que el overlay se posicione correctamente */
+}
+
+.carousel-img-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Fondo oscuro semitransparente (negro con 45% de opacidad) */
+    background-color: rgba(0, 0, 0, 0.45); 
+    z-index: 1; /* Asegura que el overlay esté debajo del caption */
+}
+
+.carousel-caption {
+    z-index: 2; /* Asegura que el texto esté encima de todo */
+    color: white; /* Aseguramos que el texto del caption sea blanco */
+}
+/* Si el fondo es blanco, ajustamos el color del texto del título */
+.carousel-caption h5 {
+    color: var(--dark); /* Cambia el color del título a oscuro si el fondo del div es blanco */
+}
 .btn-uta { background:linear-gradient(90deg,#a30000,#a02727); color:#fff; border:none; border-radius:8px;}
 .btn-uta:hover { background:var(--primary-hover);}
 
@@ -155,13 +178,14 @@ body { font-family:'Segoe UI'; background:linear-gradient(135deg,#f5f5f5 0%,#e0e
       $img = !empty($ev['IMG_EVE_CUR']) ? '../' . htmlspecialchars($ev['IMG_EVE_CUR']) : 'https://via.placeholder.com/1200x600?text=Evento+' . urlencode($ev['TIT_EVE_CUR']);
     ?>
     <div class="carousel-item <?= $i===0?'active':'' ?>">
-      <img src="<?= $img ?>" class="carousel-img">
-      <div class="carousel-caption text-start" style="bottom:18px;left:18px;">
-        <div style="background:#fff;padding:10px;border-radius:10px;">
-          <h5><?= htmlspecialchars($ev['TIT_EVE_CUR']) ?></h5>
-        </div>
+     <img src="<?= $img ?>" class="carousel-img">
+      <div class="carousel-img-overlay"></div>
+        <div class="carousel-caption text-start" style="bottom:18px;left:18px;">
+            <div style="padding:10px;border-radius:10px;background:#fff;">
+              <h5><?= htmlspecialchars($ev['TIT_EVE_CUR']) ?></h5>
+            </div>
+          </div>
       </div>
-    </div>
     <?php endforeach; ?>
   </div>
 </div>
